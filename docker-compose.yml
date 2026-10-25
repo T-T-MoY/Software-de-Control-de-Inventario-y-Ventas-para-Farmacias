@@ -1,0 +1,84 @@
+services:
+  # ==========================================
+  # BASE DE DATOS (PostgreSQL)
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: farmacia_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
+      POSTGRES_DB: ${POSTGRES_DB:-control_farmacia}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d:ro   # Scripts .sql (se ejecutan en orden alfabético)
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ==========================================
+  # PGADMIN (administrador web de la BD)
+  # ==========================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: farmacia_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmacia.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD in the root .env file}
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ==========================================
+  # BACKEND (Node.js + Express)
+  # ==========================================
+  backend:
+    build: ./backend
+    container_name: farmacia_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_USER=${POSTGRES_USER:-admin}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
+      - DB_NAME=${POSTGRES_DB:-control_farmacia}
+      - DB_PORT=5432
+      - DB_HOST=db
+      - SESSION_SECRET=${SESSION_SECRET:?Set SESSION_SECRET in the root .env file}
+    volumes:
+      - ./backend:/app                 # Sincroniza el código fuente en tiempo real
+      - /app/node_modules              # Protege las dependencias de Linux
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ==========================================
+  # FRONTEND (Vue 3 + Vite + Tailwind)
+  # ==========================================
+  frontend:
+    build: ./frontend
+    container_name: farmacia_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app                # Sincroniza el código fuente en tiempo real
+      - /app/node_modules              # Protege las dependencias de Linux
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  pgadmin_data: 

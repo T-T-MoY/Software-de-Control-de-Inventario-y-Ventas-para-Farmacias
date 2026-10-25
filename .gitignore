@@ -1,0 +1,22 @@
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+credenciales.txt
+
+# Dependencias y compilación
+node_modules/
+**/node_modules/
+frontend/dist/
+
+# Archivos de usuario y registros
+backend/uploads/*
+!backend/uploads/.gitkeep
+*.log
+npm-debug.log*
+
+# Sistema/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

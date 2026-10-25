@@ -1,0 +1,433 @@
+/* ==========================================
+   1. FUENTE OFICIAL Y VARIABLES DE TEMA
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&display=swap');
+
+:root {
+    --bg-body: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --sidebar-bg: linear-gradient(180deg, #2563eb 0%, #1e40af 100%);
+    --neon-btn: #2563eb;
+    --neon-shadow: rgba(37, 99, 235, 0.4);
+    
+    /* Forzamos la fuente Nunito en todo el sistema */
+    --font-family-sans-serif: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+[data-theme="dark"], [data-bs-theme="dark"] {
+    --bg-body: #050b14;
+    --bg-card: #0d1321;
+    --text-main: #f8fafc;
+    --text-muted: #8ba3cb;
+    --border-color: #1e293b;
+    --sidebar-bg: linear-gradient(180deg, #0d1627 0%, #060a11 100%);
+    --neon-btn: #3b82f6;
+    --neon-shadow: rgba(59, 130, 246, 0.5);
+    
+    /* Forzamos las variables nativas de Bootstrap 5 al instante */
+    --bs-body-bg: var(--bg-body);
+    --bs-body-color: var(--text-main);
+    --bs-tertiary-bg: var(--bg-card);
+    --bs-secondary-bg: var(--bg-card);
+    --bs-border-color: var(--border-color);
+}
+
+/* ==========================================
+   2. COMPORTAMIENTO DE APLICACIÓN (UI/UX)
+   ========================================== */
+body {
+    font-family: var(--font-family-sans-serif) !important;
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    overflow-x: hidden;
+    
+    /* SOLUCIÓN AL BUG DEL CURSOR (Caret Bug) GLOBAL */
+    caret-color: transparent !important; 
+}
+
+#main-content {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    overflow-x: hidden;
+    margin-left: calc(250px + 3rem);
+    padding: 1.5rem 2rem;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* Restauramos el cursor parpadeante SOLO para escribir texto */
+input, textarea, select, [contenteditable="true"] {
+    caret-color: var(--neon-btn) !important; 
+}
+
+/* Evita que el usuario seleccione elementos como si fuera texto plano */
+.theme-switch, 
+.profile-menu,
+.profile-menu *,
+.sidebar-brand,
+.nav-link,
+.card-header,
+button,
+a,
+i,
+.badge {
+    user-select: none !important; 
+    -webkit-user-select: none !important; 
+    -moz-user-select: none !important; 
+    outline: none !important;
+    cursor: pointer;
+}
+
+/* ==========================================
+   3. SIDEBAR FLOTANTE Y BACKDROP (MÓVILES)
+   ========================================== */
+.sidebar-backdrop {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 1030;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.sidebar-backdrop.show {
+    display: block;
+    opacity: 1;
+}
+
+.floating-sidebar {
+    position: fixed;
+    top: 1.5rem; bottom: 1.5rem; left: 1.5rem;
+    width: 250px;
+    background: var(--sidebar-bg);
+    border-radius: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    z-index: 1040;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brand-icon {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    padding: 0.6rem;
+    border-radius: 0.6rem;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+}
+
+.sidebar-divider {
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.floating-sidebar .nav-link {
+    border-radius: 0.6rem;
+    padding: 0.8rem 1.2rem;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    color: #cbd5e1 !important;
+}
+
+.floating-sidebar .nav-link:hover { background: rgba(255,255,255,0.05); color: #fff !important; transform: translateX(5px); }
+.floating-sidebar .nav-link.active {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%);
+    color: #fff !important;
+    border-left: 4px solid #3b82f6;
+    font-weight: 600;
+}
+
+/* Sidebar en Móviles */
+@media (max-width: 991.98px) {
+    .floating-sidebar { transform: translateX(-120%); left: 1rem; }
+    .floating-sidebar.show { transform: translateX(0); }
+    #main-content { margin-left: 0; padding: 1rem; }
+}
+
+/* ==========================================
+   4. INTERRUPTOR MODO OSCURO
+   ========================================== */
+.theme-switch {
+    width: 60px;
+    height: 32px;
+    position: relative;
+    display: inline-block;
+}
+
+.theme-switch input,
+.theme-switch input[type="checkbox"] {
+    display: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
+    caret-color: transparent !important;
+    pointer-events: none !important;
+}
+
+.slider {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #cbd5e1;
+    border-radius: 34px;
+    cursor: pointer;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] .theme-switch .slider {
+    background-color: #1e293b;
+}
+
+.slider::before {
+    content: "\f185";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    height: 24px; width: 24px;
+    left: 4px; bottom: 4px;
+    background: #f59e0b;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 13px;
+    transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+input:checked + .slider {
+    background: #1e293b;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+input:checked + .slider::before {
+    transform: translateX(28px);
+    content: "\f186";
+    background: #3b82f6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+}
+
+/* ==========================================
+   5. TARJETAS, TABLAS Y BOTONES NEÓN
+   ========================================== */
+.topbar, .card {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* PARCHE: Obliga a las cabeceras a usar tu color de borde */
+.card-header, .card-footer {
+    border-color: var(--border-color) !important;
+    background-color: transparent !important;
+}
+
+/* Tablas estandarizadas */
+.custom-table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text-main);
+    color: var(--text-main);
+}
+.custom-table thead th {
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-muted);
+    background: transparent;
+    font-weight: 700;
+}
+.custom-table td {
+    border-bottom: 1px solid var(--border-color) !important;
+    vertical-align: middle;
+}
+[data-theme="dark"] .custom-table tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Botones con brillo */
+.btn-neon {
+    background: var(--neon-btn);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 10px var(--neon-shadow);
+    transition: all 0.2s;
+}
+.btn-neon:hover { background: #1d4ed8; transform: translateY(-2px); color: white;}
+.hover-primary:hover { color: var(--neon-btn) !important; }
+
+/* ==========================================
+   6. ETIQUETAS DE ESTADO (Badges)
+   ========================================== */
+.custom-badge {
+    border: 1px solid transparent;
+    letter-spacing: 0.5px;
+    font-size: 0.7rem;
+}
+.badge-critica { color: #dc3545; background-color: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.3); }
+.badge-advertencia { color: #d97706; background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); }
+.badge-normal { color: #0d6efd; background-color: rgba(13, 110, 253, 0.1); border-color: rgba(13, 110, 253, 0.3); }
+
+[data-theme="dark"] .badge-critica { color: #ff6b6b; background-color: rgba(255, 107, 107, 0.15); border-color: rgba(255, 107, 107, 0.4); }
+[data-theme="dark"] .badge-advertencia { color: #fbbf24; background-color: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.3); }
+[data-theme="dark"] .badge-normal { color: #60a5fa; background-color: rgba(96, 165, 250, 0.15); border-color: rgba(96, 165, 250, 0.4); }
+
+/* ==========================================
+   7. INPUTS UNIFICADOS Y MODALES (CRUD)
+   ========================================== */
+.custom-input-group {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.custom-input-group:focus-within {
+    border-color: var(--neon-btn);
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.custom-input-group .input-group-text {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-muted);
+    padding-right: 0.5rem;
+}
+
+.custom-input-group .form-control {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-main);
+    box-shadow: none !important;
+    padding-left: 0;
+}
+
+.custom-input-group .form-control::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+}
+
+[data-theme="dark"] .custom-input-group .form-control::placeholder {
+    color: #475569;
+}
+
+.modal-content, .offcanvas {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+.modal-header { border-bottom: 1px solid var(--border-color) !important; }
+.modal-footer { border-top: 1px solid var(--border-color) !important; }
+
+.form-control, .form-select {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border-color: var(--neon-btn) !important;
+    box-shadow: 0 0 0 0.25rem var(--neon-shadow) !important;
+}
+
+[data-theme="dark"] .form-select option {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
+[data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-theme="dark"] .form-control::placeholder,
+[data-theme="dark"] .custom-input-group .form-control::placeholder {
+    color: #94a3b8 !important;
+    opacity: 0.8 !important;
+}
+
+/* ==========================================
+   8. PARCHE: FORZAR COLORES Y COMPATIBILIDAD
+   ========================================== */
+h1, h2, h3, h4, h5, h6,
+.text-body,
+.form-label {
+    color: var(--text-main) !important;
+}
+
+.text-muted,
+.small,
+.custom-input-group .input-group-text i {
+    color: var(--text-muted) !important;
+}
+
+/* Fix Autocompletado del Navegador (Quita el fondo amarillo de Chrome) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-main) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Parche Calendarios en Modo Oscuro */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] input[type="date"] {
+    color-scheme: dark !important;
+}
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+
+/* Estilo Pantalla de Login */
+.login-card {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    width: 100%;
+    max-width: 420px;
+}
+
+/* ==========================================
+   9. KANBAN Y MODO OSCURO (Menú Dropdown)
+   ========================================== */
+[data-theme="dark"] .bg-body { background-color: var(--bg-card) !important; }
+[data-theme="dark"] .bg-light { background-color: #1e293b !important; border-color: #334155 !important; }
+[data-theme="dark"] .bg-primary.bg-opacity-10 { background-color: rgba(59, 130, 246, 0.15) !important; border-color: rgba(59, 130, 246, 0.3) !important; }
+[data-theme="dark"] .task-card { background-color: var(--bg-card) !important; border-color: var(--border-color) !important; }
+[data-theme="dark"] .alert-warning { background-color: rgba(245, 158, 11, 0.1) !important; color: #fbbf24 !important; border-color: rgba(245, 158, 11, 0.2) !important; }
+[data-theme="dark"] .alert-success { background-color: rgba(16, 185, 129, 0.1) !important; color: #34d399 !important; border-color: rgba(16, 185, 129, 0.2) !important; }
+[data-theme="dark"] .alert-primary { background-color: rgba(59, 130, 246, 0.1) !important; color: #60a5fa !important; border-color: rgba(59, 130, 246, 0.2) !important; }
+
+/* Dropdown del Menú de Perfil */
+[data-theme="dark"] .dropdown-menu {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
+[data-theme="dark"] .dropdown-item { color: var(--text-main) !important; transition: all 0.2s ease; }
+[data-theme="dark"] .dropdown-item:hover { background-color: rgba(59, 130, 246, 0.1) !important; color: #3b82f6 !important; }
+[data-theme="dark"] .dropdown-item.text-danger { color: #ef4444 !important; }
+[data-theme="dark"] .dropdown-item.text-danger:hover { background-color: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+[data-theme="dark"] .dropdown-divider { border-top-color: var(--border-color) !important; opacity: 1 !important; }
+[data-theme="dark"] .dropdown-item i.text-muted { color: var(--text-muted) !important; }
+[data-theme="dark"] .dropdown-item:hover i.text-muted { color: #3b82f6 !important; }
+
+/* ==========================================
+   10. SCROLLBAR ESTILIZADO (Desaparece la barra gruesa)
+   ========================================== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(108, 117, 125, 0.3);
+    border-radius: 10px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+}
+

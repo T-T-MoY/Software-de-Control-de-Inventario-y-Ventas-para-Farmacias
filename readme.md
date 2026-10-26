@@ -43,9 +43,9 @@ Las tres cuentas de demostración comparten la misma contraseña.
 
 | Rol | Correo | Contraseña |
 |---|---|---|
-| Administrador | `admin@farmacia.bo` | `<CONTRASEÑA_DEMO>` |
-| Encargado de inventario | `inventario@farmacia.bo` | `<CONTRASEÑA_DEMO>` |
-| Ventas (Personal de atención) | `ventas@farmacia.bo` | `<CONTRASEÑA_DEMO>` |
+| Administrador | `admin@farmacia.bo` | `Passw123` |
+| Encargado de inventario | `inventario@farmacia.bo` | `Passw123` |
+| Ventas (Personal de atención) | `ventas@farmacia.bo` | `Passw123` |
 
 Direcciones del sistema cuando está en marcha:
 

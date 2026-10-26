@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
 const db = require('../config/db');
+const { verifyPassword } = require('../config/password');
 const { crearToken } = require('../middleware/auth');
 
 const login = async (req, res) => {
@@ -23,7 +23,7 @@ const login = async (req, res) => {
 
         const user = result.rows[0];
         const passwordIsValid = user
-            ? await bcrypt.compare(password, user.contrasena_hash)
+            ? await verifyPassword(password, user.contrasena_hash)
             : false;
 
         if (!user || user.estado_cuenta !== 'Activo' || !passwordIsValid) {

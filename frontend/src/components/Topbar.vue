@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { applyTheme, getStoredTheme } from '../services/theme'
 
 const route = useRoute()
 const router = useRouter()
@@ -8,22 +9,25 @@ const userName = ref('Usuario')
 const role = ref('')
 const isDarkMode = ref(false)
 
+const initials = computed(() => {
+  const parts = userName.value.trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return 'U'
+  return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase()
+})
+
 onMounted(() => {
   userName.value = localStorage.getItem('nombreUsuario') || 'Usuario'
   role.value = localStorage.getItem('rolUsuario') || ''
-  isDarkMode.value = localStorage.getItem('theme') === 'dark'
+  isDarkMode.value = getStoredTheme() === 'dark'
 })
 
 const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value
-  const theme = isDarkMode.value ? 'dark' : 'light'
-  document.documentElement.setAttribute('data-theme', theme)
-  document.documentElement.setAttribute('data-bs-theme', theme)
-  localStorage.setItem('theme', theme)
+  applyTheme(isDarkMode.value ? 'dark' : 'light')
 }
 
 const cerrarSesion = async () => {
-  const theme = localStorage.getItem('theme') || 'light'
+  const theme = getStoredTheme()
   localStorage.clear()
   localStorage.setItem('theme', theme)
   await router.replace({ name: 'login' })
@@ -33,36 +37,45 @@ defineEmits(['toggle-sidebar'])
 </script>
 
 <template>
-  <nav class="navbar topbar px-3 px-md-4 py-3 rounded-4 shadow-sm mb-4">
+  <nav class="navbar topbar px-3 px-md-4 py-3 mb-4">
     <div class="d-flex align-items-center justify-content-between w-100 gap-3">
-      <div class="d-flex align-items-center">
+      <div class="d-flex align-items-center gap-2">
         <button
           type="button"
-          class="btn btn-link d-lg-none me-3 text-body p-0 text-decoration-none"
+          class="icon-btn d-lg-none"
           aria-label="Abrir menú"
           @click="$emit('toggle-sidebar')"
         >
-          <i class="fas fa-bars fs-4"></i>
+          <i class="fas fa-bars"></i>
         </button>
-        <h1 class="h5 mb-0 fw-bold page-title">{{ route.meta.title }}</h1>
+        <div>
+          <div class="topbar-eyebrow d-none d-sm-block">Panel administrativo</div>
+          <h1 class="h5 mb-0 fw-bold page-title">{{ route.meta.title }}</h1>
+        </div>
       </div>
 
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2 gap-sm-3">
         <button
           type="button"
-          class="btn btn-sm btn-outline-secondary rounded-pill"
+          class="icon-btn"
           :aria-label="isDarkMode ? 'Activar tema claro' : 'Activar tema oscuro'"
+          :title="isDarkMode ? 'Activar tema claro' : 'Activar tema oscuro'"
           @click="toggleTheme"
         >
           <i class="fas" :class="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
         </button>
-        <div class="d-none d-sm-block text-end">
-          <div class="small fw-bold">{{ userName }}</div>
-          <div class="text-muted" style="font-size: 0.72rem">{{ role }}</div>
+
+        <div class="user-chip d-none d-md-flex">
+          <span class="avatar">{{ initials }}</span>
+          <div class="text-end">
+            <div class="user-chip-name">{{ userName }}</div>
+            <div class="user-chip-role">{{ role || 'Sesión activa' }}</div>
+          </div>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" @click="cerrarSesion">
-          <i class="fas fa-right-from-bracket me-sm-1"></i>
-          <span class="d-none d-sm-inline">Salir</span>
+
+        <button type="button" class="btn btn-sm btn-ghost rounded-pill px-3" @click="cerrarSesion">
+          <i class="fas fa-arrow-right-from-bracket"></i>
+          <span class="d-none d-sm-inline ms-1">Salir</span>
         </button>
       </div>
     </div>

@@ -29,7 +29,7 @@ services:
     container_name: farmacia_pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmacia.local}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmacia.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD in the root .env file}
     ports:
       - "5050:80"
@@ -57,8 +57,8 @@ services:
       - DB_HOST=db
       - SESSION_SECRET=${SESSION_SECRET:?Set SESSION_SECRET in the root .env file}
     volumes:
-      - ./backend:/app                 # Sincroniza el código fuente en tiempo real
-      - /app/node_modules              # Protege las dependencias de Linux
+      - ./backend:/app                    # Sincroniza el código fuente en tiempo real
+      - /app/node_modules                 # Protege las dependencias de Linux
       - ./backend/uploads:/app/uploads
     depends_on:
       db:
@@ -74,11 +74,11 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/app                # Sincroniza el código fuente en tiempo real
-      - /app/node_modules              # Protege las dependencias de Linux
+      - ./frontend:/app                    # Sincroniza el código fuente en tiempo real
+      - /app/node_modules                 # Protege las dependencias de Linux
     depends_on:
       - backend
 
 volumes:
   pgdata:
-  pgadmin_data: 
+  pgadmin_data:

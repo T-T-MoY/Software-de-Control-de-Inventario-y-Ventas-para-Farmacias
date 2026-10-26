@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
 const db = require('../config/db');
+const { hashPassword } = require('../config/password');
 
 const camposUsuario = `
     u.id_usuario,
@@ -95,10 +95,15 @@ const validarUsuario = (body, necesitaContrasena) => {
     )) {
         return 'La contraseña debe tener al menos 8 caracteres.';
     }
-    if (!necesitaContrasena && body.contrasena !== undefined && typeof body.contrasena !== 'string') {
-        return 'La nueva contraseña no es válida.';
+    const cambiaContrasena = body.contrasena !== undefined
+        && body.contrasena !== null
+        && body.contrasena !== '';
+    if (!necesitaContrasena && cambiaContrasena && (
+        typeof body.contrasena !== 'string' || body.contrasena.length < 8
+    )) {
+        return 'La nueva contraseña debe tener al menos 8 caracteres.';
     }
-    if (body.contrasena && Buffer.byteLength(body.contrasena, 'utf8') > 72) {
+    if (cambiaContrasena && Buffer.byteLength(body.contrasena, 'utf8') > 72) {
         return 'La contraseña no puede superar 72 bytes.';
     }
     return null;
@@ -111,7 +116,7 @@ const crearUsuario = async (req, res) => {
     }
 
     try {
-        const passwordHash = await bcrypt.hash(req.body.contrasena, 10);
+        const passwordHash = await hashPassword(req.body.contrasena);
         const result = await db.query(
             `INSERT INTO usuario (
                 nombre, apellido_paterno, apellido_materno, fecha_nacimiento,
@@ -151,7 +156,7 @@ const actualizarUsuario = async (req, res) => {
 
     try {
         const passwordHash = req.body.contrasena
-            ? await bcrypt.hash(req.body.contrasena, 10)
+            ? await hashPassword(req.body.contrasena)
             : null;
         if (Number(req.params.id) === req.sessionUser.id_usuario) {
             const roleResult = await db.query(

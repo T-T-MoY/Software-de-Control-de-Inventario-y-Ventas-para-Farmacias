@@ -89,42 +89,41 @@ CREATE TABLE lote (
 );
 
 -- ---------------------------------------------------------------------
--- VENTAS: clientes, pacientes, médicos, ventas y comprobantes
+-- PERSONAS: generalización (Persona -> Cliente, Medico)
+-- El paciente no tiene tabla propia: es una Persona a la que apunta
+-- venta.id_paciente.
 -- ---------------------------------------------------------------------
-CREATE TABLE cliente (
-    id_cliente         SERIAL        PRIMARY KEY,
-    nombre_completo    VARCHAR(150)  NOT NULL,
-    ci_nit             VARCHAR(20)   NOT NULL UNIQUE,
-    telefono           VARCHAR(20),
-    correo_electronico VARCHAR(120),
-    domicilio          VARCHAR(150)
-);
-
-CREATE TABLE paciente (
-    id_paciente      SERIAL        PRIMARY KEY,
+CREATE TABLE persona (
+    id_persona       SERIAL        PRIMARY KEY,
     nombre_completo  VARCHAR(150)  NOT NULL,
     ci_nit           VARCHAR(20)   NOT NULL UNIQUE
 );
 
-CREATE TABLE medico (
-    id_medico        SERIAL        PRIMARY KEY,
-    nombre_completo  VARCHAR(150)  NOT NULL,
-    ci               VARCHAR(20)   NOT NULL UNIQUE,
-    matricula        VARCHAR(30)   NOT NULL UNIQUE
+CREATE TABLE cliente (
+    id_cliente          INT           PRIMARY KEY REFERENCES persona (id_persona),
+    telefono            VARCHAR(20),
+    correo_electronico  VARCHAR(120),
+    domicilio           VARCHAR(150)
 );
 
+CREATE TABLE medico (
+    id_medico   INT           PRIMARY KEY REFERENCES persona (id_persona),
+    matricula   VARCHAR(30)   NOT NULL UNIQUE
+);
+
+-- ---------------------------------------------------------------------
+-- VENTAS: ventas, detalle y comprobantes
+-- ---------------------------------------------------------------------
 CREATE TABLE venta (
     id_venta              SERIAL         PRIMARY KEY,
     id_cliente            INT            NOT NULL REFERENCES cliente (id_cliente),
     id_usuario            INT            NOT NULL REFERENCES usuario (id_usuario),
-    id_paciente           INT            REFERENCES paciente (id_paciente),
+    id_paciente           INT            REFERENCES persona (id_persona),
     id_medico             INT            REFERENCES medico (id_medico),
     fecha_hora_venta      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     descuento_porcentaje  NUMERIC(5,2)   NOT NULL DEFAULT 0
                           CHECK (descuento_porcentaje BETWEEN 0 AND 100),
     monto_recibido        NUMERIC(10,2)  NOT NULL CHECK (monto_recibido >= 0),
-    estado_venta          VARCHAR(12)    NOT NULL DEFAULT 'Completada'
-                          CHECK (estado_venta IN ('Completada', 'Anulada')),
     -- paciente y médico van juntos: ambos con valor (venta con receta) o ambos NULL
     CHECK ((id_paciente IS NULL) = (id_medico IS NULL))
 );

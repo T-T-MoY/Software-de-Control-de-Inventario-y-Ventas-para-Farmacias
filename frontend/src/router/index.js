@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import UsuariosView from '../views/UsuariosView.vue'
+import PerfilView from '../views/PerfilView.vue'
+import { RESPONSABLES } from '../config/reparto'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,10 +21,21 @@ const router = createRouter({
       meta: { requiresAuth: true, title: 'Panel principal' }
     },
     {
+      path: '/perfil',
+      name: 'perfil',
+      component: PerfilView,
+      meta: { requiresAuth: true, title: 'Mi perfil' }
+    },
+    {
       path: '/usuarios',
       name: 'usuarios',
       component: UsuariosView,
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Gestión de usuarios' }
+      meta: {
+        requiresAuth: true,
+        requiresAdmin: true,
+        title: 'Gestión de usuarios',
+        responsable: RESPONSABLES.seguridad
+      }
     },
     {
       path: '/:pathMatch(.*)*',

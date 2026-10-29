@@ -1,10 +1,13 @@
 const express = require('express');
 const usuariosController = require('../controllers/usuarios.controller');
-const { autenticarAdministrador } = require('../middleware/auth');
+const { autenticarUsuario } = require('../middleware/auth');
+const { autorizar } = require('../middleware/permisos');
+const { PERMISOS } = require('../config/permisos');
 
 const router = express.Router();
 
-router.use(autenticarAdministrador);
+router.use(autenticarUsuario);
+router.use(autorizar(PERMISOS.ADMINISTRAR_USUARIOS));
 router.get('/', usuariosController.obtenerUsuarios);
 router.get('/roles', usuariosController.obtenerRoles);
 router.post('/', usuariosController.crearUsuario);

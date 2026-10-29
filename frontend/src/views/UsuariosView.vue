@@ -17,7 +17,7 @@ const currentUserId = Number(localStorage.getItem('idUsuario'))
 
 const formularioInicial = () => ({
   id_usuario: null,
-  nombre: '',
+  nombres: '',
   apellido_paterno: '',
   apellido_materno: '',
   fecha_nacimiento: '',
@@ -32,7 +32,7 @@ const usuariosFiltrados = computed(() => {
   const consulta = search.value.trim().toLocaleLowerCase()
   return usuarios.value.filter((usuario) => {
     const nombre = [
-      usuario.nombre,
+      usuario.nombres,
       usuario.apellido_paterno,
       usuario.apellido_materno
     ].filter(Boolean).join(' ').toLocaleLowerCase()
@@ -78,7 +78,7 @@ const abrirEdicion = (usuario) => {
   editando.value = true
   form.value = {
     id_usuario: usuario.id_usuario,
-    nombre: usuario.nombre,
+    nombres: usuario.nombres,
     apellido_paterno: usuario.apellido_paterno,
     apellido_materno: usuario.apellido_materno || '',
     fecha_nacimiento: String(usuario.fecha_nacimiento).split('T')[0],
@@ -99,7 +99,7 @@ const guardarUsuario = async () => {
   mensaje.value = ''
 
   const body = {
-    nombre: form.value.nombre.trim(),
+    nombres: form.value.nombres.trim(),
     apellido_paterno: form.value.apellido_paterno.trim(),
     apellido_materno: form.value.apellido_materno.trim(),
     fecha_nacimiento: form.value.fecha_nacimiento,
@@ -133,7 +133,7 @@ const guardarUsuario = async () => {
 const cambiarEstado = async (usuario) => {
   const activo = usuario.estado_cuenta !== 'Activo'
   const verbo = activo ? 'activar' : 'desactivar'
-  if (!window.confirm(`¿Quieres ${verbo} la cuenta de ${usuario.nombre}?`)) return
+  if (!window.confirm(`¿Quieres ${verbo} la cuenta de ${usuario.nombres}?`)) return
   error.value = ''
   mensaje.value = ''
   try {
@@ -149,13 +149,13 @@ const cambiarEstado = async (usuario) => {
 }
 
 const nombreCompleto = (usuario) => [
-  usuario.nombre,
+  usuario.nombres,
   usuario.apellido_paterno,
   usuario.apellido_materno
 ].filter(Boolean).join(' ')
 
 const iniciales = (usuario) => {
-  const partes = [usuario.nombre, usuario.apellido_paterno].filter(Boolean)
+  const partes = [usuario.nombres, usuario.apellido_paterno].filter(Boolean)
   return partes.map((parte) => parte[0]).join('').toUpperCase()
 }
 
@@ -314,8 +314,8 @@ onMounted(cargarDatos)
         <form class="p-4 pt-3" @submit.prevent="guardarUsuario">
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label" for="nombre">Nombre *</label>
-              <input id="nombre" v-model="form.nombre" class="form-control" maxlength="80" required>
+              <label class="form-label" for="nombres">Nombre *</label>
+              <input id="nombres" v-model="form.nombres" class="form-control" maxlength="80" required>
             </div>
             <div class="col-md-6">
               <label class="form-label" for="apellido-paterno">Apellido paterno *</label>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { MODULOS } from '../config/reparto'
 
 const firstName = computed(() => localStorage.getItem('nombrePila') || 'Usuario')
 const fullName = computed(() => localStorage.getItem('nombreUsuario') || firstName.value)
@@ -13,17 +14,7 @@ const greeting = computed(() => {
   return 'Buenas noches'
 })
 
-const modules = [
-  { name: 'Medicamentos', icon: 'fa-pills' },
-  { name: 'Lotes', icon: 'fa-boxes-stacked' },
-  { name: 'Proveedores', icon: 'fa-truck' },
-  { name: 'Ventas', icon: 'fa-cash-register' },
-  { name: 'Clientes', icon: 'fa-address-book' },
-  { name: 'Alertas', icon: 'fa-bell' },
-  { name: 'Reportes', icon: 'fa-chart-column' },
-  { name: 'Historial', icon: 'fa-clock-rotate-left' },
-  { name: 'Configuración', icon: 'fa-sliders' }
-]
+const modules = MODULOS
 
 const stats = computed(() => [
   {
@@ -42,8 +33,8 @@ const stats = computed(() => [
   },
   {
     label: 'Módulos activos',
-    value: '2',
-    hint: 'Panel y usuarios',
+    value: '3',
+    hint: 'Panel, usuarios y perfil',
     icon: 'fa-table-cells-large',
     tone: 'blue'
   },
@@ -66,8 +57,8 @@ const stats = computed(() => [
           <span class="eyebrow eyebrow-light">{{ greeting }}</span>
           <h2 class="welcome-title">Hola, {{ firstName }}</h2>
           <p class="welcome-text mb-0">
-            La base del sistema de farmacia está lista. La gestión de usuarios está habilitada;
-            los demás módulos se incorporarán durante el trabajo del equipo.
+            La base del sistema de farmacia está lista. La gestión de usuarios y el perfil
+            ya están habilitados; los demás módulos se incorporarán durante el trabajo del equipo.
           </p>
           <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
             <router-link
@@ -127,8 +118,8 @@ const stats = computed(() => [
               <i class="fas" :class="module.icon"></i>
             </span>
             <div class="min-w-0 flex-grow-1">
-              <div class="fw-semibold text-truncate">{{ module.name }}</div>
-              <small class="text-muted">Próximamente</small>
+              <div class="fw-semibold text-truncate" :title="module.name">{{ module.name }}</div>
+              <small class="text-muted">({{ module.responsable }}) · Próximamente</small>
             </div>
             <i class="fas fa-hourglass-half module-arrow" title="En desarrollo"></i>
           </div>

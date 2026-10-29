@@ -56,6 +56,12 @@ services:
       - DB_PORT=5432
       - DB_HOST=db
       - SESSION_SECRET=${SESSION_SECRET:?Set SESSION_SECRET in the root .env file}
+      - MARGEN_ALERTA_DIAS=${MARGEN_ALERTA_DIAS:-30}
+      - STOCK_SEGURIDAD=${STOCK_SEGURIDAD:-10}
+      - FARMACIA_NOMBRE=${FARMACIA_NOMBRE:-Farmacia}
+      - FARMACIA_NIT=${FARMACIA_NIT:-}
+      - FARMACIA_DIRECCION=${FARMACIA_DIRECCION:-}
+      - FARMACIA_TELEFONO=${FARMACIA_TELEFONO:-}
     volumes:
       - ./backend:/app                    # Sincroniza el código fuente en tiempo real
       - /app/node_modules                 # Protege las dependencias de Linux

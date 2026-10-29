@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const { verifyPassword } = require('../config/password');
 const { crearToken } = require('../middleware/auth');
+const { obtenerPermisos } = require('../config/permisos');
 
 const login = async (req, res) => {
     const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
@@ -12,7 +13,7 @@ const login = async (req, res) => {
 
     try {
         const result = await db.query(
-            `SELECT u.id_usuario, u.nombre, u.apellido_paterno, u.apellido_materno,
+            `SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno,
                     u.correo, u.ci_nit, u.contrasena_hash, u.estado_cuenta,
                     r.nombre_rol
              FROM usuario AS u
@@ -35,15 +36,16 @@ const login = async (req, res) => {
 
         const usuario = {
             id_usuario: user.id_usuario,
-            nombre: user.nombre,
+            nombres: user.nombres,
             apellido_paterno: user.apellido_paterno,
             apellido_materno: user.apellido_materno || '',
-            nombre_completo: [user.nombre, user.apellido_paterno, user.apellido_materno]
+            nombre_completo: [user.nombres, user.apellido_paterno, user.apellido_materno]
                 .filter(Boolean)
                 .join(' '),
             correo: user.correo,
             ci_nit: user.ci_nit,
             rol: user.nombre_rol,
+            permisos: obtenerPermisos(user.nombre_rol),
         };
 
         return res.json({

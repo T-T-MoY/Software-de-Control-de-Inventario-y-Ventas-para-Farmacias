@@ -14,7 +14,7 @@
 -- ROLES (los 3 del sistema)
 -- ---------------------------------------------------------------------
 INSERT INTO rol (nombre_rol, descripcion) VALUES
-('Administrador',          'Control total del sistema, usuarios, parámetros y reportes'),
+('Administrador',          'Control total del sistema, usuarios y reportes'),
 ('Encargado de inventario','Gestiona medicamentos, lotes, proveedores y recepciones'),
 ('Ventas',                 'Realiza ventas en caja y emite comprobantes');
 
@@ -22,23 +22,17 @@ INSERT INTO rol (nombre_rol, descripcion) VALUES
 -- USUARIOS (uno por rol)
 -- ---------------------------------------------------------------------
 INSERT INTO usuario
-    (nombre, apellido_paterno, apellido_materno, fecha_nacimiento, correo, ci_nit, contrasena_hash, estado_cuenta, id_rol)
+    (nombres, apellido_paterno, apellido_materno, fecha_nacimiento, correo, ci_nit, contrasena_hash, estado_cuenta, id_rol)
 VALUES
 ('Carlos Andrés', 'Mamani', 'Quispe',  '1985-03-14', 'admin@farmacia.bo',      '4587123',
- '$2a$12$0MvPkscRGlIBDxSs8qjQ0OL1eMSFAjhhxlpEPFyiLc59eaLWP/MF.', 'Activo', 1),
+ '$2a$12$dBxhqwYRrR82IYokhgkt7OVP5pcH8lPwZ67x28Evxrbq4n.VwPk0a', 'Activo', 1),
 ('Rosa María',    'Choque', 'Villca',  '1990-07-22', 'inventario@farmacia.bo', '6012345',
- '$2a$12$0MvPkscRGlIBDxSs8qjQ0OL1eMSFAjhhxlpEPFyiLc59eaLWP/MF.', 'Activo', 2),
+ '$2a$12$dBxhqwYRrR82IYokhgkt7OVP5pcH8lPwZ67x28Evxrbq4n.VwPk0a', 'Activo', 2),
 ('Luis Alberto',  'Flores', 'Condori', '1998-11-05', 'ventas@farmacia.bo',     '8123456',
- '$2a$12$0MvPkscRGlIBDxSs8qjQ0OL1eMSFAjhhxlpEPFyiLc59eaLWP/MF.', 'Activo', 3);
+ '$2a$12$dBxhqwYRrR82IYokhgkt7OVP5pcH8lPwZ67x28Evxrbq4n.VwPk0a', 'Activo', 3);
 
 -- ---------------------------------------------------------------------
--- PARÁMETROS DEL SISTEMA
--- ---------------------------------------------------------------------
-INSERT INTO parametro_sistema (nombre_parametro, valor) VALUES
-('margen_alerta_dias', '30');
-
--- ---------------------------------------------------------------------
--- CATÁLOGOS
+-- CATEGORÍAS
 -- ---------------------------------------------------------------------
 INSERT INTO categoria (nombre_categoria) VALUES
 ('Analgésicos'),             -- 1
@@ -49,29 +43,24 @@ INSERT INTO categoria (nombre_categoria) VALUES
 ('Vitaminas y suplementos'), -- 6
 ('Respiratorios');           -- 7
 
-INSERT INTO forma_farmaceutica (nombre_forma) VALUES
-('Tableta'),     -- 1
-('Cápsula'),     -- 2
-('Jarabe'),      -- 3
-('Crema'),       -- 4
-('Inyectable'),  -- 5
-('Suspensión');  -- 6
-
 -- ---------------------------------------------------------------------
 -- MEDICAMENTOS
+-- El medicamento 9 está 'Inactivo' (borrado lógico): no sale en el
+-- catálogo ni se vende, pero se conserva para el historial.
 -- ---------------------------------------------------------------------
 INSERT INTO medicamento
-    (codigo_barras, nombre_comercial, dci, concentracion, precio_unitario, tipo_venta,
-     stock_seguridad, dias_reposicion, id_categoria, id_forma)
+    (codigo_barras, nombre_comercial, dci, concentracion, forma_farmaceutica, precio_unitario,
+     tipo_venta, stock_seguridad, dias_reposicion, estado_medicamento, id_categoria)
 VALUES
-('7770000000011', 'Dolofin',         'Paracetamol',     '500 mg',     5.00, 'Libre',      20, 3, 1, 1),
-('7770000000028', 'Ibufen',          'Ibuprofeno',      '400 mg',    12.00, 'Libre',      15, 3, 2, 1),
-('7770000000035', 'Amoxibol',        'Amoxicilina',     '500 mg',    38.00, 'Con receta', 10, 5, 3, 2),
-('7770000000042', 'Loratex',         'Loratadina',      '10 mg',     15.00, 'Libre',      15, 3, 4, 1),
-('7770000000059', 'Omeprazol Andes', 'Omeprazol',       '20 mg',     22.00, 'Libre',      10, 3, 5, 2),
-('7770000000066', 'VitaC Plus',      'Ácido ascórbico', '500 mg',    30.00, 'Libre',      10, 5, 6, 1),
-('7770000000073', 'Bronquil',        'Ambroxol',        '15 mg/5 mL',25.00, 'Libre',       8, 3, 7, 3),
-('7770000000080', 'Diclogel',        'Diclofenaco',     '1 %',       18.00, 'Libre',       8, 3, 2, 4);
+('7770000000011', 'Dolofin',         'Paracetamol',     '500 mg',      'Tableta', 5.00,  'Libre',      20, 3, 'Activo',   1),
+('7770000000028', 'Ibufen',          'Ibuprofeno',      '400 mg',      'Tableta', 12.00, 'Libre',      15, 3, 'Activo',   2),
+('7770000000035', 'Amoxibol',        'Amoxicilina',     '500 mg',      'Cápsula', 38.00, 'Con receta', 10, 5, 'Activo',   3),
+('7770000000042', 'Loratex',         'Loratadina',      '10 mg',       'Tableta', 15.00, 'Libre',      15, 3, 'Activo',   4),
+('7770000000059', 'Omeprazol Andes', 'Omeprazol',       '20 mg',       'Cápsula', 22.00, 'Libre',      10, 3, 'Activo',   5),
+('7770000000066', 'VitaC Plus',      'Ácido ascórbico', '500 mg',      'Tableta', 30.00, 'Libre',      10, 5, 'Activo',   6),
+('7770000000073', 'Bronquil',        'Ambroxol',        '15 mg/5 mL',  'Jarabe',  25.00, 'Libre',       8, 3, 'Activo',   7),
+('7770000000080', 'Diclogel',        'Diclofenaco',     '1 %',         'Crema',   18.00, 'Libre',       8, 3, 'Activo',   2),
+('7770000000097', 'Cafiaspin',       'Ácido acetilsalicílico', '500 mg', 'Tableta', 6.00, 'Libre',     10, 3, 'Inactivo', 1);
 
 -- ---------------------------------------------------------------------
 -- PROVEEDORES
@@ -103,62 +92,39 @@ VALUES
 (7, 2, 'BRO-2024-C', CURRENT_DATE - 500, CURRENT_DATE - 60,  14.00,   0, CURRENT_DATE - 55);   -- 10
 
 -- ---------------------------------------------------------------------
--- PERSONAS (supertipo). Cada una puede ser cliente, médico o paciente.
---   1, 2, 3 -> clientes
---   4, 5    -> médicos
---   2 y 6   -> también aparecen como pacientes en ventas con receta
+-- CLIENTES
 -- ---------------------------------------------------------------------
-INSERT INTO persona (nombre_completo, ci_nit) VALUES
-('Juan Carlos Mamani Flores',    '4521897'),  -- 1
-('María Elena Quispe Condori',   '5876543'),  -- 2
-('Pedro Luis Apaza Ticona',      '3987120'),  -- 3
-('Dra. Rosa Huanca Apaza',       '3987456'),  -- 4
-('Dr. Luis Fernando Calle Rojas','5123674'),  -- 5
-('Ana Lucía Vargas Mendoza',     '6234512');  -- 6
-
--- ---------------------------------------------------------------------
--- CLIENTES (subtipo): el id es el mismo id_persona
--- ---------------------------------------------------------------------
-INSERT INTO cliente (id_cliente, telefono, correo_electronico, domicilio) VALUES
-(1, '71234567', 'juan.mamani@correo.com', 'Calle Murillo #456, La Paz'),
-(2, '76543210', NULL,                     'Av. Buenos Aires #1234, La Paz'),
-(3, '70123456', NULL,                     'Zona Villa Fátima, La Paz');
-
--- ---------------------------------------------------------------------
--- MÉDICOS (subtipo): el id es el mismo id_persona
--- ---------------------------------------------------------------------
-INSERT INTO medico (id_medico, matricula) VALUES
-(4, 'MED-0412'),
-(5, 'MED-0875');
-
--- ---------------------------------------------------------------------
--- VENTAS
---   venta 1: libre, sin descuento
---   venta 2: con receta; la cliente (2) es también la paciente (2); médico 4; 10 % de descuento
---   venta 3: libre
---   venta 4: con receta; el cliente (3) compra para la paciente (6); médico 5
--- ---------------------------------------------------------------------
-INSERT INTO venta
-    (id_cliente, id_usuario, id_paciente, id_medico, fecha_hora_venta, descuento_porcentaje, monto_recibido)
+INSERT INTO cliente
+    (nombres, apellido_paterno, apellido_materno, ci_nit, telefono, correo_electronico, domicilio)
 VALUES
-(1, 3, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '3 days',  0,  50.00),
-(2, 3, 2,    4,    CURRENT_TIMESTAMP - INTERVAL '2 days',  10, 50.00),
-(1, 3, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 day',   0,  60.00),
-(3, 3, 6,    5,    CURRENT_TIMESTAMP - INTERVAL '5 hours', 0,  40.00);
+('Juan Carlos', 'Mamani', 'Flores',  '4521897', '71234567', 'juan.mamani@correo.com', 'Calle Murillo #456, La Paz'),
+('María Elena', 'Quispe', 'Condori', '5876543', '76543210', NULL,                     'Av. Buenos Aires #1234, La Paz'),
+('Pedro Luis',  'Apaza',  'Ticona',  '3987120', '70123456', NULL,                     'Zona Villa Fátima, La Paz');
 
-INSERT INTO detalle_venta (id_venta, id_lote, cantidad, precio_venta) VALUES
+-- ---------------------------------------------------------------------
+-- VENTAS (sin descuento) y DISPENSA (líneas de cada venta)
+--   Las ventas 2 y 4 incluyen Amoxibol (Con receta): la receta se validó
+--   en pantalla y no se guarda.
+-- ---------------------------------------------------------------------
+INSERT INTO venta (id_cliente, id_usuario, fecha_hora_venta, descuento_porcentaje, monto_recibido) VALUES
+(1, 3, CURRENT_TIMESTAMP - INTERVAL '3 days',  0, 50.00),
+(2, 3, CURRENT_TIMESTAMP - INTERVAL '2 days',  0, 60.00),
+(1, 3, CURRENT_TIMESTAMP - INTERVAL '1 day',   0, 60.00),
+(3, 3, CURRENT_TIMESTAMP - INTERVAL '5 hours', 0, 40.00);
+
+INSERT INTO dispensa (id_venta, id_lote, cantidad, precio_venta) VALUES
 (1, 1, 3,  5.00),   -- Dolofin x3   = 15.00
 (1, 3, 2, 12.00),   -- Ibufen x2    = 24.00  -> total 39.00, cambio 11.00
 (2, 4, 1, 38.00),   -- Amoxibol x1  = 38.00
-(2, 5, 1, 15.00),   -- Loratex x1   = 15.00  -> 53.00 - 10 % = 47.70, cambio 2.30
+(2, 5, 1, 15.00),   -- Loratex x1   = 15.00  -> total 53.00, cambio 7.00
 (3, 7, 2, 30.00),   -- VitaC x2     = 60.00  -> total 60.00, cambio 0.00
 (4, 4, 1, 38.00);   -- Amoxibol x1  = 38.00  -> total 38.00, cambio 2.00
 
 INSERT INTO comprobante_venta (id_venta, tipo_comprobante, num_serie, formato_impresion) VALUES
-(1, 'Nota de venta', 'NV-000001', 'Impreso'),
-(2, 'Factura',       'F-000001',  'Impreso'),
-(3, 'Nota de venta', 'NV-000002', 'Pantalla'),
-(4, 'Nota de venta', 'NV-000003', 'Pantalla');
+(1, 'Nota de venta', 'NV-2026-000001', 'Impreso'),
+(2, 'Factura',       'F-2026-000001',  'Impreso'),
+(3, 'Nota de venta', 'NV-2026-000002', 'Pantalla'),
+(4, 'Nota de venta', 'NV-2026-000003', 'Pantalla');
 
 -- ---------------------------------------------------------------------
 -- HISTORIAL DE OPERACIONES

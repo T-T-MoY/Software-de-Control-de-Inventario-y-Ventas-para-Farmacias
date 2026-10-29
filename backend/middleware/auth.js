@@ -26,13 +26,16 @@ const crearToken = (usuario) => {
     return `${payload}.${firmar(payload)}`;
 };
 
-const autenticarAdministrador = async (req, res, next) => {
+// Valida el token y devuelve la sesión del usuario activo.
+// Responde directamente (401/403) o delega el error a Express si algo falla.
+const obtenerSesion = async (req, res, next) => {
     const authorization = req.get('authorization') || '';
     const [scheme, token] = authorization.split(' ');
     const [payload, signature] = (token || '').split('.');
 
     if (scheme !== 'Bearer' || !payload || !signature) {
-        return res.status(401).json({ error: 'Debes iniciar sesión.' });
+        res.status(401).json({ error: 'Debes iniciar sesión.' });
+        return null;
     }
 
     try {
@@ -44,38 +47,64 @@ const autenticarAdministrador = async (req, res, next) => {
             actualBuffer.length !== expectedBuffer.length
             || !crypto.timingSafeEqual(actualBuffer, expectedBuffer)
         ) {
-            return res.status(401).json({ error: 'La sesión no es válida.' });
+            res.status(401).json({ error: 'La sesión no es válida.' });
+            return null;
         }
 
         const session = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
         if (!Number.isInteger(session.sub) || session.exp <= Math.floor(Date.now() / 1000)) {
-            return res.status(401).json({ error: 'La sesión venció.' });
+            res.status(401).json({ error: 'La sesión venció.' });
+            return null;
         }
 
         const result = await db.query(
-            `SELECT u.id_usuario
+            `SELECT u.id_usuario, r.nombre_rol
              FROM usuario AS u
              JOIN rol AS r ON r.id_rol = u.id_rol
              WHERE u.id_usuario = $1
-               AND u.estado_cuenta = 'Activo'
-               AND r.nombre_rol = 'Administrador'`,
+               AND u.estado_cuenta = 'Activo'`,
             [session.sub]
         );
         if (result.rowCount === 0) {
-            return res.status(403).json({ error: 'Se requiere una cuenta administradora activa.' });
+            res.status(403).json({ error: 'Se requiere una cuenta activa.' });
+            return null;
         }
 
-        req.sessionUser = { id_usuario: Number(session.sub) };
-        return next();
+        return {
+            id_usuario: Number(session.sub),
+            rol: result.rows[0].nombre_rol,
+        };
     } catch (error) {
         if (error.message.startsWith('SESSION_SECRET')) {
-            return next(error);
+            next(error);
+            return null;
         }
         if (error instanceof SyntaxError || error instanceof TypeError) {
-            return res.status(401).json({ error: 'La sesión no es válida.' });
+            res.status(401).json({ error: 'La sesión no es válida.' });
+            return null;
         }
-        return next(error);
+        next(error);
+        return null;
     }
 };
 
-module.exports = { autenticarAdministrador, crearToken };
+const autenticarUsuario = async (req, res, next) => {
+    const session = await obtenerSesion(req, res, next);
+    if (!session) return;
+    req.sessionUser = session;
+    return next();
+};
+
+const autenticarAdministrador = async (req, res, next) => {
+    const session = await obtenerSesion(req, res, next);
+    if (!session) return;
+    if (session.rol !== 'Administrador') {
+        return res.status(403).json({
+            error: 'Se requiere una cuenta administradora activa.',
+        });
+    }
+    req.sessionUser = session;
+    return next();
+};
+
+module.exports = { autenticarUsuario, autenticarAdministrador, crearToken };

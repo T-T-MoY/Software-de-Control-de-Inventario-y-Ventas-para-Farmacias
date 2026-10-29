@@ -3,7 +3,7 @@ const { hashPassword } = require('../config/password');
 
 const camposUsuario = `
     u.id_usuario,
-    u.nombre,
+    u.nombres,
     u.apellido_paterno,
     u.apellido_materno,
     u.fecha_nacimiento,
@@ -20,7 +20,7 @@ const obtenerUsuarios = async (req, res) => {
             `SELECT ${camposUsuario}
              FROM usuario AS u
              JOIN rol AS r ON r.id_rol = u.id_rol
-             ORDER BY u.apellido_paterno, u.nombre`
+             ORDER BY u.apellido_paterno, u.nombres`
         );
         return res.json(result.rows);
     } catch (error) {
@@ -43,7 +43,7 @@ const obtenerRoles = async (req, res) => {
 
 const validarUsuario = (body, necesitaContrasena) => {
     const required = [
-        'nombre',
+        'nombres',
         'apellido_paterno',
         'fecha_nacimiento',
         'correo',
@@ -62,7 +62,7 @@ const validarUsuario = (body, necesitaContrasena) => {
         return 'Ingresa un correo válido.';
     }
     if (
-        body.nombre.trim().length > 80
+        body.nombres.trim().length > 80
         || body.apellido_paterno.trim().length > 60
         || (body.apellido_materno != null && typeof body.apellido_materno !== 'string')
         || (body.apellido_materno?.trim().length || 0) > 60
@@ -119,13 +119,13 @@ const crearUsuario = async (req, res) => {
         const passwordHash = await hashPassword(req.body.contrasena);
         const result = await db.query(
             `INSERT INTO usuario (
-                nombre, apellido_paterno, apellido_materno, fecha_nacimiento,
+                nombres, apellido_paterno, apellido_materno, fecha_nacimiento,
                 correo, ci_nit, contrasena_hash, id_rol
              )
              VALUES ($1, $2, $3, $4, LOWER($5), $6, $7, $8)
              RETURNING id_usuario`,
             [
-                req.body.nombre.trim(),
+                req.body.nombres.trim(),
                 req.body.apellido_paterno.trim(),
                 req.body.apellido_materno?.trim() || null,
                 req.body.fecha_nacimiento,
@@ -170,7 +170,7 @@ const actualizarUsuario = async (req, res) => {
 
         const result = await db.query(
             `UPDATE usuario
-             SET nombre = $1,
+             SET nombres = $1,
                  apellido_paterno = $2,
                  apellido_materno = $3,
                  fecha_nacimiento = $4,
@@ -180,7 +180,7 @@ const actualizarUsuario = async (req, res) => {
                  contrasena_hash = COALESCE($8, contrasena_hash)
              WHERE id_usuario = $9`,
             [
-                req.body.nombre.trim(),
+                req.body.nombres.trim(),
                 req.body.apellido_paterno.trim(),
                 req.body.apellido_materno?.trim() || null,
                 req.body.fecha_nacimiento,

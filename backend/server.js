@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('./config/env');
 
 const express = require('express');
 const cors = require('cors');
@@ -6,6 +6,8 @@ const path = require('path');
 const db = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const usuariosRoutes = require('./routes/usuarios.routes');
+const perfilRoutes = require('./routes/perfil.routes');
+const parametrosRoutes = require('./routes/parametros.routes');
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.get('/api/health', async (req, res) => {
 
 app.use('/api', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/perfil', perfilRoutes);
+app.use('/api/parametros', parametrosRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Ruta no encontrada' });

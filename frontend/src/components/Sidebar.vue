@@ -1,19 +1,10 @@
 <script setup>
 import { computed } from 'vue'
+import { MODULOS, RESPONSABLES } from '../config/reparto'
 
 const isAdmin = computed(() => localStorage.getItem('rolUsuario') === 'Administrador')
 
-const modules = [
-  { name: 'Medicamentos', icon: 'fa-pills' },
-  { name: 'Lotes', icon: 'fa-boxes-stacked' },
-  { name: 'Proveedores', icon: 'fa-truck' },
-  { name: 'Ventas', icon: 'fa-cash-register' },
-  { name: 'Clientes', icon: 'fa-address-book' },
-  { name: 'Alertas', icon: 'fa-bell' },
-  { name: 'Reportes', icon: 'fa-chart-column' },
-  { name: 'Historial', icon: 'fa-clock-rotate-left' },
-  { name: 'Configuración', icon: 'fa-sliders' }
-]
+const modules = MODULOS
 </script>
 
 <template>
@@ -43,10 +34,19 @@ const modules = [
             <span>Panel principal</span>
           </router-link>
         </li>
+        <li class="nav-item">
+          <router-link to="/perfil" class="nav-link d-flex align-items-center">
+            <i class="fas fa-circle-user me-3"></i>
+            <span>Mi perfil</span>
+          </router-link>
+        </li>
         <li v-if="isAdmin" class="nav-item">
           <router-link to="/usuarios" class="nav-link d-flex align-items-center">
             <i class="fas fa-users me-3"></i>
-            <span>Usuarios</span>
+            <span class="flex-grow-1">
+              Usuarios
+              <small class="module-owner">({{ RESPONSABLES.seguridad }})</small>
+            </span>
           </router-link>
         </li>
       </ul>
@@ -56,10 +56,13 @@ const modules = [
         <li v-for="module in modules" :key="module.name" class="nav-item">
           <span
             class="nav-link d-flex align-items-center module-pending"
-            :title="`${module.name}: en desarrollo`"
+            :title="`${module.name}: en desarrollo (${module.responsable})`"
           >
             <i class="fas me-3" :class="module.icon"></i>
-            <span class="flex-grow-1">{{ module.name }}</span>
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">({{ module.responsable }})</small>
+            </span>
             <span class="pending-dot" aria-label="En desarrollo"></span>
           </span>
         </li>
@@ -101,6 +104,12 @@ const modules = [
   background: transparent !important;
   transform: none !important;
   color: rgba(255, 247, 227, 0.55) !important;
+}
+
+.module-owner {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 247, 227, 0.5);
 }
 
 .pending-dot {

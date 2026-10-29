@@ -2,6 +2,10 @@
 -- 01_init.sql
 -- Software de Control de Inventario y Ventas para Farmacias
 -- Creación de tablas (PostgreSQL)
+--
+-- Borrado lógico: las entidades con "estado" nunca se eliminan, se pasan
+-- a 'Inactivo'. Las tablas de movimientos (venta, dispensa,
+-- comprobante_venta, historial_operacion) no se modifican ni se borran.
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
@@ -15,7 +19,7 @@ CREATE TABLE rol (
 
 CREATE TABLE usuario (
     id_usuario        SERIAL        PRIMARY KEY,
-    nombre            VARCHAR(80)   NOT NULL,
+    nombres           VARCHAR(80)   NOT NULL,
     apellido_paterno  VARCHAR(60)   NOT NULL,
     apellido_materno  VARCHAR(60),
     fecha_nacimiento  DATE          NOT NULL,
@@ -29,40 +33,31 @@ CREATE TABLE usuario (
 );
 
 -- ---------------------------------------------------------------------
--- CONFIGURACIÓN
--- ---------------------------------------------------------------------
-CREATE TABLE parametro_sistema (
-    id_parametro      SERIAL        PRIMARY KEY,
-    nombre_parametro  VARCHAR(60)   NOT NULL UNIQUE,
-    valor             VARCHAR(100)  NOT NULL
-);
-
--- ---------------------------------------------------------------------
--- INVENTARIO: catálogos, medicamentos, proveedores y lotes
+-- INVENTARIO: categorías, medicamentos, proveedores y lotes
 -- ---------------------------------------------------------------------
 CREATE TABLE categoria (
     id_categoria      SERIAL        PRIMARY KEY,
     nombre_categoria  VARCHAR(60)   NOT NULL UNIQUE
 );
 
-CREATE TABLE forma_farmaceutica (
-    id_forma      SERIAL        PRIMARY KEY,
-    nombre_forma  VARCHAR(40)   NOT NULL UNIQUE
-);
-
 CREATE TABLE medicamento (
-    id_medicamento   SERIAL         PRIMARY KEY,
-    codigo_barras    VARCHAR(20)    NOT NULL UNIQUE,
-    nombre_comercial VARCHAR(100)   NOT NULL,
-    dci              VARCHAR(100)   NOT NULL,
-    concentracion    VARCHAR(40)    NOT NULL,
-    precio_unitario  NUMERIC(10,2)  NOT NULL CHECK (precio_unitario >= 0),
-    tipo_venta       VARCHAR(15)    NOT NULL DEFAULT 'Libre'
-                     CHECK (tipo_venta IN ('Libre', 'Con receta')),
-    stock_seguridad  INT            NOT NULL DEFAULT 0 CHECK (stock_seguridad >= 0),
-    dias_reposicion  INT            NOT NULL DEFAULT 0 CHECK (dias_reposicion >= 0),
-    id_categoria     INT            NOT NULL REFERENCES categoria (id_categoria),
-    id_forma         INT            NOT NULL REFERENCES forma_farmaceutica (id_forma)
+    id_medicamento      SERIAL         PRIMARY KEY,
+    codigo_barras       VARCHAR(20)    NOT NULL UNIQUE,
+    nombre_comercial    VARCHAR(100)   NOT NULL,
+    dci                 VARCHAR(100)   NOT NULL,
+    concentracion       VARCHAR(40)    NOT NULL,
+    forma_farmaceutica  VARCHAR(20)    NOT NULL
+                        CHECK (forma_farmaceutica IN
+                              ('Tableta', 'Cápsula', 'Jarabe', 'Suspensión',
+                               'Crema', 'Gel', 'Inyectable', 'Gotas')),
+    precio_unitario     NUMERIC(10,2)  NOT NULL CHECK (precio_unitario >= 0),
+    tipo_venta          VARCHAR(15)    NOT NULL DEFAULT 'Libre'
+                        CHECK (tipo_venta IN ('Libre', 'Con receta')),
+    stock_seguridad     INT            NOT NULL DEFAULT 0 CHECK (stock_seguridad >= 0),
+    dias_reposicion     INT            NOT NULL DEFAULT 0 CHECK (dias_reposicion >= 0),
+    estado_medicamento  VARCHAR(10)    NOT NULL DEFAULT 'Activo'
+                        CHECK (estado_medicamento IN ('Activo', 'Inactivo')),
+    id_categoria        INT            NOT NULL REFERENCES categoria (id_categoria)
 );
 
 CREATE TABLE proveedor (
@@ -74,6 +69,8 @@ CREATE TABLE proveedor (
     direccion          VARCHAR(150)
 );
 
+-- fecha_recepcion y costo_unitario son atributos de la relación
+-- Proveedor --Suministra(1:N)-- Lote, por eso viven en lote.
 CREATE TABLE lote (
     id_lote           SERIAL         PRIMARY KEY,
     id_medicamento    INT            NOT NULL REFERENCES medicamento (id_medicamento),
@@ -89,47 +86,34 @@ CREATE TABLE lote (
 );
 
 -- ---------------------------------------------------------------------
--- PERSONAS: generalización (Persona -> Cliente, Medico)
--- El paciente no tiene tabla propia: es una Persona a la que apunta
--- venta.id_paciente.
+-- VENTAS: clientes, ventas, dispensa (relación N:M Venta-Lote) y comprobantes
+-- La receta no se guarda: solo se valida en pantalla al vender
+-- medicamentos con tipo_venta = 'Con receta'.
 -- ---------------------------------------------------------------------
-CREATE TABLE persona (
-    id_persona       SERIAL        PRIMARY KEY,
-    nombre_completo  VARCHAR(150)  NOT NULL,
-    ci_nit           VARCHAR(20)   NOT NULL UNIQUE
-);
-
 CREATE TABLE cliente (
-    id_cliente          INT           PRIMARY KEY REFERENCES persona (id_persona),
+    id_cliente          SERIAL        PRIMARY KEY,
+    nombres             VARCHAR(80)   NOT NULL,
+    apellido_paterno    VARCHAR(60),
+    apellido_materno    VARCHAR(60),
+    ci_nit              VARCHAR(20)   NOT NULL UNIQUE,
     telefono            VARCHAR(20),
     correo_electronico  VARCHAR(120),
     domicilio           VARCHAR(150)
 );
 
-CREATE TABLE medico (
-    id_medico   INT           PRIMARY KEY REFERENCES persona (id_persona),
-    matricula   VARCHAR(30)   NOT NULL UNIQUE
-);
-
--- ---------------------------------------------------------------------
--- VENTAS: ventas, detalle y comprobantes
--- ---------------------------------------------------------------------
 CREATE TABLE venta (
     id_venta              SERIAL         PRIMARY KEY,
     id_cliente            INT            NOT NULL REFERENCES cliente (id_cliente),
     id_usuario            INT            NOT NULL REFERENCES usuario (id_usuario),
-    id_paciente           INT            REFERENCES persona (id_persona),
-    id_medico             INT            REFERENCES medico (id_medico),
     fecha_hora_venta      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     descuento_porcentaje  NUMERIC(5,2)   NOT NULL DEFAULT 0
                           CHECK (descuento_porcentaje BETWEEN 0 AND 100),
-    monto_recibido        NUMERIC(10,2)  NOT NULL CHECK (monto_recibido >= 0),
-    -- paciente y médico van juntos: ambos con valor (venta con receta) o ambos NULL
-    CHECK ((id_paciente IS NULL) = (id_medico IS NULL))
+    monto_recibido        NUMERIC(10,2)  NOT NULL CHECK (monto_recibido >= 0)
 );
 
-CREATE TABLE detalle_venta (
-    id_detalle    SERIAL         PRIMARY KEY,
+-- Tabla de la relación Venta --Dispensa(N:M)[Cantidad, Precio_Venta]-- Lote
+CREATE TABLE dispensa (
+    id_dispensa   SERIAL         PRIMARY KEY,
     id_venta      INT            NOT NULL REFERENCES venta (id_venta),
     id_lote       INT            NOT NULL REFERENCES lote (id_lote),
     cantidad      INT            NOT NULL CHECK (cantidad > 0),
@@ -137,6 +121,8 @@ CREATE TABLE detalle_venta (
     UNIQUE (id_venta, id_lote)
 );
 
+-- num_serie incluye el año (ej. NV-2026-000001) porque la numeración
+-- se reinicia cada año y debe seguir siendo único.
 CREATE TABLE comprobante_venta (
     id_comprobante    SERIAL       PRIMARY KEY,
     id_venta          INT          NOT NULL UNIQUE REFERENCES venta (id_venta),
@@ -160,14 +146,3 @@ CREATE TABLE historial_operacion (
     id_registro     INT          NOT NULL,
     fecha_hora      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
--- ---------------------------------------------------------------------
--- ÍNDICES para las búsquedas frecuentes (RF2, RF4, RNF3)
--- ---------------------------------------------------------------------
-CREATE INDEX idx_medicamento_nombre   ON medicamento (nombre_comercial);
-CREATE INDEX idx_medicamento_dci      ON medicamento (dci);
-CREATE INDEX idx_lote_medicamento     ON lote (id_medicamento);
-CREATE INDEX idx_lote_vencimiento     ON lote (fecha_vencimiento);
-CREATE INDEX idx_venta_fecha          ON venta (fecha_hora_venta);
-CREATE INDEX idx_detalle_venta_venta  ON detalle_venta (id_venta);
-CREATE INDEX idx_historial_fecha      ON historial_operacion (fecha_hora);

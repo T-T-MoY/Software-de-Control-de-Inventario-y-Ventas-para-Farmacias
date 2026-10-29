@@ -1,6 +1,17 @@
 # Sistema de Control de Inventario y Ventas para Farmacias
 
-Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar los módulos de farmacia. En esta versión solo están implementados el inicio de sesión y la gestión de usuarios; los demás módulos se muestran como pendientes para que cada integrante los desarrolle.
+Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar los módulos de farmacia. Están implementados el inicio de sesión, la gestión de usuarios y roles, el perfil del usuario, el middleware de permisos por rol y los parámetros generales del sistema; los demás módulos se muestran como pendientes para que cada integrante los desarrolle.
+
+## Reparto del equipo
+
+| Persona | Sección / módulo | En pocas palabras (qué y dónde) |
+|---|---|---|
+| Persona 1 (Moisés) | Seguridad y administración | (login, usuarios, roles y permisos) |
+| Persona 2 (Bryan) | Gestión de inventario | (medicamentos, lotes, proveedores y alertas) |
+| Persona 3 (Rodrigo) | Ventas y atención al cliente | (ventas, clientes, recetas y comprobante) |
+| Persona 4 (Víctor) | Analítica y reportes | (reportes, historial y exportaciones) |
+
+Cada persona trabaja en su módulo. Las tablas, pantallas y pruebas de cada uno están detalladas en **Módulos del sistema**. Antes de tocar archivos compartidos (`server.js`, `router/index.js`, `database/` o `docker-compose.yml`), avisa al equipo.
 
 ## Tecnologías
 
@@ -18,12 +29,13 @@ Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar lo
 ├── docker-compose.yml
 ├── database/
 │   ├── 01_init.sql
-│   ├── 02_procesos.sql
-│   ├── 03_datos_iniciales.sql
-│   └── 04_actualizar_contrasenas.sql
+│   └── 02_inserts.sql
 ├── backend/
 │   ├── config/
 │   │   ├── db.js
+│   │   ├── env.js
+│   │   ├── parametros.js
+│   │   ├── permisos.js
 │   │   └── password.js
 │   ├── controllers/
 │   ├── middleware/
@@ -143,7 +155,7 @@ npm install
 npm run dev
 ```
 
-`npm install` solo hace falta la primera vez y cuando cambie `package.json`. Cuando el backend corre fuera de Docker, usa `DB_HOST=localhost` (dentro de Docker Compose el host es `db`). Variables necesarias: `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` y `SESSION_SECRET`.
+`npm install` solo hace falta la primera vez y cuando cambie `package.json`. Cuando el backend corre fuera de Docker, usa `DB_HOST=localhost` (dentro de Docker Compose el host es `db`). Variables necesarias: `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` y `SESSION_SECRET`. Los parámetros generales (`MARGEN_ALERTA_DIAS`, `STOCK_SEGURIDAD`, `FARMACIA_NOMBRE`, `FARMACIA_NIT`, `FARMACIA_DIRECCION`, `FARMACIA_TELEFONO`) también se leen desde `.env`.
 
 ### 3. Despliegue del sistema completo
 
@@ -167,7 +179,7 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 
 ### Ejecución manual (sin Docker)
 
-1. Crea una base PostgreSQL y ejecuta en orden `database/01_init.sql`, `database/02_procesos.sql`, `database/03_datos_iniciales.sql` y `database/04_actualizar_contrasenas.sql`.
+1. Crea una base PostgreSQL y ejecuta en orden `database/01_init.sql` y `database/02_inserts.sql`.
 2. Configura las variables del backend indicadas arriba.
 3. Ejecuta backend y frontend con `npm install` y `npm run dev`.
 
@@ -177,13 +189,43 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 |---|---|---|
 | `GET` | `/api/health` | Estado de la API y PostgreSQL |
 | `POST` | `/api/login` | Inicio de sesión |
+| `GET` | `/api/perfil` | Datos y permisos del usuario con sesión activa (cualquier rol) |
+| `GET` | `/api/parametros` | Margen de alerta, stock de seguridad por defecto y datos de la farmacia |
 | `GET` | `/api/usuarios` | Lista de usuarios activos e inactivos |
 | `GET` | `/api/usuarios/roles` | Lista de roles |
 | `POST` | `/api/usuarios` | Crea un usuario |
 | `PUT` | `/api/usuarios/:id` | Actualiza los datos y el rol; opcionalmente restablece la contraseña |
 | `PATCH` | `/api/usuarios/:id/estado` | Activa o desactiva una cuenta |
 
-La administración de usuarios requiere una sesión válida de un administrador activo. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/config/password.js`; nunca se guardan en texto plano.
+La administración de usuarios requiere el permiso `administrar_usuarios`, que solo tiene el rol Administrador. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/config/password.js`; nunca se guardan en texto plano.
+
+### Permisos por rol
+
+La matriz de permisos vive en `backend/config/permisos.js` y se aplica con `backend/middleware/permisos.js`.
+
+| Permiso | Administrador | Encargado de inventario | Ventas |
+|---|:---:|:---:|:---:|
+| `administrar_usuarios` | Sí | No | No |
+| `administrar_parametros` | Sí | No | No |
+| `gestionar_catalogo` | Sí | Sí | No |
+| `consultar_catalogo` | Sí | Sí | Sí |
+| `gestionar_proveedores` | Sí | Sí | No |
+| `dar_baja_lotes` | Sí | No | No |
+| `procesar_ventas` | Sí | No | Sí |
+| `generar_reportes` | Sí | No | No |
+
+Para proteger una ruta nueva, primero se valida la sesión y luego el permiso:
+
+```js
+const { autenticarUsuario } = require('../middleware/auth');
+const { autorizar } = require('../middleware/permisos');
+const { PERMISOS } = require('../config/permisos');
+
+router.use(autenticarUsuario);
+router.get('/', autorizar(PERMISOS.CONSULTAR_CATALOGO), controlador.listar);
+```
+
+`autorizar()` acepta uno o varios permisos y permite el acceso si el rol tiene al menos uno. También está disponible `autorizarRoles('Administrador')` para rutas que dependan directamente del nombre del rol.
 
 ### Contraseñas y bcrypt
 
@@ -194,7 +236,22 @@ cd backend
 npm run hash -- "NuevaClaveSegura123*"
 ```
 
-El hash resultante puede colocarse en `database/03_datos_iniciales.sql` o aplicarse a todas las cuentas existentes con `database/04_actualizar_contrasenas.sql`. Este último script unifica la contraseña de todos los usuarios y debe ejecutarse una sola vez en una base existente.
+El hash resultante puede colocarse en `database/02_inserts.sql` o aplicarse a las cuentas existentes con un `UPDATE` puntual.
+
+### Parámetros generales
+
+Los parámetros que antes vivían en una tabla se leen ahora desde `.env` en un solo módulo, `backend/config/parametros.js`:
+
+| Variable | Uso |
+|---|---|
+| `MARGEN_ALERTA_DIAS` | Días de anticipación para la alerta de vencimiento (30 por defecto) |
+| `STOCK_SEGURIDAD` | Stock de seguridad por defecto para nuevos medicamentos (cada medicamento puede sobrescribirlo) |
+| `FARMACIA_NOMBRE` | Nombre que se imprime en el comprobante |
+| `FARMACIA_NIT` | NIT de la farmacia para el comprobante |
+| `FARMACIA_DIRECCION` | Dirección de la farmacia para el comprobante |
+| `FARMACIA_TELEFONO` | Teléfono de la farmacia para el comprobante |
+
+El módulo de alertas debe comparar con `fecha_vencimiento <= CURRENT_DATE + margen`, y el de ventas debe incluir `margenAlertaDias` y `farmacia` en la respuesta del comprobante. El inventario consume `stockSeguridad` como valor inicial al registrar un medicamento. `GET /api/parametros` expone estos valores a cualquier rol con `consultar_catalogo`. No requiere tablas ni pantallas nuevas.
 
 ## Módulos del sistema
 
@@ -212,7 +269,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 **Qué abarca**
 - Inicio de sesión: solo con credenciales válidas y cuenta activa.
 - Administración de cuentas: crear, modificar y desactivar usuarios, y asignar roles.
-- Parámetros generales: margen de alerta de vencimiento (30 días por defecto) y stock de seguridad. Los usa el módulo de inventario.
+- Parámetros generales: margen de alerta de vencimiento (30 días por defecto) y datos de la farmacia para el comprobante, leídos desde `.env` mediante `backend/config/parametros.js`. Los usa el módulo de inventario y el de ventas.
 - Control de acceso por rol en toda la API, según la matriz de permisos.
 - Contraseñas cifradas (bcrypt).
 
@@ -229,7 +286,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 | Procesar ventas y registrar clientes | Sí | No | Sí |
 | Generar reportes y consultar el historial | Sí | No | No |
 
-**Tablas:** `rol`, `usuario`, `parametro_sistema`. **Pantallas:** `LoginView`, `UsuariosView`, `ConfiguracionView`, `PerfilView`.
+**Tablas:** `rol`, `usuario`. **Pantallas:** `LoginView`, `UsuariosView`, `PerfilView`.
 **Pruebas:** CP-01 (acceso válido, inválido y cuenta desactivada) y CP-07 (rol sin permiso rechazado, contraseña cifrada).
 
 ### 2. Gestión de inventario (Bryan)
@@ -242,7 +299,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 - **Vencimientos (RF4):** alerta 30 días antes (margen configurable), advertencia en caja y bloqueo de la venta de lotes vencidos.
 - Conservar lote y proveedor en cada entrada y salida (RD1).
 
-**Tablas:** `categoria`, `forma_farmaceutica`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicamentosView`, `LotesView`, `ProveedoresView`, `AlertasView`.
+**Tablas:** `categoria`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicamentosView`, `LotesView`, `ProveedoresView`, `AlertasView`.
 **Pruebas:** CP-02, CP-12 (catálogo); CP-03, CP-10, CP-13 (lotes, stock y reorden); CP-04, CP-11 (vencimientos).
 
 ### 3. Ventas y atención al cliente (Rodrigo)
@@ -256,7 +313,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 - Al confirmar: descontar el stock del lote, advertir si está en margen de alerta, bloquear lotes vencidos y rechazar cantidades mayores al stock.
 - Registrar en el historial quién hizo la venta.
 
-**Tablas:** `persona`, `cliente`, `medico`, `venta`, `detalle_venta`, `comprobante_venta`. **Pantallas:** `VentasView`, `ClientesView`, `ComprobanteVenta.vue`.
+**Tablas:** `cliente`, `venta`, `dispensa`, `comprobante_venta`. **Pantallas:** `VentasView`, `ClientesView`, `ComprobanteVenta.vue`.
 **Pruebas:** CP-05 (cálculo, cambio y rechazos), CP-14 (receta), CP-08 (venta de 3 productos en 3 minutos).
 
 ### 4. Analítica y reportes (Víctor)
@@ -265,7 +322,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 - Reportes de ventas, inventario, lotes por vencer y lotes vencidos, filtrados por fecha y exportables a PDF o Excel. Solo el Administrador.
 - Historial de ventas, recepciones y bajas: quién realizó cada operación y cuándo. No se puede modificar ni eliminar.
 
-**Tablas:** `historial_operacion` (y lectura de `venta`, `detalle_venta` y `lote`). **Pantallas:** `ReportesView`, `HistorialView`.
+**Tablas:** `historial_operacion` (y lectura de `venta`, `dispensa` y `lote`). **Pantallas:** `ReportesView`, `HistorialView`.
 **Pruebas:** CP-06 (generar y exportar los 4 reportes, consultar el historial) y CP-07 (historial sin edición).
 
 ## Planificación por sprint
@@ -293,7 +350,7 @@ Objetivo de la revisión: recepción de lotes, actualización de stock, alertas,
 |---|---|---|
 | Seguridad y administración | Moisés | Aplicar la matriz de permisos a las rutas de todos los módulos (CP-07). Apoyo en la integración y en la prueba con 5 usuarios. |
 | Gestión de inventario | Bryan | Proveedores, recepción de lotes y actualización de stock (RF3). Alerta de reorden (RD4). Baja de lotes vencidos. Alerta de 30 días y bloqueo de vencidos (RF4). |
-| Ventas y atención al cliente | Rodrigo | Flujo básico de venta (RF5): carrito, total, cambio, cliente, receta, comprobante y descuento de stock. Empieza con los lotes de prueba de `03_datos_iniciales.sql` mientras inventario termina la recepción. |
+| Ventas y atención al cliente | Rodrigo | Flujo básico de venta (RF5): carrito, total, cambio, cliente, receta, comprobante y descuento de stock. Empieza con los lotes de prueba de `02_inserts.sql` mientras inventario termina la recepción. |
 | Analítica y reportes | Víctor | Reporte esencial (se sugiere el de ventas) e historial de operaciones. Después, completar los 4 reportes con exportación a PDF y Excel. |
 
 Pruebas: CP-03 a CP-11, CP-13 y CP-14. Integración y pruebas de todo el equipo el 09/11, incluida la prueba de rendimiento con 5 usuarios (CP-09, RNF3). Validación final y entrega el 10/11.

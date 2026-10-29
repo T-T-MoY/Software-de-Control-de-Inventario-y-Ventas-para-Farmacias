@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 
 /**
  * Coste de bcrypt para todo el sistema.
- * Debe coincidir con el coste del hash inicial definido en database/03_datos_iniciales.sql.
+ * Debe coincidir con el coste del hash inicial definido en database/02_inserts.sql.
  */
 const BCRYPT_ROUNDS = 12;
 

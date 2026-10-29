@@ -34,7 +34,7 @@ erDiagram
         varchar apellido_materno
         date fecha_nacimiento
         varchar correo UK
-        varchar ci_nit UK
+        varchar ci UK
         varchar contrasena_hash
         varchar estado_cuenta
         timestamp fecha_registro
@@ -89,7 +89,6 @@ erDiagram
         varchar apellido_materno
         varchar ci_nit UK
         varchar telefono
-        varchar correo_electronico
         varchar domicilio
     }
 
@@ -169,7 +168,7 @@ classDiagram
         +string apellido_materno
         +date fecha_nacimiento
         +string correo
-        +string ci_nit
+        +string ci
         +string contrasena_hash
         +string estado_cuenta
         +datetime fecha_registro
@@ -231,7 +230,6 @@ classDiagram
         +string apellido_materno
         +string ci_nit
         +string telefono
-        +string correo_electronico
         +string domicilio
     }
 
@@ -320,7 +318,7 @@ classDiagram
 | `apellido_materno` | `VARCHAR(60)` | — |
 | `fecha_nacimiento` | `DATE` | NOT NULL |
 | `correo` | `VARCHAR(120)` | NOT NULL, UNIQUE |
-| `ci_nit` | `VARCHAR(20)` | NOT NULL, UNIQUE |
+| `ci` | `VARCHAR(20)` | NOT NULL, UNIQUE |
 | `contrasena_hash` | `VARCHAR(100)` | NOT NULL (bcrypt, coste 12) |
 | `estado_cuenta` | `VARCHAR(10)` | NOT NULL, `Activo` / `Inactivo` / `Eliminado` |
 | `fecha_registro` | `TIMESTAMP` | NOT NULL, default `CURRENT_TIMESTAMP` |
@@ -387,7 +385,6 @@ Restricción adicional: `UNIQUE (id_medicamento, lote_numero)`.
 | `apellido_materno` | `VARCHAR(60)` | — |
 | `ci_nit` | `VARCHAR(20)` | NOT NULL, UNIQUE |
 | `telefono` | `VARCHAR(20)` | — |
-| `correo_electronico` | `VARCHAR(120)` | — |
 | `domicilio` | `VARCHAR(150)` | — |
 
 ### `venta`

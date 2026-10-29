@@ -11,7 +11,7 @@ const CAMPOS_USUARIO = `
     u.apellido_materno,
     u.fecha_nacimiento,
     u.correo,
-    u.ci_nit,
+    u.ci,
     u.estado_cuenta,
     u.id_rol,
     r.nombre_rol
@@ -31,7 +31,7 @@ const listar = async () => {
 const buscarPorCorreo = async (correo) => {
     const { rows } = await db.query(
         `SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno,
-                u.correo, u.ci_nit, u.contrasena_hash, u.estado_cuenta,
+                u.correo, u.ci, u.contrasena_hash, u.estado_cuenta,
                 r.nombre_rol
          FROM usuario AS u
          JOIN rol AS r ON r.id_rol = u.id_rol
@@ -56,7 +56,7 @@ const buscarSesionActiva = async (idUsuario) => {
 const buscarPorId = async (idUsuario) => {
     const { rows } = await db.query(
         `SELECT u.id_usuario, u.nombres, u.apellido_paterno, u.apellido_materno,
-                u.fecha_nacimiento, u.correo, u.ci_nit, u.estado_cuenta,
+                u.fecha_nacimiento, u.correo, u.ci, u.estado_cuenta,
                 u.fecha_registro, r.nombre_rol
          FROM usuario AS u
          JOIN rol AS r ON r.id_rol = u.id_rol
@@ -72,14 +72,14 @@ const crear = async ({
     apellido_materno,
     fecha_nacimiento,
     correo,
-    ci_nit,
+    ci,
     contrasenaHash,
     id_rol,
 }) => {
     const { rows } = await db.query(
         `INSERT INTO usuario (
             nombres, apellido_paterno, apellido_materno, fecha_nacimiento,
-            correo, ci_nit, contrasena_hash, id_rol
+            correo, ci, contrasena_hash, id_rol
          )
          VALUES ($1, $2, $3, $4, LOWER($5), $6, $7, $8)
          RETURNING id_usuario`,
@@ -89,7 +89,7 @@ const crear = async ({
             apellido_materno,
             fecha_nacimiento,
             correo,
-            ci_nit,
+            ci,
             contrasenaHash,
             id_rol,
         ]
@@ -103,7 +103,7 @@ const actualizar = async (idUsuario, {
     apellido_materno,
     fecha_nacimiento,
     correo,
-    ci_nit,
+    ci,
     id_rol,
     contrasenaHash,
 }) => {
@@ -114,7 +114,7 @@ const actualizar = async (idUsuario, {
              apellido_materno = $3,
              fecha_nacimiento = $4,
              correo = LOWER($5),
-             ci_nit = $6,
+             ci = $6,
              id_rol = $7,
              contrasena_hash = COALESCE($8, contrasena_hash)
          WHERE id_usuario = $9`,
@@ -124,7 +124,7 @@ const actualizar = async (idUsuario, {
             apellido_materno,
             fecha_nacimiento,
             correo,
-            ci_nit,
+            ci,
             id_rol,
             contrasenaHash,
             idUsuario,

@@ -22,7 +22,7 @@ const datos = computed(() => {
   if (!perfil.value) return []
   return [
     { label: 'Correo electrónico', value: perfil.value.correo, icon: 'fa-envelope' },
-    { label: 'CI / NIT', value: perfil.value.ci_nit, icon: 'fa-id-card' },
+    { label: 'CI / NIT', value: perfil.value.ci, icon: 'fa-id-card' },
     { label: 'Fecha de nacimiento', value: formatearFecha(perfil.value.fecha_nacimiento), icon: 'fa-cake-candles' },
     { label: 'Miembro desde', value: formatearFecha(perfil.value.fecha_registro, true), icon: 'fa-calendar-check' }
   ]

@@ -63,7 +63,7 @@ const formularioInicial = () => ({
   apellido_materno: '',
   fecha_nacimiento: '',
   correo: '',
-  ci_nit: '',
+  ci: '',
   id_rol: '',
   contrasena: ''
 })
@@ -148,7 +148,7 @@ const usuariosFiltrados = computed(() => {
       const coincide = [
         nombre,
         usuario.correo,
-        usuario.ci_nit,
+        usuario.ci,
         usuario.nombre_rol
       ].some((valor) => String(valor || '').toLocaleLowerCase().includes(consulta))
       if (!coincide) return false
@@ -311,7 +311,7 @@ const abrirEdicion = (usuario) => {
     apellido_materno: usuario.apellido_materno || '',
     fecha_nacimiento: String(usuario.fecha_nacimiento).split('T')[0],
     correo: usuario.correo,
-    ci_nit: usuario.ci_nit,
+    ci: usuario.ci,
     id_rol: String(usuario.id_rol),
     contrasena: ''
   }
@@ -337,7 +337,7 @@ const guardarUsuario = async () => {
     apellido_materno: form.value.apellido_materno.trim(),
     fecha_nacimiento: form.value.fecha_nacimiento,
     correo: form.value.correo.trim().toLowerCase(),
-    ci_nit: form.value.ci_nit.trim(),
+    ci: form.value.ci.trim(),
     id_rol: Number(form.value.id_rol)
   }
   if (!editando.value) body.contrasena = form.value.contrasena
@@ -941,18 +941,18 @@ onBeforeUnmount(() => {
               <label class="form-label" for="ci-nit">CI / NIT <span class="req">*</span></label>
               <input
                 id="ci-nit"
-                v-model="form.ci_nit"
+                v-model="form.ci"
                 class="form-control"
-                :class="{ 'is-invalid': errores.ci_nit && touched.ci_nit }"
+                :class="{ 'is-invalid': errores.ci && touched.ci }"
                 maxlength="20"
                 autocomplete="off"
                 placeholder="Ej.: 4587123"
-                :aria-invalid="Boolean(errores.ci_nit && touched.ci_nit)"
-                @input="alEscribir('ci_nit')"
-                @blur="alSalir('ci_nit')"
+                :aria-invalid="Boolean(errores.ci && touched.ci)"
+                @input="alEscribir('ci')"
+                @blur="alSalir('ci')"
               >
-              <p v-if="errores.ci_nit && touched.ci_nit" class="error-text" role="alert">
-                <i class="fas fa-circle-exclamation"></i>{{ errores.ci_nit }}
+              <p v-if="errores.ci && touched.ci" class="error-text" role="alert">
+                <i class="fas fa-circle-exclamation"></i>{{ errores.ci }}
               </p>
             </div>
             <div class="col-md-6">

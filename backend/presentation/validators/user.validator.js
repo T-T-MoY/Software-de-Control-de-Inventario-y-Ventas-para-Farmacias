@@ -8,7 +8,7 @@
 const {
     validarCorreo,
     validarNombre,
-    validarCiNit,
+    validarCi,
     validarContrasena,
 } = require('./fields');
 
@@ -17,7 +17,7 @@ const CAMPOS_OBLIGATORIOS = [
     'apellido_paterno',
     'fecha_nacimiento',
     'correo',
-    'ci_nit',
+    'ci',
 ];
 
 const validarDatosUsuario = (body, { requiereContrasena = false } = {}) => {
@@ -43,8 +43,8 @@ const validarDatosUsuario = (body, { requiereContrasena = false } = {}) => {
     const errorCorreo = validarCorreo(body.correo);
     if (errorCorreo) return errorCorreo;
 
-    const errorCiNit = validarCiNit(body.ci_nit);
-    if (errorCiNit) return errorCiNit;
+    const errorCi = validarCi(body.ci);
+    if (errorCi) return errorCi;
 
     const fechaNacimiento = body.fecha_nacimiento;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)) {

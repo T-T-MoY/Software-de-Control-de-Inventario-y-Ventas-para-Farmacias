@@ -26,7 +26,7 @@ CREATE TABLE usuario (
     apellido_materno  VARCHAR(60),
     fecha_nacimiento  DATE          NOT NULL,
     correo            VARCHAR(120)  NOT NULL UNIQUE,
-    ci_nit            VARCHAR(20)   NOT NULL UNIQUE,
+    ci                VARCHAR(20)   NOT NULL UNIQUE,
     contrasena_hash   VARCHAR(100)  NOT NULL,
     estado_cuenta     VARCHAR(10)   NOT NULL DEFAULT 'Activo'
                       CHECK (estado_cuenta IN ('Activo', 'Inactivo', 'Eliminado')),
@@ -99,7 +99,6 @@ CREATE TABLE cliente (
     apellido_materno    VARCHAR(60),
     ci_nit              VARCHAR(20)   NOT NULL UNIQUE,
     telefono            VARCHAR(20),
-    correo_electronico  VARCHAR(120),
     domicilio           VARCHAR(150)
 );
 

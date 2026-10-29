@@ -22,7 +22,7 @@ INSERT INTO rol (nombre_rol, descripcion) VALUES
 -- USUARIOS (uno por rol)
 -- ---------------------------------------------------------------------
 INSERT INTO usuario
-    (nombres, apellido_paterno, apellido_materno, fecha_nacimiento, correo, ci_nit, contrasena_hash, estado_cuenta, id_rol)
+    (nombres, apellido_paterno, apellido_materno, fecha_nacimiento, correo, ci, contrasena_hash, estado_cuenta, id_rol)
 VALUES
 ('Carlos Andrés', 'Mamani', 'Quispe',  '1985-03-14', 'admin@farmacia.bo',      '4587123',
  '$2a$12$dBxhqwYRrR82IYokhgkt7OVP5pcH8lPwZ67x28Evxrbq4n.VwPk0a', 'Activo', 1),
@@ -95,11 +95,11 @@ VALUES
 -- CLIENTES
 -- ---------------------------------------------------------------------
 INSERT INTO cliente
-    (nombres, apellido_paterno, apellido_materno, ci_nit, telefono, correo_electronico, domicilio)
+    (nombres, apellido_paterno, apellido_materno, ci_nit, telefono, domicilio)
 VALUES
-('Juan Carlos', 'Mamani', 'Flores',  '4521897', '71234567', 'juan.mamani@correo.com', 'Calle Murillo #456, La Paz'),
-('María Elena', 'Quispe', 'Condori', '5876543', '76543210', NULL,                     'Av. Buenos Aires #1234, La Paz'),
-('Pedro Luis',  'Apaza',  'Ticona',  '3987120', '70123456', NULL,                     'Zona Villa Fátima, La Paz');
+('Juan Carlos', 'Mamani', 'Flores',  '4521897', '71234567', 'Calle Murillo #456, La Paz'),
+('María Elena', 'Quispe', 'Condori', '5876543', '76543210', 'Av. Buenos Aires #1234, La Paz'),
+('Pedro Luis',  'Apaza',  'Ticona',  '3987120', '70123456', 'Zona Villa Fátima, La Paz');
 
 -- ---------------------------------------------------------------------
 -- VENTAS (sin descuento) y DISPENSA (líneas de cada venta)

@@ -8,7 +8,7 @@
 
 const REGEX_CORREO = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z]{2,63})+$/;
 const REGEX_NOMBRE = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]+$/;
-const REGEX_CI_NIT = /^[0-9A-Za-z-]{5,20}$/;
+const REGEX_CI = /^[0-9A-Za-z-]{5,20}$/;
 const REGEX_CONTRASENA = /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]+$/;
 const CARACTERES = 120
 const BYTES = 72
@@ -33,10 +33,10 @@ const validarNombre = (valor, etiqueta, { requerido = true, max = 80 } = {}) => 
     return null;
 };
 
-const validarCiNit = (valor) => {
-    const ciNit = String(valor ?? '').trim();
-    if (!ciNit) return 'El CI/NIT es obligatorio.';
-    if (!REGEX_CI_NIT.test(ciNit)) {
+const validarCi = (valor) => {
+    const ci = String(valor ?? '').trim();
+    if (!ci) return 'El CI/NIT es obligatorio.';
+    if (!REGEX_CI.test(ci)) {
         return 'El CI/NIT debe tener entre 5 y 20 caracteres: solo números, letras y guion.';
     }
     return null;
@@ -61,10 +61,10 @@ const validarContrasena = (valor, { etiqueta = 'La contraseña', min = 8 } = {})
 module.exports = {
     REGEX_CORREO,
     REGEX_NOMBRE,
-    REGEX_CI_NIT,
+    REGEX_CI,
     REGEX_CONTRASENA,
     validarCorreo,
     validarNombre,
-    validarCiNit,
+    validarCi,
     validarContrasena,
 };

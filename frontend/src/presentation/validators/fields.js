@@ -12,7 +12,7 @@ export const FECHA_MINIMA = '1900-01-01'
 
 export const REGEX_CORREO = /^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z]{2,63})+$/
 export const REGEX_NOMBRE = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]+$/
-export const REGEX_CI_NIT = /^[0-9A-Za-z-]{5,20}$/
+export const REGEX_CI = /^[0-9A-Za-z-]{5,20}$/;
 
 const CARACTER_CONTRASENA = /[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?~`]/
 const CARACTER_CORREO = /[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~@-]/
@@ -37,7 +37,7 @@ export function limpiarNombre(valor, max = 80) {
 }
 
 /** Solo permite números, letras y guion en el CI/NIT. */
-export function limpiarCiNit(valor, max = 20) {
+export function limpiarCi(valor, max = 20) {
   return Array.from(String(valor ?? ''))
     .filter((caracter) => CARACTER_CI_NIT.test(caracter))
     .join('')
@@ -83,10 +83,10 @@ export function validarNombre(
   return ''
 }
 
-export function validarCiNit(valor, { requerido = true } = {}) {
-  const ciNit = String(valor ?? '').trim()
-  if (!ciNit) return requerido ? 'El CI/NIT es obligatorio.' : ''
-  if (!REGEX_CI_NIT.test(ciNit)) {
+export function validarCi(valor, { requerido = true } = {}) {
+  const ci = String(valor ?? '').trim()
+  if (!ci) return requerido ? 'El CI/NIT es obligatorio.' : ''
+  if (!REGEX_CI.test(ci)) {
     return 'El CI/NIT debe tener entre 5 y 20 caracteres: solo números, letras y guion.'
   }
   return ''

@@ -23,7 +23,7 @@ export function guardarSesion(token, usuario) {
   localStorage.setItem(CLAVES.nombrePila, usuario.nombres || '')
   localStorage.setItem(CLAVES.rol, usuario.rol || '')
   localStorage.setItem(CLAVES.correo, usuario.correo || '')
-  localStorage.setItem(CLAVES.ciNit, usuario.ci_nit || '')
+  localStorage.setItem(CLAVES.ciNit, usuario.ci || '')
   localStorage.setItem(CLAVES.apellidoPaterno, usuario.apellido_paterno || '')
   localStorage.setItem(CLAVES.apellidoMaterno, usuario.apellido_materno || '')
 }

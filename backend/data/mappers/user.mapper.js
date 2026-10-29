@@ -16,7 +16,7 @@ const aSesion = (fila) => ({
     apellido_materno: fila.apellido_materno || '',
     nombre_completo: nombreCompleto(fila),
     correo: fila.correo,
-    ci_nit: fila.ci_nit,
+    ci: fila.ci,
     rol: fila.nombre_rol,
 });
 
@@ -29,7 +29,7 @@ const aPerfil = (fila) => ({
     nombre_completo: nombreCompleto(fila),
     fecha_nacimiento: fila.fecha_nacimiento,
     correo: fila.correo,
-    ci_nit: fila.ci_nit,
+    ci: fila.ci,
     estado_cuenta: fila.estado_cuenta,
     fecha_registro: fila.fecha_registro,
     nombre_rol: fila.nombre_rol,

@@ -38,7 +38,7 @@ const normalizarDatosUsuario = (datos) => ({
     apellido_materno: datos.apellido_materno?.trim() || null,
     fecha_nacimiento: datos.fecha_nacimiento,
     correo: datos.correo.trim().toLowerCase(),
-    ci_nit: datos.ci_nit.trim(),
+    ci: datos.ci.trim(),
     id_rol: Number(datos.id_rol),
     contrasena: datos.contrasena,
 });

@@ -3,11 +3,11 @@
  * Mantiene la vista enfocada en la interacción y no en las reglas.
  */
 import {
-  limpiarCiNit,
+  limpiarCi,
   limpiarContrasena,
   limpiarCorreo,
   limpiarNombre,
-  validarCiNit,
+  validarCi,
   validarContrasena,
   validarCorreo,
   validarFechaNacimiento,
@@ -21,7 +21,7 @@ export const CAMPOS_USUARIO = [
   'apellido_materno',
   'fecha_nacimiento',
   'correo',
-  'ci_nit',
+  'ci',
   'id_rol',
   'contrasena'
 ]
@@ -42,8 +42,8 @@ export function validarCampoUsuario(campo, valor, { editando = false } = {}) {
       return validarFechaNacimiento(valor)
     case 'correo':
       return validarCorreo(valor)
-    case 'ci_nit':
-      return validarCiNit(valor)
+    case 'ci':
+      return validarCi(valor)
     case 'id_rol':
       return validarRol(valor)
     case 'contrasena':
@@ -76,8 +76,8 @@ export function limpiarCampoUsuario(campo, valor) {
       return limpiarNombre(valor, 60)
     case 'correo':
       return limpiarCorreo(valor)
-    case 'ci_nit':
-      return limpiarCiNit(valor)
+    case 'ci':
+      return limpiarCi(valor)
     case 'contrasena':
       return limpiarContrasena(valor, 72)
     default:

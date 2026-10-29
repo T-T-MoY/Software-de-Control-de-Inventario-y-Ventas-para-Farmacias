@@ -8,6 +8,7 @@ const { hashPassword } = require('../security/passwords');
 const {
     validarCambioRolPropio,
     validarDesactivacionPropia,
+    validarEliminacionPropia,
     normalizarDatosUsuario,
 } = require('../rules/users.rules');
 const {
@@ -82,4 +83,41 @@ const cambiarEstado = async (idUsuario, activo, idSesion) => {
     return actualizados;
 };
 
-module.exports = { listar, listarRoles, crear, actualizar, cambiarEstado };
+/**
+ * Informa cuántos registros dependen del usuario antes de darlo de baja.
+ * El frontend usa este dato para decidir entre desactivar o eliminar.
+ */
+const obtenerImpacto = async (idUsuario) => {
+    const usuario = await usuariosRepositorio.buscarPorId(idUsuario);
+    if (!usuario || usuario.estado_cuenta === 'Eliminado') {
+        throw errorNoEncontrado('Usuario no encontrado.');
+    }
+
+    const { ventas, historial } = await usuariosRepositorio.contarImpacto(idUsuario);
+    return {
+        ventas,
+        historial,
+        total: ventas + historial,
+    };
+};
+
+/** Baja lógica: la cuenta pasa a 'Eliminado' y conserva su historial. */
+const eliminarLogicamente = async (idUsuario, idSesion) => {
+    validarEliminacionPropia({ idSesion, idUsuario });
+
+    const actualizados = await usuariosRepositorio.eliminarLogicamente(idUsuario);
+    if (!actualizados) {
+        throw errorNoEncontrado('Usuario no encontrado.');
+    }
+    return actualizados;
+};
+
+module.exports = {
+    listar,
+    listarRoles,
+    crear,
+    actualizar,
+    cambiarEstado,
+    obtenerImpacto,
+    eliminarLogicamente,
+};

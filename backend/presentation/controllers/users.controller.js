@@ -78,10 +78,43 @@ const cambiarEstado = async (req, res, next) => {
     }
 };
 
+const esIdValido = (id) => /^\d+$/.test(String(id)) && Number(id) > 0;
+
+const obtenerImpacto = async (req, res, next) => {
+    if (!esIdValido(req.params.id)) {
+        return res.status(400).json({ error: 'Identificador de usuario inválido.' });
+    }
+
+    try {
+        const impacto = await usuariosServicio.obtenerImpacto(req.params.id);
+        return res.json({ impacto });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+const eliminarUsuario = async (req, res, next) => {
+    if (!esIdValido(req.params.id)) {
+        return res.status(400).json({ error: 'Identificador de usuario inválido.' });
+    }
+
+    try {
+        await usuariosServicio.eliminarLogicamente(
+            req.params.id,
+            req.sessionUser.id_usuario
+        );
+        return res.json({ message: 'Usuario eliminado correctamente.' });
+    } catch (error) {
+        return next(error);
+    }
+};
+
 module.exports = {
     obtenerUsuarios,
     obtenerRoles,
     crearUsuario,
     actualizarUsuario,
     cambiarEstado,
+    obtenerImpacto,
+    eliminarUsuario,
 };

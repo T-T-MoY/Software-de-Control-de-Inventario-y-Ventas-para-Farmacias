@@ -4,8 +4,10 @@
 -- Creación de tablas (PostgreSQL)
 --
 -- Borrado lógico: las entidades con "estado" nunca se eliminan, se pasan
--- a 'Inactivo'. Las tablas de movimientos (venta, dispensa,
--- comprobante_venta, historial_operacion) no se modifican ni se borran.
+-- a 'Inactivo'. En el caso de usuario, la baja definitiva se marca como
+-- 'Eliminado' y la cuenta deja de listarse. Las tablas de movimientos
+-- (venta, dispensa, comprobante_venta, historial_operacion) no se
+-- modifican ni se borran.
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
@@ -27,7 +29,7 @@ CREATE TABLE usuario (
     ci_nit            VARCHAR(20)   NOT NULL UNIQUE,
     contrasena_hash   VARCHAR(100)  NOT NULL,
     estado_cuenta     VARCHAR(10)   NOT NULL DEFAULT 'Activo'
-                      CHECK (estado_cuenta IN ('Activo', 'Inactivo')),
+                      CHECK (estado_cuenta IN ('Activo', 'Inactivo', 'Eliminado')),
     fecha_registro    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id_rol            INT           NOT NULL REFERENCES rol (id_rol)
 );

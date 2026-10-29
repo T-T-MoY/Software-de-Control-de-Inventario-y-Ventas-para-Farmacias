@@ -55,21 +55,6 @@ onMounted(cargarPerfil)
 
 <template>
   <section class="px-1">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-      <div>
-        <span class="eyebrow">Cuenta</span>
-        <h2 class="h4 fw-bold mb-1">Mi perfil</h2>
-        <p class="text-muted mb-0">Consulta tus datos de acceso y el estado de tu cuenta.</p>
-      </div>
-      <router-link
-        v-if="perfil?.nombre_rol === 'Administrador'"
-        to="/usuarios"
-        class="btn btn-ghost rounded-pill px-3"
-      >
-        <i class="fas fa-users me-2"></i>Gestionar usuarios
-      </router-link>
-    </div>
-
     <div v-if="loading" class="text-center py-5 text-muted">
       <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
       Cargando perfil...

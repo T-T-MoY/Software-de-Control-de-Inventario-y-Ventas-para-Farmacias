@@ -1,11 +1,13 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   actualizarUsuario,
   cambiarEstadoUsuario,
   crearUsuario,
+  eliminarUsuarioLogico,
   listarRoles,
-  listarUsuarios
+  listarUsuarios,
+  obtenerImpactoUsuario
 } from '../../data/endpoints/users'
 import { iniciales, nombreCompleto } from '../../business/format'
 import { obtenerSesion } from '../../business/session'
@@ -18,16 +20,41 @@ import {
 
 const usuarios = ref([])
 const roles = ref([])
-const search = ref('')
-const estadoFiltro = ref('Todos')
 const loading = ref(true)
 const saving = ref(false)
 const modalAbierto = ref(false)
 const editando = ref(false)
-const mensaje = ref('')
 const error = ref('')
+const errorFormulario = ref('')
+const errorAccion = ref('')
 const showPassword = ref(false)
 const currentUserId = obtenerSesion().idUsuario
+
+// Filtros, búsqueda y paginación
+const search = ref('')
+const filtroRol = ref('Todos')
+const filtroEstado = ref('Todos')
+const porPagina = 10
+const paginaActual = ref(1)
+
+// Baja de usuarios
+const usuarioBaja = ref(null)
+const impactoBaja = ref(null)
+const errorBaja = ref('')
+const procesandoBaja = ref(false)
+const eliminandoId = ref(null)
+
+// Notificación flotante
+const notificacion = ref('')
+let temporizadorNotificacion = null
+
+const notificar = (texto) => {
+  notificacion.value = texto
+  if (temporizadorNotificacion) clearTimeout(temporizadorNotificacion)
+  temporizadorNotificacion = setTimeout(() => {
+    notificacion.value = ''
+  }, 4500)
+}
 
 const formularioInicial = () => ({
   id_usuario: null,
@@ -78,25 +105,176 @@ const validarFormulario = () => {
   return !Object.values(errores.value).some(Boolean)
 }
 
+const esActivo = (usuario) => (
+  String(usuario?.estado_cuenta || '').trim().toLocaleLowerCase() === 'activo'
+)
+
+const esPropio = (usuario) => (
+  Number(usuario?.id_usuario) === Number(currentUserId)
+)
+
+// Listas únicas para los filtros
+const rolesDisponibles = computed(() => {
+  const conjunto = new Set()
+  roles.value.forEach((rol) => {
+    if (rol.nombre_rol) conjunto.add(String(rol.nombre_rol))
+  })
+  usuarios.value.forEach((usuario) => {
+    if (usuario.nombre_rol) conjunto.add(String(usuario.nombre_rol))
+  })
+  return Array.from(conjunto).sort((a, b) => a.localeCompare(b, 'es'))
+})
+
+const estadosDisponibles = computed(() => {
+  const conjunto = new Set(['Activo', 'Inactivo'])
+  usuarios.value.forEach((usuario) => {
+    const estado = String(usuario.estado_cuenta || '').trim()
+    if (estado) conjunto.add(estado)
+  })
+  return Array.from(conjunto)
+})
+
+// Filtrado + búsqueda
 const usuariosFiltrados = computed(() => {
   const consulta = search.value.trim().toLocaleLowerCase()
+
   return usuarios.value.filter((usuario) => {
-    const nombre = [
-      usuario.nombres,
-      usuario.apellido_paterno,
-      usuario.apellido_materno
-    ].filter(Boolean).join(' ').toLocaleLowerCase()
-    const coincideTexto = !consulta || [
-      nombre,
-      usuario.correo,
-      usuario.ci_nit,
-      usuario.nombre_rol
-    ].some((valor) => String(valor || '').toLocaleLowerCase().includes(consulta))
-    const coincideEstado = estadoFiltro.value === 'Todos'
-      || usuario.estado_cuenta === estadoFiltro.value
-    return coincideTexto && coincideEstado
+    if (consulta) {
+      const nombre = [
+        usuario.nombres,
+        usuario.apellido_paterno,
+        usuario.apellido_materno
+      ].filter(Boolean).join(' ')
+      const coincide = [
+        nombre,
+        usuario.correo,
+        usuario.ci_nit,
+        usuario.nombre_rol
+      ].some((valor) => String(valor || '').toLocaleLowerCase().includes(consulta))
+      if (!coincide) return false
+    }
+
+    if (
+      filtroRol.value !== 'Todos'
+      && String(usuario.nombre_rol) !== filtroRol.value
+    ) {
+      return false
+    }
+
+    if (
+      filtroEstado.value !== 'Todos'
+      && String(usuario.estado_cuenta).toLocaleLowerCase()
+        !== filtroEstado.value.toLocaleLowerCase()
+    ) {
+      return false
+    }
+
+    return true
   })
 })
+
+// Paginación
+const totalPaginas = computed(() => (
+  Math.max(1, Math.ceil(usuariosFiltrados.value.length / porPagina))
+))
+
+const usuariosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * porPagina
+  return usuariosFiltrados.value.slice(inicio, inicio + porPagina)
+})
+
+const indiceInicio = computed(() => (
+  usuariosFiltrados.value.length === 0
+    ? 0
+    : (paginaActual.value - 1) * porPagina + 1
+))
+
+const indiceFin = computed(() => (
+  Math.min(paginaActual.value * porPagina, usuariosFiltrados.value.length)
+))
+
+const numerosPagina = computed(() => {
+  const paginas = []
+  const total = totalPaginas.value
+  const actual = paginaActual.value
+  const maxVisible = 5
+
+  if (total <= maxVisible + 2) {
+    for (let i = 1; i <= total; i += 1) paginas.push(i)
+    return paginas
+  }
+
+  paginas.push(1)
+  let inicio = Math.max(2, actual - 1)
+  let fin = Math.min(total - 1, actual + 1)
+
+  if (actual <= 3) {
+    inicio = 2
+    fin = 4
+  }
+  if (actual >= total - 2) {
+    inicio = total - 3
+    fin = total - 1
+  }
+
+  if (inicio > 2) paginas.push('...')
+  for (let i = inicio; i <= fin; i += 1) paginas.push(i)
+  if (fin < total - 1) paginas.push('...')
+  paginas.push(total)
+
+  return paginas
+})
+
+watch([search, filtroRol, filtroEstado], () => {
+  paginaActual.value = 1
+})
+
+watch(totalPaginas, (total) => {
+  if (paginaActual.value > total) paginaActual.value = total
+})
+
+const limpiarFiltros = () => {
+  search.value = ''
+  filtroRol.value = 'Todos'
+  filtroEstado.value = 'Todos'
+  paginaActual.value = 1
+}
+
+const hayFiltrosActivos = computed(() => (
+  search.value.trim() !== ''
+  || filtroRol.value !== 'Todos'
+  || filtroEstado.value !== 'Todos'
+))
+
+const filtrosActivos = computed(() => [
+  search.value.trim() !== '',
+  filtroRol.value !== 'Todos',
+  filtroEstado.value !== 'Todos'
+].filter(Boolean).length)
+
+// Tarjetas de estadísticas
+const totalUsuarios = computed(() => usuarios.value.length)
+const usuariosActivos = computed(() => (
+  usuarios.value.filter((usuario) => esActivo(usuario)).length
+))
+const usuariosInactivos = computed(() => (
+  usuarios.value.filter((usuario) => !esActivo(usuario)).length
+))
+const usuariosAdmin = computed(() => (
+  usuarios.value.filter((usuario) => (
+    String(usuario.nombre_rol || '').toLocaleLowerCase().includes('admin')
+  )).length
+))
+
+const mensajeErrorAccion = (err) => {
+  if (err.status === 401 || err.status === 403) {
+    return 'No tienes permisos para gestionar usuarios o tu sesión expiró. Vuelve a iniciar sesión.'
+  }
+  if (err.status === 404) {
+    return 'El usuario no existe o ya fue eliminado.'
+  }
+  return `No se pudo completar la operación: ${err.message}`
+}
 
 const cargarDatos = async () => {
   loading.value = true
@@ -109,7 +287,7 @@ const cargarDatos = async () => {
     usuarios.value = lista
     roles.value = listaRoles
   } catch (err) {
-    error.value = err.message
+    error.value = mensajeErrorAccion(err)
   } finally {
     loading.value = false
   }
@@ -118,8 +296,7 @@ const cargarDatos = async () => {
 const abrirNuevo = () => {
   editando.value = false
   form.value = formularioInicial()
-  mensaje.value = ''
-  error.value = ''
+  errorFormulario.value = ''
   showPassword.value = false
   restablecerValidacion()
   modalAbierto.value = true
@@ -138,19 +315,17 @@ const abrirEdicion = (usuario) => {
     id_rol: String(usuario.id_rol),
     contrasena: ''
   }
-  mensaje.value = ''
-  error.value = ''
+  errorFormulario.value = ''
   showPassword.value = false
   restablecerValidacion()
   modalAbierto.value = true
 }
 
 const guardarUsuario = async () => {
-  error.value = ''
-  mensaje.value = ''
+  errorFormulario.value = ''
 
   if (!validarFormulario()) {
-    error.value = 'Revisa los campos marcados en rojo antes de guardar.'
+    errorFormulario.value = 'Revisa los campos marcados en rojo antes de guardar.'
     return
   }
 
@@ -172,168 +347,471 @@ const guardarUsuario = async () => {
     await (editando.value
       ? actualizarUsuario(form.value.id_usuario, body)
       : crearUsuario(body))
-    modalAbierto.value = false
-    mensaje.value = editando.value
+    const mensaje = editando.value
       ? 'Los datos del usuario se actualizaron.'
       : 'El usuario se creó correctamente.'
+    modalAbierto.value = false
     await cargarDatos()
+    notificar(mensaje)
   } catch (err) {
-    error.value = err.message
+    errorFormulario.value = err.message
   } finally {
     saving.value = false
   }
 }
 
-const cambiarEstado = async (usuario) => {
-  const activo = usuario.estado_cuenta !== 'Activo'
-  const verbo = activo ? 'activar' : 'desactivar'
-  if (!window.confirm(`¿Quieres ${verbo} la cuenta de ${usuario.nombres}?`)) return
-  error.value = ''
-  mensaje.value = ''
+const activarUsuario = async (usuario) => {
+  errorAccion.value = ''
   try {
-    await cambiarEstadoUsuario(usuario.id_usuario, activo)
-    mensaje.value = `La cuenta quedó ${activo ? 'activa' : 'inactiva'}.`
+    await cambiarEstadoUsuario(usuario.id_usuario, true)
     await cargarDatos()
+    notificar(`La cuenta de ${nombreCompleto(usuario)} quedó activa.`)
   } catch (err) {
-    error.value = err.message
+    errorAccion.value = mensajeErrorAccion(err)
   }
 }
 
+// =====================================================
+// BAJA DE USUARIO (borrado lógico)
+// =====================================================
+const cerrarModalBaja = () => {
+  if (procesandoBaja.value) return
+  usuarioBaja.value = null
+  impactoBaja.value = null
+  errorBaja.value = ''
+}
+
+const ejecutarBaja = async (accion) => {
+  const usuario = usuarioBaja.value
+  if (!usuario?.id_usuario) {
+    errorBaja.value = 'No se pudo identificar el usuario.'
+    return
+  }
+
+  if (accion === 'desactivar' && !esActivo(usuario)) return
+
+  procesandoBaja.value = true
+  eliminandoId.value = usuario.id_usuario
+  errorBaja.value = ''
+
+  try {
+    if (accion === 'desactivar') {
+      await cambiarEstadoUsuario(usuario.id_usuario, false)
+    } else {
+      await eliminarUsuarioLogico(usuario.id_usuario)
+    }
+
+    const nombre = nombreCompleto(usuario)
+    usuarioBaja.value = null
+    impactoBaja.value = null
+    await cargarDatos()
+    notificar(
+      accion === 'desactivar'
+        ? `La cuenta de ${nombre} quedó inactiva.`
+        : `La cuenta de ${nombre} se eliminó correctamente.`
+    )
+  } catch (err) {
+    errorBaja.value = mensajeErrorAccion(err)
+  } finally {
+    procesandoBaja.value = false
+    eliminandoId.value = null
+  }
+}
+
+const abrirBaja = async (usuario) => {
+  if (esPropio(usuario) || procesandoBaja.value) return
+
+  usuarioBaja.value = usuario
+  impactoBaja.value = null
+  errorBaja.value = ''
+  eliminandoId.value = usuario.id_usuario
+
+  try {
+    const respuesta = await obtenerImpactoUsuario(usuario.id_usuario)
+    impactoBaja.value = respuesta.impacto
+  } catch (err) {
+    errorBaja.value = mensajeErrorAccion(err)
+  } finally {
+    eliminandoId.value = null
+  }
+}
+
+const reintentarBaja = () => {
+  const usuario = usuarioBaja.value
+  if (!usuario) return
+  usuarioBaja.value = null
+  errorBaja.value = ''
+  abrirBaja(usuario)
+}
+
 onMounted(cargarDatos)
+
+onBeforeUnmount(() => {
+  if (temporizadorNotificacion) clearTimeout(temporizadorNotificacion)
+})
 </script>
 
 <template>
-  <section class="px-1">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-      <div>
-        <span class="eyebrow">Administración</span>
-        <h2 class="h4 fw-bold mb-1">Usuarios del sistema</h2>
-        <p class="text-muted mb-0">Administra las cuentas y los roles de acceso del sistema.</p>
-      </div>
-      <button type="button" class="btn btn-brand rounded-pill px-4" @click="abrirNuevo">
-        <i class="fas fa-user-plus me-2"></i>Nuevo usuario
+  <section class="admin-panel">
+    <div v-if="errorAccion" class="notice notice-error" role="alert">
+      <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorAccion }}</span>
+      <button
+        type="button"
+        class="notice-close"
+        aria-label="Cerrar aviso"
+        @click="errorAccion = ''"
+      >
+        ×
       </button>
     </div>
 
-    <div v-if="mensaje" class="alert alert-success rounded-3" role="status">
-      <i class="fas fa-circle-check me-2"></i>{{ mensaje }}
-    </div>
-    <div v-if="error && !modalAbierto" class="alert alert-danger rounded-3" role="alert">
-      <i class="fas fa-circle-exclamation me-2"></i>{{ error }}
+    <!-- Cabecera -->
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Administración</span>
+        <h2>Usuarios</h2>
+        <p>Resumen general de las cuentas registradas.</p>
+      </div>
+      <div class="panel-heading-actions">
+        <button
+          type="button"
+          class="btn-panel btn-panel-ghost"
+          :disabled="loading"
+          @click="cargarDatos"
+        >
+          <i class="fas fa-rotate"></i>
+          Actualizar
+        </button>
+        <button type="button" class="btn-panel btn-panel-primary" @click="abrirNuevo">
+          <i class="fas fa-user-plus"></i>
+          Nuevo usuario
+        </button>
+      </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-      <div class="card-header border-0 p-3 p-lg-4">
-        <div class="row g-3">
-          <div class="col-md">
+    <!-- Tarjetas de estadísticas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <p>Total registrados</p>
+        <strong>{{ totalUsuarios }}</strong>
+      </div>
+      <div class="stat-card">
+        <p>Activos</p>
+        <strong>{{ usuariosActivos }}</strong>
+      </div>
+      <div class="stat-card">
+        <p>Roles de Admin</p>
+        <strong>{{ usuariosAdmin }}</strong>
+      </div>
+      <div class="stat-card is-danger">
+        <p>Suspendidos</p>
+        <strong>{{ usuariosInactivos }}</strong>
+      </div>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="panel">
+      <div class="panel-title-bar">
+        <h3>Administrar usuarios</h3>
+      </div>
+
+      <!-- Barra de búsqueda y filtros -->
+      <div class="panel-toolbar">
+        <div class="panel-filters">
+          <div class="field field-search">
             <label class="visually-hidden" for="buscar-usuarios">Buscar usuarios</label>
-            <div class="custom-input-group">
-              <span class="input-group-text"><i class="fas fa-search"></i></span>
-              <input
-                id="buscar-usuarios"
-                v-model="search"
-                class="form-control"
-                type="search"
-                placeholder="Buscar por nombre, correo, CI/NIT o rol"
-              >
-            </div>
+            <i class="fas fa-search"></i>
+            <input
+              id="buscar-usuarios"
+              v-model="search"
+              class="form-control panel-control"
+              type="search"
+              placeholder="Buscar por nombre, apellidos o correo..."
+              autocomplete="off"
+            >
           </div>
-          <div class="col-md-3">
-            <label class="visually-hidden" for="filtrar-estado">Filtrar por estado</label>
-            <div class="custom-input-group filter-group">
-              <span class="input-group-text"><i class="fas fa-filter"></i></span>
-              <select id="filtrar-estado" v-model="estadoFiltro" class="form-select">
-                <option>Todos</option>
-                <option>Activo</option>
-                <option>Inactivo</option>
-              </select>
-            </div>
+
+          <div class="field">
+            <label for="filtrar-rol">Rol</label>
+            <select id="filtrar-rol" v-model="filtroRol" class="form-select panel-control">
+              <option value="Todos">Todos</option>
+              <option v-for="rol in rolesDisponibles" :key="rol" :value="rol">
+                {{ rol }}
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="filtrar-estado">Estado</label>
+            <select id="filtrar-estado" v-model="filtroEstado" class="form-select panel-control">
+              <option value="Todos">Todos</option>
+              <option v-for="estado in estadosDisponibles" :key="estado" :value="estado">
+                {{ estado }}
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+            <button
+              type="button"
+              class="btn-panel btn-panel-ghost"
+              :disabled="!hayFiltrosActivos"
+              @click="limpiarFiltros"
+            >
+              Limpiar filtros
+              <span v-if="filtrosActivos > 0" class="filter-count">{{ filtrosActivos }}</span>
+            </button>
           </div>
         </div>
-      </div>
 
-      <div v-if="loading" class="text-center py-5 text-muted">
-        <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
-        Cargando usuarios...
-      </div>
-      <div v-else-if="usuariosFiltrados.length === 0" class="text-center py-5">
-        <i class="fas fa-user-slash fs-2 text-muted mb-3"></i>
-        <p class="text-muted mb-0">
-          {{ usuarios.length ? 'No hay usuarios que coincidan con la búsqueda.' : 'Aún no hay usuarios registrados.' }}
+        <p class="panel-count">
+          Mostrando
+          <strong>{{ indiceInicio }}-{{ indiceFin }}</strong>
+          de
+          <strong>{{ usuariosFiltrados.length }}</strong>
+          usuarios
+          <span v-if="hayFiltrosActivos">(filtrados de {{ totalUsuarios }} en total)</span>
         </p>
       </div>
-      <div v-else class="table-responsive">
-        <table class="table align-middle mb-0">
-          <thead>
-            <tr>
-              <th class="ps-4">Usuario</th>
-              <th>CI / NIT</th>
-              <th>Rol</th>
-              <th>Estado</th>
-              <th class="text-end pe-4">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="usuario in usuariosFiltrados" :key="usuario.id_usuario">
-              <td class="ps-4">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="user-avatar">{{ iniciales(usuario) }}</span>
-                  <div class="min-w-0">
-                    <div class="fw-semibold text-truncate">{{ nombreCompleto(usuario) }}</div>
-                    <div class="small text-muted text-truncate">{{ usuario.correo }}</div>
+
+      <!-- Estado de carga / error / vacío -->
+      <div v-if="loading" class="panel-state">
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Cargando usuarios...
+      </div>
+      <div v-else-if="error" class="panel-state is-error">{{ error }}</div>
+      <div v-else-if="usuariosFiltrados.length === 0" class="panel-state">
+        <i class="fas fa-user-slash fs-4 d-block mb-2"></i>
+        {{
+          hayFiltrosActivos
+            ? 'No se encontraron usuarios que coincidan con los filtros.'
+            : 'No hay usuarios registrados.'
+        }}
+      </div>
+
+      <template v-else>
+        <!-- Vista de escritorio: tabla -->
+        <div class="panel-table-wrap">
+          <table class="panel-table">
+            <thead>
+              <tr>
+                <th class="cell-index">#</th>
+                <th style="width: 24%">Usuario</th>
+                <th style="width: 26%">Correo electrónico</th>
+                <th style="width: 12%">Rol</th>
+                <th style="width: 12%">Estado</th>
+                <th class="cell-actions text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(usuario, indice) in usuariosPaginados" :key="usuario.id_usuario">
+                <td class="cell-index">
+                  {{ (paginaActual - 1) * porPagina + indice + 1 }}
+                </td>
+                <td class="cell-truncate">
+                  <div class="user-cell">
+                    <span class="avatar-soft">{{ iniciales(usuario) }}</span>
+                    <span
+                      class="truncate fw-semibold"
+                      :title="nombreCompleto(usuario)"
+                    >
+                      {{ nombreCompleto(usuario) }}
+                    </span>
                   </div>
-                </div>
-              </td>
-              <td class="text-muted">{{ usuario.ci_nit }}</td>
-              <td>
-                <span class="badge-soft badge-soft-primary">
-                  <i class="fas fa-shield-halved"></i>
+                </td>
+                <td class="cell-truncate">
+                  <span class="truncate text-muted" :title="usuario.correo">
+                    {{ usuario.correo }}
+                  </span>
+                </td>
+                <td class="cell-truncate">
+                  <span class="truncate" :title="usuario.nombre_rol">
+                    {{ usuario.nombre_rol }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    class="badge-estado"
+                    :class="esActivo(usuario) ? 'is-active' : 'is-inactive'"
+                  >
+                    {{ usuario.estado_cuenta }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-stack">
+                    <button
+                      type="button"
+                      class="btn-row"
+                      @click="abrirEdicion(usuario)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      v-if="!esActivo(usuario)"
+                      type="button"
+                      class="btn-row is-success"
+                      @click="activarUsuario(usuario)"
+                    >
+                      Activar
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-row is-danger"
+                      :disabled="esPropio(usuario) || eliminandoId === usuario.id_usuario"
+                      :title="esPropio(usuario)
+                        ? 'No puedes eliminar tu propia cuenta'
+                        : 'Eliminar usuario'"
+                      @click="abrirBaja(usuario)"
+                    >
+                      {{ eliminandoId === usuario.id_usuario ? 'Cargando…' : 'Eliminar' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Vista móvil: cards -->
+        <div class="mobile-list">
+          <article
+            v-for="(usuario, indice) in usuariosPaginados"
+            :key="`movil-${usuario.id_usuario}`"
+            class="mobile-card"
+          >
+            <div class="mobile-card-head">
+              <span class="mobile-index">
+                {{ (paginaActual - 1) * porPagina + indice + 1 }}
+              </span>
+              <span class="avatar-soft">{{ iniciales(usuario) }}</span>
+              <div class="mobile-card-title">
+                <h4 class="truncate" :title="nombreCompleto(usuario)">
+                  {{ nombreCompleto(usuario) }}
+                </h4>
+                <p class="truncate" :title="usuario.correo">{{ usuario.correo }}</p>
+              </div>
+            </div>
+
+            <div class="mobile-meta">
+              <div class="min-w-0">
+                <p>Rol</p>
+                <strong class="truncate" :title="usuario.nombre_rol">
                   {{ usuario.nombre_rol }}
-                </span>
-              </td>
-              <td>
+                </strong>
+              </div>
+              <div>
+                <p>Estado</p>
                 <span
-                  class="badge-soft"
-                  :class="usuario.estado_cuenta === 'Activo' ? 'badge-soft-primary' : 'badge-soft-muted'"
+                  class="badge-estado"
+                  :class="esActivo(usuario) ? 'is-active' : 'is-inactive'"
                 >
-                  <span class="status-dot"></span>
                   {{ usuario.estado_cuenta }}
                 </span>
-              </td>
-              <td class="text-end pe-4">
-                <div class="d-inline-flex gap-2">
-                  <button
-                    type="button"
-                    class="btn-icon"
-                    aria-label="Editar usuario"
-                    title="Editar usuario"
-                    @click="abrirEdicion(usuario)"
-                  >
-                    <i class="fas fa-pen"></i>
-                  </button>
-                  <button
-                    v-if="usuario.id_usuario !== currentUserId"
-                    type="button"
-                    class="btn-icon"
-                    :class="usuario.estado_cuenta === 'Activo' ? 'is-danger' : 'is-success'"
-                    :aria-label="usuario.estado_cuenta === 'Activo' ? 'Desactivar cuenta' : 'Activar cuenta'"
-                    :title="usuario.estado_cuenta === 'Activo' ? 'Desactivar cuenta' : 'Activar cuenta'"
-                    @click="cambiarEstado(usuario)"
-                  >
-                    <i class="fas" :class="usuario.estado_cuenta === 'Activo' ? 'fa-user-slash' : 'fa-user-check'"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card-footer border-0 px-4 py-3 text-muted small d-flex justify-content-between align-items-center">
-        <span>{{ usuariosFiltrados.length }} usuario(s)</span>
-        <span v-if="search || estadoFiltro !== 'Todos'" class="badge-soft badge-soft-lavender">Filtro activo</span>
-      </div>
+              </div>
+            </div>
+
+            <div class="mobile-actions">
+              <button type="button" class="btn-row" @click="abrirEdicion(usuario)">
+                Editar
+              </button>
+              <button
+                v-if="!esActivo(usuario)"
+                type="button"
+                class="btn-row is-success"
+                @click="activarUsuario(usuario)"
+              >
+                Activar
+              </button>
+              <button
+                type="button"
+                class="btn-row is-danger"
+                :disabled="esPropio(usuario) || eliminandoId === usuario.id_usuario"
+                :title="esPropio(usuario)
+                  ? 'No puedes eliminar tu propia cuenta'
+                  : 'Eliminar usuario'"
+                @click="abrirBaja(usuario)"
+              >
+                {{ eliminandoId === usuario.id_usuario ? 'Cargando…' : 'Eliminar' }}
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <!-- Paginación numerada -->
+        <div v-if="totalPaginas > 1" class="panel-footer">
+          <p>
+            Página <strong>{{ paginaActual }}</strong> de <strong>{{ totalPaginas }}</strong>
+          </p>
+
+          <nav class="pagination" aria-label="Paginación de usuarios">
+            <button
+              type="button"
+              class="page-btn"
+              title="Primera página"
+              :disabled="paginaActual === 1"
+              @click="paginaActual = 1"
+            >
+              «
+            </button>
+            <button
+              type="button"
+              class="page-btn"
+              title="Página anterior"
+              :disabled="paginaActual === 1"
+              @click="paginaActual = Math.max(1, paginaActual - 1)"
+            >
+              ‹
+            </button>
+
+            <template v-for="(numero, indice) in numerosPagina" :key="`pagina-${indice}`">
+              <span v-if="numero === '...'" class="page-ellipsis">…</span>
+              <button
+                v-else
+                type="button"
+                class="page-btn"
+                :class="{ 'is-current': paginaActual === numero }"
+                :aria-current="paginaActual === numero ? 'page' : undefined"
+                @click="paginaActual = numero"
+              >
+                {{ numero }}
+              </button>
+            </template>
+
+            <button
+              type="button"
+              class="page-btn"
+              title="Página siguiente"
+              :disabled="paginaActual === totalPaginas"
+              @click="paginaActual = Math.min(totalPaginas, paginaActual + 1)"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              class="page-btn"
+              title="Última página"
+              :disabled="paginaActual === totalPaginas"
+              @click="paginaActual = totalPaginas"
+            >
+              »
+            </button>
+          </nav>
+        </div>
+      </template>
     </div>
 
+    <!-- Notificación flotante -->
+    <div class="toast-stack" aria-live="polite">
+      <Transition name="toast">
+        <div v-if="notificacion" class="toast-item" role="status">
+          <i class="fas fa-circle-check"></i>
+          <span>{{ notificacion }}</span>
+        </div>
+      </Transition>
+    </div>
+
+    <!-- Modal de alta / edición -->
     <div v-if="modalAbierto" class="modal-backdrop-custom" @click.self="modalAbierto = false">
       <section class="user-modal card border-0" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
         <div class="modal-head">
@@ -541,8 +1019,8 @@ onMounted(cargarDatos)
             </div>
           </div>
 
-          <div v-if="error" class="alert alert-danger py-2 mt-3 mb-0" role="alert">
-            <i class="fas fa-circle-exclamation me-2"></i>{{ error }}
+          <div v-if="errorFormulario" class="notice notice-error mt-3" role="alert">
+            <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorFormulario }}</span>
           </div>
 
           <div class="d-flex justify-content-end gap-2 mt-4">
@@ -557,42 +1035,120 @@ onMounted(cargarDatos)
         </form>
       </section>
     </div>
+
+    <!-- Modal de baja con impacto -->
+    <div
+      v-if="usuarioBaja"
+      class="panel-modal-backdrop"
+      role="presentation"
+      @mousedown.self="cerrarModalBaja"
+    >
+      <section
+        class="panel-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-baja-usuario"
+      >
+        <div class="panel-modal-head">
+          <div>
+            <h3 id="titulo-baja-usuario">Gestionar baja de usuario</h3>
+            <p>{{ nombreCompleto(usuarioBaja) }}</p>
+          </div>
+          <button
+            type="button"
+            class="panel-modal-close"
+            aria-label="Cerrar"
+            :disabled="procesandoBaja"
+            @click="cerrarModalBaja"
+          >
+            ×
+          </button>
+        </div>
+
+        <div v-if="errorBaja" class="notice notice-error mt-4" role="alert">
+          <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorBaja }}</span>
+        </div>
+
+        <div v-else-if="!impactoBaja" class="panel-state">
+          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          Calculando registros asociados...
+        </div>
+
+        <template v-else-if="impactoBaja.total > 0">
+          <p class="mt-4 mb-0 small">
+            Este usuario tiene registros asociados en el sistema:
+          </p>
+          <ul class="impact-list">
+            <li v-if="impactoBaja.ventas > 0">
+              Ventas registradas: <strong>{{ impactoBaja.ventas }}</strong>
+            </li>
+            <li v-if="impactoBaja.historial > 0">
+              Movimientos de historial: <strong>{{ impactoBaja.historial }}</strong>
+            </li>
+          </ul>
+          <div class="notice notice-warning mt-3">
+            <span>
+              <i class="fas fa-triangle-exclamation me-2"></i>
+              La cuenta quedará marcada como <strong>eliminada</strong> y su historial se conservará.
+            </span>
+          </div>
+        </template>
+
+        <p v-else class="mt-4 mb-0 small">
+          ¿Quieres eliminar a <strong>{{ nombreCompleto(usuarioBaja) }}</strong>?
+          No tiene registros asociados en el sistema.
+        </p>
+
+        <div class="panel-modal-actions">
+          <button
+            type="button"
+            class="btn-panel btn-panel-ghost"
+            :disabled="procesandoBaja"
+            @click="cerrarModalBaja"
+          >
+            Cancelar
+          </button>
+
+          <button
+            v-if="errorBaja && !impactoBaja"
+            type="button"
+            class="btn-panel btn-panel-danger"
+            :disabled="procesandoBaja"
+            @click="reintentarBaja"
+          >
+            Reintentar
+          </button>
+
+          <template v-else>
+            <button
+              type="button"
+              class="btn-panel btn-panel-warning"
+              :disabled="procesandoBaja || !impactoBaja || !esActivo(usuarioBaja)"
+              :title="!esActivo(usuarioBaja)
+                ? 'La cuenta ya está desactivada'
+                : 'Desactivar la cuenta sin eliminarla'"
+              @click="ejecutarBaja('desactivar')"
+            >
+              Desactivar
+            </button>
+            <button
+              type="button"
+              class="btn-panel btn-panel-danger"
+              :disabled="procesandoBaja || !impactoBaja"
+              @click="ejecutarBaja('eliminar')"
+            >
+              {{ procesandoBaja ? 'Procesando...' : 'Eliminar' }}
+            </button>
+          </template>
+        </div>
+      </section>
+    </div>
   </section>
 </template>
 
 <style scoped>
 .min-w-0 {
   min-width: 0;
-}
-
-.user-avatar {
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2a468b, #b8aee3);
-  color: #fff7e3;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  flex: 0 0 auto;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.filter-group .form-select {
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding-left: 0;
-  border-radius: 0;
 }
 
 .modal-backdrop-custom {

@@ -24,6 +24,13 @@ const validarDesactivacionPropia = ({ idSesion, idUsuario, activo }) => {
     }
 };
 
+/** Una cuenta no puede eliminarse lógicamente a sí misma. */
+const validarEliminacionPropia = ({ idSesion, idUsuario }) => {
+    if (Number(idSesion) === Number(idUsuario)) {
+        throw errorValidacion('No puedes eliminar tu propia cuenta.');
+    }
+};
+
 /** Normaliza los datos que llegan de la interfaz antes de persistirlos. */
 const normalizarDatosUsuario = (datos) => ({
     nombres: datos.nombres.trim(),
@@ -40,5 +47,6 @@ module.exports = {
     ROL_ADMINISTRADOR,
     validarCambioRolPropio,
     validarDesactivacionPropia,
+    validarEliminacionPropia,
     normalizarDatosUsuario,
 };

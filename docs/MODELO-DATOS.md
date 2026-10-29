@@ -2,7 +2,7 @@
 
 Este documento corresponde al punto **13.3 Capa de datos: modelo E/R, diagrama de clases y diseño de la base de datos**.
 
-> **Importante:** el esquema real vive en `database/01_init.sql` y `database/02_inserts.sql`. En esta reestructuración **no se modificó ningún archivo de `database/`**. Todo lo que sigue documenta ese esquema y ubica cada regla en la capa que le corresponde.
+> **Importante:** el esquema real vive en `database/01_init.sql`, `database/02_inserts.sql` y `database/03_estado_cuenta_eliminado.sql`. Todo lo que sigue documenta ese esquema y ubica cada regla en la capa que le corresponde.
 
 ---
 
@@ -322,7 +322,7 @@ classDiagram
 | `correo` | `VARCHAR(120)` | NOT NULL, UNIQUE |
 | `ci_nit` | `VARCHAR(20)` | NOT NULL, UNIQUE |
 | `contrasena_hash` | `VARCHAR(100)` | NOT NULL (bcrypt, coste 12) |
-| `estado_cuenta` | `VARCHAR(10)` | NOT NULL, `Activo` / `Inactivo` |
+| `estado_cuenta` | `VARCHAR(10)` | NOT NULL, `Activo` / `Inactivo` / `Eliminado` |
 | `fecha_registro` | `TIMESTAMP` | NOT NULL, default `CURRENT_TIMESTAMP` |
 | `id_rol` | `INT` | NOT NULL, FK → `rol` |
 
@@ -458,7 +458,7 @@ Restricción adicional: `UNIQUE (id_venta, id_lote)`.
 - **Normalización:** el esquema está en tercera forma normal (3FN). Cada tabla tiene una clave primaria simple, los atributos dependen de ella y las relaciones N:M se resuelven con tablas intermedias (`dispensa`).
 - **Integridad:** claves foráneas en todas las relaciones, `UNIQUE` en correo, CI/NIT, código de barras, RUC/NIT, número de lote por medicamento y número de serie del comprobante.
 - **Dominio:** `CHECK` para estados, tipos, precios, stock y descuentos.
-- **Borrado lógico:** las entidades con estado pasan a `Inactivo`; los movimientos (`venta`, `dispensa`, `comprobante_venta`, `historial_operacion`) no se modifican ni se eliminan.
+- **Borrado lógico:** las entidades con estado pasan a `Inactivo`; en `usuario`, la baja definitiva se marca como `Eliminado` y la cuenta deja de listarse. Los movimientos (`venta`, `dispensa`, `comprobante_venta`, `historial_operacion`) no se modifican ni se eliminan.
 - **Transacciones:** las operaciones que afectan varias tablas (venta + dispensa + stock, recepción + stock + historial) deben ejecutarse con `data/connection.js → conTransaccion()`.
 - **Índices:** las claves primarias y `UNIQUE` ya crean índices. Para reportes conviene evaluar índices sobre `lote.fecha_vencimiento`, `venta.fecha_hora_venta` y `usuario.correo`; **no se aplicaron cambios** porque el esquema no se modifica en esta entrega.
 

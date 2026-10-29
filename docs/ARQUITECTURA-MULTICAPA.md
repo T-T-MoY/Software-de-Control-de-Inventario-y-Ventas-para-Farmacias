@@ -301,7 +301,7 @@ const registrarVenta = async (datos, idUsuario) => conTransaccion(async (cliente
 
 - `node --check` sobre todos los archivos del backend.
 - `npm run build` en `frontend/` para comprobar que todos los imports resuelven.
-- Prueba manual: login, listado de usuarios, alta, edición, cambio de estado y perfil.
+- Prueba manual: login, listado de usuarios, alta, edición, cambio de estado, baja lógica y perfil.
 
 Comandos:
 

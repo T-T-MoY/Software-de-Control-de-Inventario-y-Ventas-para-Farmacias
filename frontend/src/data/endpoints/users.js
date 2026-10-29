@@ -21,3 +21,12 @@ export const cambiarEstadoUsuario = (idUsuario, activo) => apiRequest(
     body: JSON.stringify({ activo })
   }
 )
+
+export const obtenerImpactoUsuario = (idUsuario) => apiRequest(
+  `/api/usuarios/${idUsuario}/impacto`
+)
+
+export const eliminarUsuarioLogico = (idUsuario) => apiRequest(
+  `/api/usuarios/${idUsuario}`,
+  { method: 'DELETE' }
+)

@@ -22,6 +22,7 @@ const listar = async () => {
         `SELECT ${CAMPOS_USUARIO}
          FROM usuario AS u
          JOIN rol AS r ON r.id_rol = u.id_rol
+         WHERE u.estado_cuenta <> 'Eliminado'
          ORDER BY u.apellido_paterno, u.nombres`
     );
     return rows;
@@ -136,8 +137,40 @@ const cambiarEstado = async (idUsuario, activo) => {
     const { rowCount } = await db.query(
         `UPDATE usuario
          SET estado_cuenta = $1
-         WHERE id_usuario = $2`,
+         WHERE id_usuario = $2
+           AND estado_cuenta <> 'Eliminado'`,
         [activo ? 'Activo' : 'Inactivo', idUsuario]
+    );
+    return rowCount;
+};
+
+/**
+ * Cuenta los registros que dependen del usuario.
+ * Las tablas de movimientos nunca se borran; solo se informan.
+ */
+const contarImpacto = async (idUsuario) => {
+    const { rows } = await db.query(
+        `SELECT
+             (SELECT COUNT(*)::int FROM venta
+              WHERE id_usuario = $1) AS ventas,
+             (SELECT COUNT(*)::int FROM historial_operacion
+              WHERE id_usuario = $1) AS historial`,
+        [idUsuario]
+    );
+    return rows[0];
+};
+
+/**
+ * Borrado lógico: la cuenta queda como 'Eliminado' y conserva todo
+ * su historial. Nunca se ejecuta DELETE sobre la tabla usuario.
+ */
+const eliminarLogicamente = async (idUsuario) => {
+    const { rowCount } = await db.query(
+        `UPDATE usuario
+         SET estado_cuenta = 'Eliminado'
+         WHERE id_usuario = $1
+           AND estado_cuenta <> 'Eliminado'`,
+        [idUsuario]
     );
     return rowCount;
 };
@@ -150,4 +183,6 @@ module.exports = {
     crear,
     actualizar,
     cambiarEstado,
+    contarImpacto,
+    eliminarLogicamente,
 };

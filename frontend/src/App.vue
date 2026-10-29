@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import Sidebar from './components/Sidebar.vue'
-import Topbar from './components/Topbar.vue'
-import { applyTheme, getStoredTheme } from './services/theme'
+import Sidebar from './presentation/components/Sidebar.vue'
+import Topbar from './presentation/components/Topbar.vue'
+import { applyTheme, getStoredTheme } from './presentation/theme'
 
 const route = useRoute()
 const isSidebarOpen = ref(false)

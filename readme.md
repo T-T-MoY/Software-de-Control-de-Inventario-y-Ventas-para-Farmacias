@@ -20,34 +20,213 @@ Cada persona trabaja en su módulo. Las tablas, pantallas y pruebas de cada uno 
 - Base de datos: PostgreSQL 15; esquema, procesos y datos iniciales en `database/`.
 - Entorno local: Docker Compose y pgAdmin.
 
-## Estructura
+## Estructura del proyecto
+
+Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas y archivos dentro de `backend/` y `frontend/` están en inglés; los identificadores, mensajes y textos de la interfaz siguen en español.
 
 ```text
 .
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
-├── database/
-│   ├── 01_init.sql
-│   └── 02_inserts.sql
+├── readme.md
+│
+├── docs/
+│   ├── ARQUITECTURA-MULTICAPA.md
+│   └── MODELO-DATOS.md
+│
+├── database/                       # NO se modifica en esta entrega
+│   ├── 01_init.sql                 # tablas
+│   └── 02_inserts.sql              # datos de ejemplo
+│
 ├── backend/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js                   # arranque y registro de rutas
 │   ├── config/
-│   │   ├── db.js
-│   │   ├── env.js
-│   │   ├── parametros.js
-│   │   ├── permisos.js
-│   │   └── password.js
-│   ├── controllers/
-│   ├── middleware/
-│   ├── routes/
-│   ├── scripts/generar-hash.js
-│   └── server.js
+│   │   ├── env.js                  # carga del .env
+│   │   └── parameters.js           # margen de 30 días y datos de la farmacia
+│   ├── presentation/               # Capa 13.1
+│   │   ├── routes/
+│   │   │   ├── auth.routes.js
+│   │   │   ├── users.routes.js
+│   │   │   ├── profile.routes.js
+│   │   │   └── parameters.routes.js
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.js
+│   │   │   ├── users.controller.js
+│   │   │   ├── profile.controller.js
+│   │   │   └── parameters.controller.js
+│   │   ├── middleware/
+│   │   │   ├── authentication.js
+│   │   │   ├── authorization.js
+│   │   │   └── errors.js
+│   │   └── validators/
+│   │       ├── fields.js
+│   │       └── user.validator.js
+│   ├── business/                   # Capa 13.2
+│   │   ├── services/
+│   │   │   ├── auth.service.js
+│   │   │   ├── users.service.js
+│   │   │   ├── profile.service.js
+│   │   │   └── parameters.service.js
+│   │   ├── rules/
+│   │   │   ├── permissions.js
+│   │   │   └── users.rules.js
+│   │   ├── security/
+│   │   │   ├── passwords.js
+│   │   │   └── session.js
+│   │   └── errors/
+│   │       └── app-error.js
+│   ├── data/                       # Capa 13.3
+│   │   ├── connection.js           # pool de PostgreSQL + conTransaccion()
+│   │   ├── repositories/
+│   │   │   ├── users.repository.js
+│   │   │   └── roles.repository.js
+│   │   └── mappers/
+│   │       └── user.mapper.js
+│   ├── scripts/
+│   │   └── generate-hash.js
+│   └── uploads/
+│
 └── frontend/
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    ├── public/
+    │   └── favicon.svg
     └── src/
-        ├── components/
-        ├── router/
-        └── views/
+        ├── main.js
+        ├── App.vue
+        ├── assets/
+        │   ├── css/
+        │   │   ├── tailwind.css
+        │   │   └── style.css
+        │   └── img/
+        │       └── hero.png
+        ├── config/
+        │   └── distribution.js   # módulos y responsables del equipo
+        ├── data/                 # Capa 13.3
+        │   ├── api.js
+        │   └── endpoints/
+        │       ├── auth.js
+        │       ├── users.js
+        │       └── profile.js
+        ├── business/             # Capa 13.2
+        │   ├── format.js
+        │   └── session.js
+        └── presentation/         # Capa 13.1
+            ├── theme.js
+            ├── components/
+            │   ├── Sidebar.vue
+            │   ├── Topbar.vue
+            │   ├── ThemeToggle.vue
+            │   └── SaleReceipt.vue   # comprobante de 80 mm (nuevo)
+            ├── router/
+            │   └── index.js
+            ├── validators/
+            │   ├── fields.js
+            │   └── user.js
+            └── views/
+                ├── DashboardView.vue
+                ├── LoginView.vue
+                ├── ProfileView.vue
+                └── UsersView.vue
 ```
+
+## Arquitectura multicapa
+
+El proyecto está separado en tres capas y las dependencias siempre apuntan hacia abajo: **presentation → business → data**. Ninguna capa superior se salta a la inferior y ninguna capa inferior conoce a la superior.
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ PRESENTATION (13.1)                                          │
+│ Rutas, controladores, middleware, vistas, formularios        │
+│ y validaciones de entrada.                                   │
+└───────────────────────────┬──────────────────────────────────┘
+                            │ llama a
+┌───────────────────────────▼──────────────────────────────────┐
+│ BUSINESS (13.2)                                              │
+│ Casos de uso, reglas, permisos, cálculos y seguridad.        │
+│ No conoce Express ni SQL.                                    │
+└───────────────────────────┬──────────────────────────────────┘
+                            │ llama a
+┌───────────────────────────▼──────────────────────────────────┐
+│ DATA (13.3)                                                  │
+│ Repositorios con SQL, mapeadores, conexión y transacciones.  │
+└───────────────────────────┬──────────────────────────────────┘
+                            │
+                    PostgreSQL (database/)
+```
+
+| Capa | Backend | Frontend | Responsabilidad |
+|---|---|---|---|
+| Presentación (13.1) | `presentation/` | `presentation/` | Rutas, controladores, middleware, vistas, componentes, formularios y validaciones de entrada |
+| Negocio (13.2) | `business/` | `business/` | Reglas, permisos, cálculos, casos de uso y seguridad; no conoce Express ni SQL |
+| Datos (13.3) | `data/` | `data/` | Repositorios con SQL, mapeadores, conexión, transacciones y cliente HTTP |
+
+Reglas que todos deben respetar:
+
+1. **Presentation → Business → Data.** Nunca al revés.
+2. Ningún controlador escribe SQL: llama a un servicio.
+3. Ningún repositorio conoce `req`, `res` ni códigos HTTP.
+4. Ningún servicio importa Express.
+5. Los errores de negocio se lanzan como `ErrorAplicacion` (`business/errors/app-error.js`) y la capa de presentación decide el estado HTTP.
+6. En el frontend, las vistas no arman `fetch` ni escriben claves de `localStorage`: usan `data/endpoints/*` y `business/session.js`.
+
+### Qué hace cada carpeta del backend
+
+| Carpeta | Qué va aquí | Qué NO va aquí |
+|---|---|---|
+| `config/` | Variables de entorno y parámetros generales | Reglas de negocio ni SQL |
+| `presentation/routes/` | Declaración de endpoints y middleware | Validaciones ni consultas |
+| `presentation/controllers/` | Leer `req`, validar forma, llamar al servicio y responder | SQL ni reglas de negocio |
+| `presentation/middleware/` | Autenticación, autorización y manejo de errores | Matriz de permisos ni acceso a datos |
+| `presentation/validators/` | Formato, obligatoriedad y longitudes de los campos | Decidir si una operación está permitida |
+| `business/services/` | Un caso de uso por operación (`crear`, `actualizar`, `registrarVenta`, etc.) | HTTP ni SQL |
+| `business/rules/` | Reglas e invariantes del dominio y matriz de permisos | Consultas a la base |
+| `business/security/` | Hash de contraseñas y firma/verificación del token | Express ni SQL |
+| `business/errors/` | `ErrorAplicacion` y fábricas de errores | Respuestas HTTP |
+| `data/repositories/` | Todo el SQL, un archivo por entidad | `req`, `res` ni reglas |
+| `data/mappers/` | Convertir filas SQL en objetos de negocio | Consultas |
+| `data/connection.js` | Pool y `conTransaccion()` | Lógica de negocio |
+
+### Qué hace cada carpeta del frontend
+
+| Carpeta | Qué va aquí | Qué NO va aquí |
+|---|---|---|
+| `presentation/views/` | Pantallas completas de cada módulo | Llamadas HTTP directas |
+| `presentation/components/` | Componentes reutilizables (sidebar, topbar, comprobante) | Reglas de negocio |
+| `presentation/router/` | Rutas y guardas de navegación | Acceso a datos |
+| `presentation/validators/` | Validación y limpieza de formularios | Llamadas a la API |
+| `presentation/theme.js` | Tema claro/oscuro | Datos de sesión |
+| `business/session.js` | Guardar, leer y cerrar sesión; rol actual | DOM ni `fetch` |
+| `business/format.js` | Nombres, iniciales y fechas | Red ni `localStorage` |
+| `data/api.js` | Cliente HTTP, token y errores | Reglas de presentación |
+| `data/endpoints/` | Una función por endpoint del backend | JSX, HTML ni estado de Vue |
+
+### Dónde trabaja cada integrante
+
+| Persona | Módulo | Backend | Frontend |
+|---|---|---|---|
+| Moisés | Seguridad y administración | `presentation/*auth*`, `presentation/*users*`, `business/*auth*`, `business/*users*`, `business/rules/permissions.js`, `data/repositories/*users*` | `views/LoginView.vue`, `views/UsersView.vue`, `views/ProfileView.vue`, `business/session.js` |
+| Bryan | Inventario | Crear `presentation/*medicines*`, `presentation/*lots*`, `presentation/*suppliers*`; `business/services/*inventory*`; `business/rules/*inventory*`; `data/repositories/*medicines*`, `*lots*`, `*suppliers*` | `views/MedicinesView.vue`, `views/LotsView.vue`, `views/SuppliersView.vue`, `views/AlertsView.vue` y sus `data/endpoints/*` |
+| Rodrigo | Ventas | Crear `presentation/*sales*`, `presentation/*customers*`; `business/services/sales.service.js`; `business/rules/sales.rules.js`; `data/repositories/*sales*`, `*customers*` | `views/SalesView.vue`, `views/CustomersView.vue`, `components/SaleReceipt.vue` y `data/endpoints/sales.js` |
+| Víctor | Reportes | Crear `presentation/*reports*`, `presentation/*history*`; `business/services/reports.service.js`; `data/repositories/*reports*`, `*history*` | `views/ReportsView.vue`, `views/HistoryView.vue` y `data/endpoints/reports.js` |
+
+Cada integrante crea sus archivos siguiendo el mismo patrón: **repositorio → servicio → validador → controlador → ruta → endpoint → vista**. Antes de tocar archivos compartidos (`backend/server.js`, `frontend/src/presentation/router/index.js`, `backend/business/rules/permissions.js`, `database/` o `docker-compose.yml`), avisa al equipo.
+
+### Checklist para agregar un módulo nuevo
+
+1. **Datos:** crear `<entidad>.repository.js` con el SQL y, si hace falta, `<entidad>.mapper.js`.
+2. **Negocio:** crear `<entidad>.service.js` con los casos de uso y `<entidad>.rules.js` con las invariantes.
+3. **Presentación:** crear `<entidad>.validator.js`, `<entidad>.controller.js` y `<entidad>.routes.js`.
+4. **Composición:** registrar la ruta en `backend/server.js`.
+5. **Frontend:** crear `frontend/src/data/endpoints/<entidad>.js`, la vista en `frontend/src/presentation/views/` y la ruta en `frontend/src/presentation/router/index.js`.
+6. **Permisos:** proteger la ruta con `autorizar(PERMISOS.X)`.
+
+Detalle completo, flujos y ejemplos: [`docs/ARQUITECTURA-MULTICAPA.md`](docs/ARQUITECTURA-MULTICAPA.md).
+Modelo E/R, diagrama de clases y diccionario de datos: [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md).
 
 ## Credenciales de acceso (solo desarrollo)
 
@@ -197,11 +376,11 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 | `PUT` | `/api/usuarios/:id` | Actualiza los datos y el rol; opcionalmente restablece la contraseña |
 | `PATCH` | `/api/usuarios/:id/estado` | Activa o desactiva una cuenta |
 
-La administración de usuarios requiere el permiso `administrar_usuarios`, que solo tiene el rol Administrador. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/config/password.js`; nunca se guardan en texto plano.
+La administración de usuarios requiere el permiso `administrar_usuarios`, que solo tiene el rol Administrador. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/business/security/passwords.js`; nunca se guardan en texto plano.
 
 ### Permisos por rol
 
-La matriz de permisos vive en `backend/config/permisos.js` y se aplica con `backend/middleware/permisos.js`.
+La matriz de permisos vive en `backend/business/rules/permissions.js` y se aplica con `backend/presentation/middleware/authorization.js`.
 
 | Permiso | Administrador | Encargado de inventario | Ventas |
 |---|:---:|:---:|:---:|
@@ -214,12 +393,12 @@ La matriz de permisos vive en `backend/config/permisos.js` y se aplica con `back
 | `procesar_ventas` | Sí | No | Sí |
 | `generar_reportes` | Sí | No | No |
 
-Para proteger una ruta nueva, primero se valida la sesión y luego el permiso:
+Para proteger una ruta nueva, primero se valida la sesión y luego el permiso. El siguiente ejemplo va en un archivo de `backend/presentation/routes/`:
 
 ```js
-const { autenticarUsuario } = require('../middleware/auth');
-const { autorizar } = require('../middleware/permisos');
-const { PERMISOS } = require('../config/permisos');
+const { autenticarUsuario } = require('../middleware/authentication');
+const { autorizar } = require('../middleware/authorization');
+const { PERMISOS } = require('../../business/rules/permissions');
 
 router.use(autenticarUsuario);
 router.get('/', autorizar(PERMISOS.CONSULTAR_CATALOGO), controlador.listar);
@@ -240,7 +419,7 @@ El hash resultante puede colocarse en `database/02_inserts.sql` o aplicarse a la
 
 ### Parámetros generales
 
-Los parámetros que antes vivían en una tabla se leen ahora desde `.env` en un solo módulo, `backend/config/parametros.js`:
+Los parámetros que antes vivían en una tabla se leen ahora desde `.env` en un solo módulo, `backend/config/parameters.js`:
 
 | Variable | Uso |
 |---|---|
@@ -252,6 +431,36 @@ Los parámetros que antes vivían en una tabla se leen ahora desde `.env` en un 
 | `FARMACIA_TELEFONO` | Teléfono de la farmacia para el comprobante |
 
 El módulo de alertas debe comparar con `fecha_vencimiento <= CURRENT_DATE + margen`, y el de ventas debe incluir `margenAlertaDias` y `farmacia` en la respuesta del comprobante. El inventario consume `stockSeguridad` como valor inicial al registrar un medicamento. `GET /api/parametros` expone estos valores a cualquier rol con `consultar_catalogo`. No requiere tablas ni pantallas nuevas.
+
+### Formularios: estilo y validación
+
+Todos los formularios del frontend comparten el estilo de campos definido en `frontend/src/assets/css/style.css`. Para que un campo se vea igual que el del login:
+
+- Usa `form-label` en la etiqueta y agrega `<span class="req">*</span>` si el campo es obligatorio.
+- Usa `form-input` (o `form-control` / `form-select` de Bootstrap) en el campo.
+- Usa `custom-input-group` cuando el campo lleve un icono dentro (por ejemplo, un buscador o la contraseña).
+- Marca el error con `has-error` / `is-invalid` y muestra el mensaje con `error-text`.
+
+Las reglas de validación están en `frontend/src/presentation/validators/fields.js` y se replican en el servidor en `backend/presentation/validators/fields.js`. Reutiliza los validadores y limpiadores antes de enviar el formulario:
+
+```js
+import { limpiarCorreo, validarCorreo, validarContrasena } from '../validators/fields'
+
+const errores = ref({})
+const validarFormulario = () => {
+  errores.value.correo = validarCorreo(form.correo)
+  errores.value.contrasena = validarContrasena(form.contrasena)
+  return !Object.values(errores.value).some(Boolean)
+}
+```
+
+Reglas aplicadas:
+
+- **Correo:** formato `nombre@dominio.com`, máximo 120 caracteres y sin espacios.
+- **Contraseña:** entre 8 y 72 caracteres (6 en el login), solo letras, números y símbolos seguros; sin espacios, acentos ni emojis. Al registrar una cuenta debe incluir al menos una letra y un número.
+- **Nombre y apellidos:** solo letras, espacios, apóstrofes, puntos y guiones.
+- **CI / NIT:** entre 5 y 20 caracteres, solo números, letras y guion.
+- **Fecha de nacimiento:** fecha real, no futura y posterior a 1900.
 
 ## Módulos del sistema
 
@@ -269,7 +478,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 **Qué abarca**
 - Inicio de sesión: solo con credenciales válidas y cuenta activa.
 - Administración de cuentas: crear, modificar y desactivar usuarios, y asignar roles.
-- Parámetros generales: margen de alerta de vencimiento (30 días por defecto) y datos de la farmacia para el comprobante, leídos desde `.env` mediante `backend/config/parametros.js`. Los usa el módulo de inventario y el de ventas.
+- Parámetros generales: margen de alerta de vencimiento (30 días por defecto) y datos de la farmacia para el comprobante, leídos desde `.env` mediante `backend/config/parameters.js`. Los usa el módulo de inventario y el de ventas.
 - Control de acceso por rol en toda la API, según la matriz de permisos.
 - Contraseñas cifradas (bcrypt).
 
@@ -286,7 +495,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 | Procesar ventas y registrar clientes | Sí | No | Sí |
 | Generar reportes y consultar el historial | Sí | No | No |
 
-**Tablas:** `rol`, `usuario`. **Pantallas:** `LoginView`, `UsuariosView`, `PerfilView`.
+**Tablas:** `rol`, `usuario`. **Pantallas:** `LoginView`, `UsersView`, `ProfileView`.
 **Pruebas:** CP-01 (acceso válido, inválido y cuenta desactivada) y CP-07 (rol sin permiso rechazado, contraseña cifrada).
 
 ### 2. Gestión de inventario (Bryan)
@@ -299,7 +508,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 - **Vencimientos (RF4):** alerta 30 días antes (margen configurable), advertencia en caja y bloqueo de la venta de lotes vencidos.
 - Conservar lote y proveedor en cada entrada y salida (RD1).
 
-**Tablas:** `categoria`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicamentosView`, `LotesView`, `ProveedoresView`, `AlertasView`.
+**Tablas:** `categoria`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicinesView`, `LotsView`, `SuppliersView`, `AlertsView`.
 **Pruebas:** CP-02, CP-12 (catálogo); CP-03, CP-10, CP-13 (lotes, stock y reorden); CP-04, CP-11 (vencimientos).
 
 ### 3. Ventas y atención al cliente (Rodrigo)
@@ -313,7 +522,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 - Al confirmar: descontar el stock del lote, advertir si está en margen de alerta, bloquear lotes vencidos y rechazar cantidades mayores al stock.
 - Registrar en el historial quién hizo la venta.
 
-**Tablas:** `cliente`, `venta`, `dispensa`, `comprobante_venta`. **Pantallas:** `VentasView`, `ClientesView`, `ComprobanteVenta.vue`.
+**Tablas:** `cliente`, `venta`, `dispensa`, `comprobante_venta`. **Pantallas:** `SalesView`, `CustomersView`, `SaleReceipt.vue`.
 **Pruebas:** CP-05 (cálculo, cambio y rechazos), CP-14 (receta), CP-08 (venta de 3 productos en 3 minutos).
 
 ### 4. Analítica y reportes (Víctor)
@@ -322,7 +531,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 - Reportes de ventas, inventario, lotes por vencer y lotes vencidos, filtrados por fecha y exportables a PDF o Excel. Solo el Administrador.
 - Historial de ventas, recepciones y bajas: quién realizó cada operación y cuándo. No se puede modificar ni eliminar.
 
-**Tablas:** `historial_operacion` (y lectura de `venta`, `dispensa` y `lote`). **Pantallas:** `ReportesView`, `HistorialView`.
+**Tablas:** `historial_operacion` (y lectura de `venta`, `dispensa` y `lote`). **Pantallas:** `ReportsView`, `HistoryView`.
 **Pruebas:** CP-06 (generar y exportar los 4 reportes, consultar el historial) y CP-07 (historial sin edición).
 
 ## Planificación por sprint

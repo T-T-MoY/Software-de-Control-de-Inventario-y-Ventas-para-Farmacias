@@ -3,11 +3,12 @@ require('./config/env');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./config/db');
-const authRoutes = require('./routes/auth.routes');
-const usuariosRoutes = require('./routes/usuarios.routes');
-const perfilRoutes = require('./routes/perfil.routes');
-const parametrosRoutes = require('./routes/parametros.routes');
+const db = require('./data/connection');
+const authRutas = require('./presentation/routes/auth.routes');
+const usuariosRutas = require('./presentation/routes/users.routes');
+const perfilRutas = require('./presentation/routes/profile.routes');
+const parametrosRutas = require('./presentation/routes/parameters.routes');
+const { noEncontrado, manejarErrores } = require('./presentation/middleware/errors');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Comprobación de infraestructura: API + conexión a PostgreSQL.
 app.get('/api/health', async (req, res) => {
     try {
         await db.query('SELECT 1');
@@ -27,19 +29,14 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-app.use('/api', authRoutes);
-app.use('/api/usuarios', usuariosRoutes);
-app.use('/api/perfil', perfilRoutes);
-app.use('/api/parametros', parametrosRoutes);
+// Capa de presentación: rutas HTTP.
+app.use('/api', authRutas);
+app.use('/api/usuarios', usuariosRutas);
+app.use('/api/perfil', perfilRutas);
+app.use('/api/parametros', parametrosRutas);
 
-app.use((req, res) => {
-    res.status(404).json({ error: 'Ruta no encontrada' });
-});
-
-app.use((error, req, res, next) => {
-    console.error('Unhandled API error:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-});
+app.use(noEncontrado);
+app.use(manejarErrores);
 
 const port = Number(process.env.PORT || 3000);
 app.listen(port, () => {

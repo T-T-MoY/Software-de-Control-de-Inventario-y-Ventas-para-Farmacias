@@ -4,12 +4,14 @@ Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar lo
 
 ## Reparto del equipo
 
-| Persona | Sección / módulo | En pocas palabras (qué y dónde) |
+El equipo trabaja con Scrum (sección 12 del informe). Los roles Scrum son: **Product Owner** Víctor Rojas, que prioriza y acepta los requisitos, y **Scrum Master** Moisés Pérez, que dirige la planificación, la Daily y la retrospectiva.
+
+| Integrante | Sección / módulo | En pocas palabras (qué y dónde) |
 |---|---|---|
-| Persona 1 (Moisés) | Seguridad y administración | (login, usuarios, roles y permisos) |
-| Persona 2 (Bryan) | Gestión de inventario | (medicamentos, lotes, proveedores y alertas) |
-| Persona 3 (Rodrigo) | Ventas y atención al cliente | (ventas, clientes, recetas y comprobante) |
-| Persona 4 (Víctor) | Analítica y reportes | (reportes, historial y exportaciones) |
+| Moisés Pérez (Scrum Master) | Seguridad y administración | (login, usuarios, roles y permisos) |
+| Bryan Coyo (Developer) | Gestión de inventario | (medicamentos, lotes, proveedores y alertas) |
+| Rodrigo Marca (Developer) | Ventas y atención al cliente | (ventas, clientes, recetas y comprobante) |
+| Víctor Zegarrundo (Developer) | Analítica y reportes | (reportes, historial y exportaciones) |
 
 Cada persona trabaja en su módulo. Las tablas, pantallas y pruebas de cada uno están detalladas en **Módulos del sistema**. Antes de tocar archivos compartidos (`server.js`, `router/index.js`, `database/` o `docker-compose.yml`), avisa al equipo.
 
@@ -137,7 +139,7 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 
 ## Arquitectura multicapa
 
-El proyecto está separado en tres capas y las dependencias siempre apuntan hacia abajo: **presentation → business → data**. Ninguna capa superior se salta a la inferior y ninguna capa inferior conoce a la superior.
+El proyecto está separado en tres capas y las dependencias siempre apuntan hacia abajo: **presentation → business → data**. Ninguna capa superior se salta a la inferior y ninguna capa inferior conoce a la superior. Esta organización responde al requisito de mantenimiento RNF5 (diseño organizado para facilitar futuras mejoras), que se comprueba con el caso de prueba CP-16.
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
@@ -299,7 +301,10 @@ Si `git push` es rechazado, es porque alguien subió antes que tú: ejecuta `git
 - Escribe los mensajes de commit con el requisito: `RF1: ...`, `RF3: ...`.
 - Cada integrante trabaja sobre los archivos de su módulo. Avisa antes de tocar archivos compartidos: `docker-compose.yml`, `database/01_init.sql`, `server.js` y `router/index.js`.
 - No subas `.env`, `credenciales.txt` ni `node_modules`.
-- Sube tus cambios antes de pasar la tarea a "En pruebas" en el tablero.
+- Sube tus cambios antes de pasar la tarea a "En pruebas" en el tablero. El tablero tiene cuatro columnas: Por hacer, En curso, En pruebas y Hecho.
+- Daily de máximo 15 minutos en días hábiles, presencial o por videollamada. Quien no pueda asistir publica su avance en el canal grupal ese mismo día.
+- Si una tarea lleva 2 días en "En curso" sin avance, avisa al Scrum Master para dividirla o reasignarla.
+- Los cambios de alcance (por ejemplo, un requisito nuevo o modificado) se tramitan con una solicitud de cambio (informe, sección 7.2) antes de incorporarse al plan. No se programan por cuenta propia.
 
 ## Modo de trabajo
 
@@ -472,9 +477,11 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 | Módulo | Responsable | Requisitos |
 |---|---|---|
 | Seguridad y administración | Moisés | RF1, RNF1 |
-| Gestión de inventario | Bryan | RF2, RF3, RF4, RD1, RD3, RD4 |
+| Gestión de inventario | Bryan | RF2, RF3, RF4, RD1, RD2, RD3, RD4 |
 | Ventas y atención al cliente | Rodrigo | RF5, RD5, RNF2 |
 | Analítica y reportes | Víctor | RF6, RNF1 (historial) |
+
+Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibilidad y RNF5 mantenimiento) son responsabilidad de todo el equipo y se verifican en la integración del Sprint 3.
 
 ### 1. Seguridad y administración (Moisés)
 
@@ -506,9 +513,9 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 **Qué abarca**
 - **Catálogo (RF2):** registrar y actualizar medicamentos con nombre comercial, DCI, concentración, forma farmacéutica, categoría, precio, tipo de venta (libre o con receta) y código de barras. Búsqueda por nombre, principio activo, categoría o código de barras, mostrando precio y stock vigente.
 - **Proveedores y recepción de lotes (RF3):** registrar proveedores y recepcionar entregas exigiendo proveedor, número de lote, fecha de vencimiento y costo. La recepción suma al stock y la venta lo descuenta, sin permitir stock negativo.
-- **Reorden (RD4):** calcular el punto de reorden `ROP = (D × L) + SS` y alertar cuando el stock sea menor o igual a ese valor.
+- **Reorden (RD4):** calcular el punto de reorden `ROP = (D × L) + SS` y alertar cuando el stock sea menor o igual a ese valor. La alerta es visual en pantalla; el aviso por correo quedó pendiente para una versión posterior.
 - **Baja de lotes vencidos (RF3):** solo el Administrador.
-- **Vencimientos (RF4):** alerta 30 días antes (margen configurable), advertencia en caja y bloqueo de la venta de lotes vencidos.
+- **Vencimientos (RF4 y RD2):** alerta 30 días antes (margen configurable), advertencia en caja y bloqueo de la venta de lotes vencidos.
 - Conservar lote y proveedor en cada entrada y salida (RD1).
 
 **Tablas:** `categoria`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicinesView`, `LotsView`, `SuppliersView`, `AlertsView`.
@@ -539,7 +546,13 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 
 ## Planificación por sprint
 
-Son 2 sprints. Los módulos que no tienen entregable en un sprint pasan al siguiente.
+El proyecto se organiza en **3 sprints** (informe, secciones 11.1 y 12.3). Los módulos que no tienen entregable formal en un sprint pasan al siguiente, y pueden adelantar trabajo usando los datos de `database/02_inserts.sql`.
+
+| Sprint | Fechas | Requisitos | Objetivo |
+|---|---|---|---|
+| Sprint 1 | 20/10 al 30/10 | RF1, RF2 | Preparar el acceso y el catálogo |
+| Sprint 2 | 02/11 al 06/11 | RF3, RF4 | Completar el inventario y el control de vencimientos |
+| Sprint 3 | 06/11 al 10/11 | RF5, RF6 | Completar ventas, reportes e integración del sistema |
 
 ### Sprint 1: 20/10 al 30/10 (RF1 y RF2)
 
@@ -547,22 +560,39 @@ Objetivo de la revisión: inicio de sesión, gestión de cuentas y búsqueda de 
 
 | Módulo | Responsable | Debe quedar implementado |
 |---|---|---|
-| Seguridad y administración | Moisés | Inicio de sesión, usuarios y roles (ya implementado en la plantilla). Middleware de permisos por rol. Parámetros del sistema (margen de alerta y stock de seguridad), que deben estar listos a más tardar al iniciar el Sprint 2 porque el inventario los usa. |
-| Gestión de inventario | Bryan | Solo el catálogo (RF2): categorías, formas farmacéuticas y medicamentos con alta, edición y búsqueda por nombre, principio activo, categoría y código de barras. Registro con DCI, concentración y forma (RD3). |
-| Ventas y atención al cliente | Rodrigo | Sin entregable en este sprint. Pasa al Sprint 2. |
-| Analítica y reportes | Víctor | Sin entregable en este sprint. Pasa al Sprint 2. |
+| Seguridad y administración | Moisés | Inicio de sesión, usuarios y roles, perfil, middleware de permisos por rol y parámetros generales desde `.env` (ya implementados en la plantilla). |
+| Gestión de inventario | Bryan | Solo el catálogo (RF2): categorías y medicamentos con alta, edición y búsqueda por nombre, principio activo, categoría y código de barras. Registro con DCI, concentración y forma farmacéutica (RD3). |
+| Ventas y atención al cliente | Rodrigo | Sin entregable en este sprint. Pasa al Sprint 3. |
+| Analítica y reportes | Víctor | Sin entregable en este sprint. Pasa al Sprint 3. |
 
-Pruebas: CP-01, CP-02 y CP-12. Revisión y retrospectiva: 29/10 y 30/10.
+Pruebas: CP-01, CP-02 y CP-12. Pruebas, revisión y retrospectiva: 29/10 y 30/10. Criterio de cierre: casos revisados y funcionalidades demostrables.
 
-### Sprint 2: 02/11 al 10/11 (RF3, RF4, RF5 y RF6)
+### Sprint 2: 02/11 al 06/11 (RF3 y RF4)
 
-Objetivo de la revisión: recepción de lotes, actualización de stock, alertas, bloqueo de vencidos, venta básica y revisión inicial de reportes.
+Objetivo de la revisión: recepción de lotes, movimientos de stock, alertas y bloqueo de vencidos.
 
 | Módulo | Responsable | Debe quedar implementado |
 |---|---|---|
-| Seguridad y administración | Moisés | Aplicar la matriz de permisos a las rutas de todos los módulos (CP-07). Apoyo en la integración y en la prueba con 5 usuarios. |
-| Gestión de inventario | Bryan | Proveedores, recepción de lotes y actualización de stock (RF3). Alerta de reorden (RD4). Baja de lotes vencidos. Alerta de 30 días y bloqueo de vencidos (RF4). |
-| Ventas y atención al cliente | Rodrigo | Flujo básico de venta (RF5): carrito, total, cambio, cliente, receta, comprobante y descuento de stock. Empieza con los lotes de prueba de `02_inserts.sql` mientras inventario termina la recepción. |
-| Analítica y reportes | Víctor | Reporte esencial (se sugiere el de ventas) e historial de operaciones. Después, completar los 4 reportes con exportación a PDF y Excel. |
+| Seguridad y administración | Moisés | Aplicar la matriz de permisos a las rutas de inventario (`autorizar(PERMISOS.X)`) y dar apoyo al resto del equipo. |
+| Gestión de inventario | Bryan | Proveedores, recepción de lotes y actualización de stock (RF3). Punto de reorden (RD4). Baja de lotes vencidos (solo Administrador). Alerta de 30 días y bloqueo de vencidos (RF4). |
+| Ventas y atención al cliente | Rodrigo | Sin entregable formal. Puede adelantar el repositorio, el servicio y la pantalla de ventas con los lotes de prueba de `02_inserts.sql`. |
+| Analítica y reportes | Víctor | Sin entregable formal. Puede adelantar la estructura de reportes e historial con los datos de ejemplo. |
 
-Pruebas: CP-03 a CP-11, CP-13 y CP-14. Integración y pruebas de todo el equipo el 09/11, incluida la prueba de rendimiento con 5 usuarios (CP-09, RNF3). Validación final y entrega el 10/11.
+Criterio de cierre: recepción y movimientos de stock verificados; alertas y bloqueo de vencidos probados. Los casos de inventario y vencimiento (CP-03, CP-04, CP-10, CP-11 y CP-13) se prueban antes de la revisión y se repiten en la integración del Sprint 3.
+
+### Sprint 3: 06/11 al 10/11 (RF5, RF6 e integración)
+
+Objetivo de la revisión: venta básica, reporte esencial e historial, integración de módulos y validación final con la farmacia.
+
+| Módulo | Responsable | Debe quedar implementado |
+|---|---|---|
+| Seguridad y administración | Moisés | Verificar que la matriz de permisos esté aplicada en todas las rutas (CP-07) y apoyar la integración. |
+| Gestión de inventario | Bryan | Correcciones de inventario y vencimientos; apoyo en la integración y en la prueba con 5 usuarios. |
+| Ventas y atención al cliente | Rodrigo | Flujo básico de venta (RF5): carrito, total, cambio, cliente, receta, comprobante y descuento de stock (06/11 al 09/11). |
+| Analítica y reportes | Víctor | Reporte esencial (se sugiere el de ventas) e historial de operaciones (06/11 al 09/11). Después, completar los 4 reportes con exportación a PDF y Excel. |
+
+Fechas clave:
+- **09/11:** integración y pruebas de todo el equipo: inventario, vencimiento, ventas, roles, usabilidad, trazabilidad, reorden y receta (CP-03 a CP-11 y CP-13 a CP-16). Incluye rendimiento con 5 usuarios (CP-09, RNF3), disponibilidad (CP-15, RNF4) y mantenimiento (CP-16, RNF5).
+- **10/11:** validación final con la farmacia, revisión, retrospectiva e informe de entrega.
+
+Criterio de cierre: casos de prueba ejecutados, defectos críticos corregidos o documentados, y entrega revisada. Si el sistema responde en más de 2.5 segundos con 5 usuarios, se optimizan las consultas y se vuelve a medir hasta cumplir RNF3.

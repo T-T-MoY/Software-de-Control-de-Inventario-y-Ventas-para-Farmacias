@@ -36,7 +36,9 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 │
 ├── docs/
 │   ├── ARQUITECTURA-MULTICAPA.md
-│   └── MODELO-DATOS.md
+│   ├── MODELO-DATOS.md
+│   ├── PRUEBAS-SPRINT-1.md          # evidencia de CP-01 y CP-07
+│   └── pruebas/POSTMAN/             # colección, entorno y capturas
 │
 ├── database/                       # esquema y datos iniciales
 │   ├── 01_init.sql                 # tablas (incluye el estado 'Eliminado')
@@ -232,6 +234,7 @@ Cada integrante crea sus archivos siguiendo el mismo patrón: **repositorio → 
 
 Detalle completo, flujos y ejemplos: [`docs/ARQUITECTURA-MULTICAPA.md`](docs/ARQUITECTURA-MULTICAPA.md).
 Modelo E/R, diagrama de clases y diccionario de datos: [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md).
+Pruebas de cierre del Sprint 1 (CP-01 y CP-07): [`docs/PRUEBAS-SPRINT-1.md`](docs/PRUEBAS-SPRINT-1.md).
 
 ## Credenciales de acceso (solo desarrollo)
 
@@ -556,7 +559,7 @@ El proyecto se organiza en **5 sprints**, del 20/10 al 10/11 (informe, secciones
 
 | Sprint | Fechas | Meta | Qué se entrega | Pruebas de cierre |
 |---|---|---|---|---|
-| 1 | 20/10 al 23/10 (4 días) | Acceso seguro y base de datos | RF1: inicio de sesión, cuentas y roles; diseño de la BD | CP-01 |
+| 1 | 20/10 al 23/10 (4 días) | Acceso seguro y base de datos | RF1: inicio de sesión, cuentas y roles; diseño de la BD | CP-01, CP-07 |
 | 2 | 26/10 al 30/10 (5 días) | Catálogo de medicamentos | RF2: registro, actualización y búsqueda | CP-02, CP-12 |
 | 3 | 02/11 al 04/11 (3 días) | Inventario completo | RF3: proveedores, lotes, stock y reorden; RF4: alertas a 30 días y bloqueo de vencidos | CP-03, CP-10, CP-13, CP-04, CP-11 |
 | 4 | 05/11 al 06/11 (2 días) | Ventas | RF5 completo: venta, recetas, comprobantes y descuento de stock | Pruebas de RF5: CP-05, CP-14 |
@@ -579,7 +582,7 @@ Cada responsable protege las rutas de su sprint con `autorizar(PERMISOS.X)`, seg
 **Sprint 1: 20/10 al 23/10.** Meta: acceso seguro y base de datos.
 - Responsable: Moisés Pérez.
 - Se entrega: inicio de sesión, cuentas y roles (RF1) y el diseño de la base de datos.
-- Cierre: acceso válido e inválido probado; cuentas y permisos demostrables (CP-01).
+- Cierre: acceso válido e inválido probado; cuentas y permisos demostrables (CP-01 y CP-07). Evidencia en [`docs/PRUEBAS-SPRINT-1.md`](docs/PRUEBAS-SPRINT-1.md).
 
 **Sprint 2: 26/10 al 30/10.** Meta: catálogo de medicamentos.
 - Responsable: Víctor Rojas.

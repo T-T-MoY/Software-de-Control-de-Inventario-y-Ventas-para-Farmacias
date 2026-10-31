@@ -6,6 +6,7 @@ import {
   cambiarEstadoMedicamento,
   crearMedicamento,
   eliminarFotoMedicamento,
+  eliminarMedicamentoLogico,
   listarCategorias,
   listarMedicamentos,
   subirFotoMedicamento
@@ -32,7 +33,8 @@ const error = ref('')
 const errorFormulario = ref('')
 const errorAccion = ref('')
 const notificacion = ref('')
-const stockSeguridadPorDefecto = ref(0)
+const stockSeguridadPorDefecto = ref(10)
+const diasReposicionPorDefecto = ref(5)
 const fotoOriginal = ref('')
 const fotoPendiente = ref(null)
 const fotoEliminada = ref(false)
@@ -59,6 +61,10 @@ const paginaActual = ref(1)
 const medicamentoEstado = ref(null)
 const errorEstado = ref('')
 const procesandoEstado = ref(null)
+const medicamentoBaja = ref(null)
+const errorBaja = ref('')
+const procesandoBaja = ref(false)
+const eliminandoId = ref(null)
 
 const formularioInicial = () => ({
   id_medicamento: null,
@@ -70,7 +76,7 @@ const formularioInicial = () => ({
   precio_unitario: '',
   tipo_venta: 'Libre',
   stock_seguridad: String(stockSeguridadPorDefecto.value),
-  dias_reposicion: '0',
+  dias_reposicion: String(diasReposicionPorDefecto.value),
   id_categoria: ''
 })
 const form = ref(formularioInicial())
@@ -317,14 +323,28 @@ const cargarDatos = async () => {
   loading.value = true
   error.value = ''
   try {
-    const [lista, listaCategorias, parametros] = await Promise.all([
+    const [lista, listaCategorias] = await Promise.all([
       listarMedicamentos(),
-      listarCategorias(),
-      obtenerParametros()
+      listarCategorias()
     ])
     medicamentos.value = lista
     categorias.value = listaCategorias
-    stockSeguridadPorDefecto.value = Number(parametros.stockSeguridad) || 0
+    try {
+      const parametros = await obtenerParametros()
+      const stockSeguridad = Number(parametros.stockSeguridad)
+      const diasReposicion = Number(parametros.diasReposicion)
+      stockSeguridadPorDefecto.value = Number.isInteger(stockSeguridad)
+        && stockSeguridad >= 0 ? stockSeguridad : 10
+      diasReposicionPorDefecto.value = Number.isInteger(diasReposicion)
+        && diasReposicion > 0 ? diasReposicion : 5
+    } catch (errorParametros) {
+      stockSeguridadPorDefecto.value = 10
+      diasReposicionPorDefecto.value = 5
+      console.error(
+        'No se pudieron cargar los parámetros; se usarán los valores predeterminados.',
+        errorParametros
+      )
+    }
   } catch (err) {
     error.value = mensajeErrorAccion(err)
   } finally {
@@ -360,6 +380,14 @@ const abrirEdicion = (medicamento) => {
   }
   errorFormulario.value = ''
   restablecerValidacion()
+  const errorReposicion = validarCampoMedicamento(
+    'dias_reposicion',
+    form.value.dias_reposicion
+  )
+  if (errorReposicion) {
+    errores.value.dias_reposicion = errorReposicion
+    touched.value.dias_reposicion = true
+  }
   modalAbierto.value = true
 }
 
@@ -471,6 +499,42 @@ const confirmarCambioEstado = async () => {
     errorEstado.value = mensajeErrorAccion(err)
   } finally {
     procesandoEstado.value = null
+  }
+}
+
+const abrirBaja = (medicamento) => {
+  if (!puedeGestionar.value || procesandoBaja.value) return
+  medicamentoBaja.value = medicamento
+  errorBaja.value = ''
+}
+
+const cerrarBaja = () => {
+  if (procesandoBaja.value) return
+  medicamentoBaja.value = null
+  errorBaja.value = ''
+}
+
+const confirmarBaja = async () => {
+  const medicamento = medicamentoBaja.value
+  if (!medicamento?.id_medicamento) {
+    errorBaja.value = 'No se pudo identificar el medicamento.'
+    return
+  }
+
+  procesandoBaja.value = true
+  eliminandoId.value = medicamento.id_medicamento
+  errorBaja.value = ''
+
+  try {
+    await eliminarMedicamentoLogico(medicamento.id_medicamento)
+    medicamentoBaja.value = null
+    await cargarDatos()
+    notificar(`"${medicamento.nombre_comercial}" se eliminó correctamente.`)
+  } catch (err) {
+    errorBaja.value = mensajeErrorAccion(err)
+  } finally {
+    procesandoBaja.value = false
+    eliminandoId.value = null
   }
 }
 
@@ -726,6 +790,15 @@ onMounted(cargarDatos)
                     >
                       {{ esActivo(medicamento) ? 'Desactivar' : 'Activar' }}
                     </button>
+                    <button
+                      type="button"
+                      class="btn-row is-danger"
+                      :disabled="eliminandoId === medicamento.id_medicamento"
+                      title="Eliminar medicamento sin borrar su historial"
+                      @click="abrirBaja(medicamento)"
+                    >
+                      {{ eliminandoId === medicamento.id_medicamento ? 'Cargando…' : 'Eliminar' }}
+                    </button>
                   </div>
                   <span v-else class="text-muted small">Solo lectura</span>
                 </td>
@@ -807,6 +880,15 @@ onMounted(cargarDatos)
                 @click="abrirCambioEstado(medicamento)"
               >
                 {{ esActivo(medicamento) ? 'Desactivar' : 'Activar' }}
+              </button>
+              <button
+                type="button"
+                class="btn-row is-danger"
+                :disabled="eliminandoId === medicamento.id_medicamento"
+                title="Eliminar medicamento sin borrar su historial"
+                @click="abrirBaja(medicamento)"
+              >
+                {{ eliminandoId === medicamento.id_medicamento ? 'Cargando…' : 'Eliminar' }}
               </button>
             </div>
           </article>
@@ -1263,6 +1345,65 @@ onMounted(cargarDatos)
             @click="confirmarCambioEstado"
           >
             {{ procesandoEstado ? 'Procesando...' : (esActivo(medicamentoEstado) ? 'Desactivar' : 'Activar') }}
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Confirmación de baja lógica del medicamento -->
+    <div
+      v-if="medicamentoBaja"
+      class="panel-modal-backdrop"
+      role="presentation"
+      @mousedown.self="cerrarBaja"
+    >
+      <section
+        class="panel-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-baja-medicamento"
+      >
+        <div class="panel-modal-head">
+          <div>
+            <h3 id="titulo-baja-medicamento">Eliminar medicamento</h3>
+            <p>{{ medicamentoBaja.nombre_comercial }}</p>
+          </div>
+          <button
+            type="button"
+            class="panel-modal-close"
+            aria-label="Cerrar"
+            :disabled="procesandoBaja"
+            @click="cerrarBaja"
+          >
+            ×
+          </button>
+        </div>
+
+        <p class="mt-4 mb-0 small">
+          ¿Quieres eliminar este medicamento? Se marcará como
+          <strong>eliminado</strong>; sus lotes, ventas e historial se conservarán.
+        </p>
+
+        <div v-if="errorBaja" class="notice notice-error mt-3" role="alert">
+          <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorBaja }}</span>
+        </div>
+
+        <div class="panel-modal-actions">
+          <button
+            type="button"
+            class="btn-panel btn-panel-ghost"
+            :disabled="procesandoBaja"
+            @click="cerrarBaja"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-panel btn-panel-danger"
+            :disabled="procesandoBaja"
+            @click="confirmarBaja"
+          >
+            {{ procesandoBaja ? 'Procesando...' : 'Eliminar' }}
           </button>
         </div>
       </section>

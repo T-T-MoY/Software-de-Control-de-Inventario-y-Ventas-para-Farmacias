@@ -18,6 +18,7 @@
 - Consulta del catálogo para los tres roles, rechazo sin sesión (401) y rechazo de escritura para Ventas (403).
 - Activación y desactivación lógica de un medicamento.
 - Búsqueda desde la interfaz iniciada con el rol Ventas: «Dolofin» redujo el catálogo a un resultado y mostró precio y stock.
+- Validación de días de reposición: L=0 rechazado, L=1 aceptado y, al omitir L en el alta, se aplica `DIAS_REPOSICION`.
 
 ## Resultados
 

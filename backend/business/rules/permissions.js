@@ -5,6 +5,7 @@ const PERMISOS = Object.freeze({
     ADMINISTRAR_USUARIOS: 'administrar_usuarios',
     ADMINISTRAR_PARAMETROS: 'administrar_parametros',
     GESTIONAR_CATALOGO: 'gestionar_catalogo',
+    // Las rutas de alertas deben usar autorizar(PERMISOS.CONSULTAR_CATALOGO).
     CONSULTAR_CATALOGO: 'consultar_catalogo',
     GESTIONAR_PROVEEDORES: 'gestionar_proveedores',
     DAR_BAJA_LOTES: 'dar_baja_lotes',

@@ -58,7 +58,7 @@ CREATE TABLE medicamento (
     stock_seguridad     INT            NOT NULL DEFAULT 0 CHECK (stock_seguridad >= 0),
     dias_reposicion     INT            NOT NULL DEFAULT 0 CHECK (dias_reposicion >= 0),
     estado_medicamento  VARCHAR(10)    NOT NULL DEFAULT 'Activo'
-                        CHECK (estado_medicamento IN ('Activo', 'Inactivo')),
+                        CHECK (estado_medicamento IN ('Activo', 'Inactivo', 'Eliminado')),
     foto_url            TEXT,
     id_categoria        INT            NOT NULL REFERENCES categoria (id_categoria)
 );

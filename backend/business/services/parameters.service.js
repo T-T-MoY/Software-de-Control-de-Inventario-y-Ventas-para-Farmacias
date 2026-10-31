@@ -7,6 +7,8 @@ const parametros = require('../../config/parameters');
 const obtener = () => ({
     margenAlertaDias: parametros.margenAlertaDias,
     stockSeguridad: parametros.stockSeguridad,
+    diasReposicion: parametros.diasReposicion,
+    ventanaDemandaDias: parametros.ventanaDemandaDias,
     farmacia: parametros.farmacia,
 });
 

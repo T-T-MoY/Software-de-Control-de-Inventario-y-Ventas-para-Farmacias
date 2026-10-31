@@ -37,6 +37,11 @@ router.patch(
     autorizar(PERMISOS.GESTIONAR_CATALOGO),
     medicamentosControlador.cambiarEstado
 );
+router.delete(
+    '/:id',
+    autorizar(PERMISOS.GESTIONAR_CATALOGO),
+    medicamentosControlador.eliminarMedicamento
+);
 router.post(
     '/:id/foto',
     autorizar(PERMISOS.GESTIONAR_CATALOGO),

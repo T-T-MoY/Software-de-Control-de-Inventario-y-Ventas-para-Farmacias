@@ -293,7 +293,7 @@ classDiagram
 | `Usuario.nombreCompleto()` | `data/mappers/user.mapper.js` |
 | `Rol.obtenerPermisos()` | `business/rules/permissions.js` |
 | `Medicamento.requiereReceta()` | `tipo_venta === 'Con receta'` (regla de ventas, futura) |
-| `Medicamento.puntoReorden()` | `ROP = (D × L) + SS` (regla de inventario, futura) |
+| `Medicamento.puntoReorden()` | `ROP = ceil(D × L) + SS`; D = unidades dispensadas en los últimos N días / N (incluye días sin ventas), N = `VENTANA_DEMANDA_DIAS` (30 por defecto), L >= 1 y SS por medicamento. Regla/endpoint pendientes del Sprint 3 |
 | `Lote.estaVencido()` / `porVencer()` | Regla de inventario/ventas, futura |
 | `Venta.calcularTotal()` | Regla de ventas, futura |
 | `Dispensa.subtotal()` | `cantidad × precio_venta` |
@@ -347,7 +347,7 @@ classDiagram
 | `tipo_venta` | `VARCHAR(15)` | NOT NULL, `Libre` / `Con receta` |
 | `stock_seguridad` | `INT` | NOT NULL, ≥ 0 |
 | `dias_reposicion` | `INT` | NOT NULL, ≥ 0 |
-| `estado_medicamento` | `VARCHAR(10)` | NOT NULL, `Activo` / `Inactivo` |
+| `estado_medicamento` | `VARCHAR(10)` | NOT NULL, `Activo` / `Inactivo` / `Eliminado` (baja lógica; conserva lotes e historial) |
 | `foto_url` | `TEXT` | Opcional; ruta relativa del archivo en `backend/uploads/medicamentos` |
 | `id_categoria` | `INT` | NOT NULL, FK → `categoria` |
 
@@ -442,7 +442,7 @@ Restricción adicional: `UNIQUE (id_venta, id_lote)`.
 |---|---|---|
 | RD1 | Conservar lote y proveedor en cada entrada y salida | `dispensa` → `lote` → `proveedor` (datos) |
 | RD3 | Medicamento con DCI, concentración y forma farmacéutica | Restricciones `NOT NULL` (datos) + validación (presentación) |
-| RD4 | Punto de reorden `ROP = (D × L) + SS` | `business/rules/` (inventario, futuro) |
+| RD4 | Punto de reorden `ROP = ceil(D × L) + SS`; D usa las unidades dispensadas durante `VENTANA_DEMANDA_DIAS` | `business/rules/` y endpoint de alertas (Sprint 3) |
 | RD5 | Receta obligatoria para `tipo_venta = 'Con receta'` | `business/services/sales.service.js` (futuro) |
 | — | Stock nunca negativo | `CHECK (cantidad_stock >= 0)` + transacción en el servicio |
 | — | No vender lotes vencidos | Regla de negocio + `fecha_vencimiento` (datos) |
@@ -458,7 +458,7 @@ Restricción adicional: `UNIQUE (id_venta, id_lote)`.
 - **Normalización:** el esquema está en tercera forma normal (3FN). Cada tabla tiene una clave primaria simple, los atributos dependen de ella y las relaciones N:M se resuelven con tablas intermedias (`dispensa`).
 - **Integridad:** claves foráneas en todas las relaciones, `UNIQUE` en correo, CI/NIT, código de barras, RUC/NIT, número de lote por medicamento y número de serie del comprobante.
 - **Dominio:** `CHECK` para estados, tipos, precios, stock y descuentos.
-- **Borrado lógico:** las entidades con estado pasan a `Inactivo`; en `usuario`, la baja definitiva se marca como `Eliminado` y la cuenta deja de listarse. Los movimientos (`venta`, `dispensa`, `comprobante_venta`, `historial_operacion`) no se modifican ni se eliminan.
+- **Borrado lógico:** las entidades con estado pasan a `Inactivo`; las bajas definitivas de `usuario` y `medicamento` se marcan como `Eliminado` y dejan de listarse. Los movimientos (`venta`, `dispensa`, `comprobante_venta`, `historial_operacion`) no se modifican ni se eliminan.
 - **Transacciones:** las operaciones que afectan varias tablas (venta + dispensa + stock, recepción + stock + historial) deben ejecutarse con `data/connection.js → conTransaccion()`.
 - **Índices:** las claves primarias y `UNIQUE` ya crean índices. Para reportes conviene evaluar índices sobre `lote.fecha_vencimiento`, `venta.fecha_hora_venta` y `usuario.correo`; **no se aplicaron cambios** porque el esquema no se modifica en esta entrega.
 

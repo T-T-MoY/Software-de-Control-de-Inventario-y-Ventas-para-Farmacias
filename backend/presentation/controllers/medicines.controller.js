@@ -8,6 +8,7 @@ const {
     validarDatosMedicamento,
     validarCambioEstado,
 } = require('../validators/medicine.validator');
+const { diasReposicion } = require('../../config/parameters');
 
 const esIdValido = (id) => /^\d+$/.test(String(id)) && Number(id) > 0;
 
@@ -43,7 +44,11 @@ const obtenerCategorias = async (req, res, next) => {
 };
 
 const crearMedicamento = async (req, res, next) => {
-    const errorValidacion = validarDatosMedicamento(req.body);
+    const datosValidados = {
+        ...req.body,
+        dias_reposicion: req.body.dias_reposicion ?? diasReposicion,
+    };
+    const errorValidacion = validarDatosMedicamento(datosValidados);
     if (errorValidacion) {
         return res.status(400).json({ error: errorValidacion });
     }
@@ -92,6 +97,19 @@ const cambiarEstado = async (req, res, next) => {
     }
 };
 
+const eliminarMedicamento = async (req, res, next) => {
+    if (!esIdValido(req.params.id)) {
+        return res.status(400).json({ error: 'Identificador de medicamento inválido.' });
+    }
+
+    try {
+        await medicamentosServicio.eliminarLogicamente(req.params.id);
+        return res.json({ message: 'Medicamento eliminado correctamente.' });
+    } catch (error) {
+        return next(error);
+    }
+};
+
 const subirFoto = async (req, res, next) => {
     if (!esIdValido(req.params.id)) {
         return res.status(400).json({ error: 'Identificador de medicamento inválido.' });
@@ -127,6 +145,7 @@ module.exports = {
     crearMedicamento,
     actualizarMedicamento,
     cambiarEstado,
+    eliminarMedicamento,
     subirFoto,
     quitarFoto,
 };

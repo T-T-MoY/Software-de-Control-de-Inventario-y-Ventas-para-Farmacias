@@ -5,7 +5,7 @@
 const medicamentosRepositorio = require('../../data/repositories/medicines.repository');
 const categoriasRepositorio = require('../../data/repositories/categories.repository');
 const { normalizarDatosMedicamento } = require('../rules/medicines.rules');
-const { stockSeguridad } = require('../../config/parameters');
+const { diasReposicion, stockSeguridad } = require('../../config/parameters');
 const {
     errorConflicto,
     errorValidacion,
@@ -44,7 +44,7 @@ const crear = async (datos) => {
         medicamento.stock_seguridad = stockSeguridad;
     }
     if (medicamento.dias_reposicion === undefined) {
-        medicamento.dias_reposicion = 0;
+        medicamento.dias_reposicion = diasReposicion;
     }
 
     try {
@@ -56,6 +56,10 @@ const crear = async (datos) => {
 
 const actualizar = async (idMedicamento, datos) => {
     const medicamento = normalizarDatosMedicamento(datos);
+    if (!Number.isSafeInteger(medicamento.dias_reposicion)
+        || medicamento.dias_reposicion < 1) {
+        throw errorValidacion('Los días de reposición deben ser un número entero mayor o igual a 1.');
+    }
 
     try {
         const actualizados = await medicamentosRepositorio.actualizar(
@@ -82,10 +86,19 @@ const cambiarEstado = async (idMedicamento, activo) => {
     return actualizados;
 };
 
+const eliminarLogicamente = async (idMedicamento) => {
+    const actualizados = await medicamentosRepositorio.eliminarLogicamente(idMedicamento);
+    if (!actualizados) {
+        throw errorNoEncontrado('Medicamento no encontrado o ya eliminado.');
+    }
+    return actualizados;
+};
+
 module.exports = {
     listar,
     listarCategorias,
     crear,
     actualizar,
     cambiarEstado,
+    eliminarLogicamente,
 };

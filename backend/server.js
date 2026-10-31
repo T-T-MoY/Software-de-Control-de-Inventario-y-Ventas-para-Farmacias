@@ -36,6 +36,8 @@ app.use('/api/usuarios', usuariosRutas);
 app.use('/api/perfil', perfilRutas);
 app.use('/api/parametros', parametrosRutas);
 app.use('/api/medicamentos', medicamentosRutas);
+// Sprint 3 montará aquí /api/alertas, /api/proveedores y /api/lotes;
+// cada ruta debe usar autenticación y autorizar(PERMISOS.X).
 
 app.use(noEncontrado);
 app.use(manejarErrores);

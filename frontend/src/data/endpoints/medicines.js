@@ -37,6 +37,11 @@ export const cambiarEstadoMedicamento = (idMedicamento, activo) => apiRequest(
   }
 )
 
+export const eliminarMedicamentoLogico = (idMedicamento) => apiRequest(
+  `/api/medicamentos/${idMedicamento}`,
+  { method: 'DELETE' }
+)
+
 export const subirFotoMedicamento = (idMedicamento, archivo) => {
   const datos = new FormData()
   datos.append('foto', archivo)

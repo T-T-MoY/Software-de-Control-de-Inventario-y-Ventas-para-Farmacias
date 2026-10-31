@@ -150,8 +150,10 @@ export function validarCampoMedicamento(campo, valor) {
 
     case 'dias_reposicion':
       if (!texto) return 'Los días de reposición son obligatorios.'
-      if (!/^\d+$/.test(texto)) {
-        return 'Los días de reposición deben ser un número entero mayor o igual a 0.'
+      if (!/^\d+$/.test(texto)
+        || !Number.isSafeInteger(Number(texto))
+        || Number(texto) < 1) {
+        return 'Los días de reposición deben ser un número entero mayor o igual a 1.'
       }
       return ''
 

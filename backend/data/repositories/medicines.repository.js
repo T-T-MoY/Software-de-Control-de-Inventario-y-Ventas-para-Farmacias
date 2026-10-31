@@ -57,7 +57,8 @@ const listar = async ({ buscar, idCategoria, estado } = {}) => {
         filtros.push(`m.estado_medicamento = $${valores.length}`);
     }
 
-    const where = filtros.length ? `WHERE ${filtros.join(' AND ')}` : '';
+    filtros.push(`m.estado_medicamento <> 'Eliminado'`);
+    const where = `WHERE ${filtros.join(' AND ')}`;
 
     const { rows } = await db.query(
         `SELECT ${CAMPOS_MEDICAMENTO}
@@ -75,7 +76,8 @@ const buscarPorId = async (idMedicamento) => {
         `SELECT ${CAMPOS_MEDICAMENTO}
          FROM medicamento AS m
          JOIN categoria AS c ON c.id_categoria = m.id_categoria
-         WHERE m.id_medicamento = $1`,
+         WHERE m.id_medicamento = $1
+           AND m.estado_medicamento <> 'Eliminado'`,
         [idMedicamento]
     );
     return rows[0] || null;
@@ -146,7 +148,8 @@ const actualizar = async (idMedicamento, {
              stock_seguridad = COALESCE($8, stock_seguridad),
              dias_reposicion = COALESCE($9, dias_reposicion),
              id_categoria = $10
-         WHERE id_medicamento = $11`,
+         WHERE id_medicamento = $11
+           AND estado_medicamento <> 'Eliminado'`,
         [
             codigo_barras,
             nombre_comercial,
@@ -164,13 +167,26 @@ const actualizar = async (idMedicamento, {
     return rowCount;
 };
 
-/** Borrado lógico del catálogo: Activo <-> Inactivo. */
+/** Activa o desactiva medicamentos que no hayan sido eliminados. */
 const cambiarEstado = async (idMedicamento, activo) => {
     const { rowCount } = await db.query(
         `UPDATE medicamento
          SET estado_medicamento = $1
-         WHERE id_medicamento = $2`,
+         WHERE id_medicamento = $2
+           AND estado_medicamento <> 'Eliminado'`,
         [activo ? 'Activo' : 'Inactivo', idMedicamento]
+    );
+    return rowCount;
+};
+
+/** Baja lógica: conserva el medicamento y todos los registros relacionados. */
+const eliminarLogicamente = async (idMedicamento) => {
+    const { rowCount } = await db.query(
+        `UPDATE medicamento
+         SET estado_medicamento = 'Eliminado'
+         WHERE id_medicamento = $1
+           AND estado_medicamento <> 'Eliminado'`,
+        [idMedicamento]
     );
     return rowCount;
 };
@@ -189,7 +205,8 @@ const actualizarFoto = async (idMedicamento, fotoUrl) => {
     const { rowCount } = await db.query(
         `UPDATE medicamento
          SET foto_url = $1
-         WHERE id_medicamento = $2`,
+         WHERE id_medicamento = $2
+           AND estado_medicamento <> 'Eliminado'`,
         [fotoUrl, idMedicamento]
     );
     return rowCount;
@@ -201,6 +218,7 @@ module.exports = {
     crear,
     actualizar,
     cambiarEstado,
+    eliminarLogicamente,
     obtenerFoto,
     actualizarFoto,
 };

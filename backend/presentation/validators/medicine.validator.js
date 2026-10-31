@@ -80,11 +80,15 @@ const validarDatosMedicamento = (body) => {
         return 'El stock de seguridad debe ser un número entero mayor o igual a 0.';
     }
 
-    if (body.dias_reposicion !== undefined
-        && body.dias_reposicion !== null
-        && body.dias_reposicion !== ''
-        && !esEnteroNoNegativo(body.dias_reposicion)) {
-        return 'Los días de reposición deben ser un número entero mayor o igual a 0.';
+    if (body.dias_reposicion === undefined
+        || body.dias_reposicion === null
+        || body.dias_reposicion === '') {
+        return 'Los días de reposición son obligatorios.';
+    }
+    if (!esEnteroNoNegativo(body.dias_reposicion)
+        || !Number.isSafeInteger(Number(body.dias_reposicion))
+        || Number(body.dias_reposicion) < 1) {
+        return 'Los días de reposición deben ser un número entero mayor o igual a 1.';
     }
 
     if (!Number.isInteger(Number(body.id_categoria)) || Number(body.id_categoria) < 1) {

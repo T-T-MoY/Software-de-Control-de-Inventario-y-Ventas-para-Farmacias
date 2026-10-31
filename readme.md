@@ -390,6 +390,7 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 | `PUT` | `/api/usuarios/:id` | Actualiza los datos y el rol; opcionalmente restablece la contraseña |
 | `PATCH` | `/api/usuarios/:id/estado` | Activa o desactiva una cuenta |
 | `DELETE` | `/api/usuarios/:id` | Borrado lógico: marca la cuenta como `Eliminado` y deja de listarse |
+| `DELETE` | `/api/medicamentos/:id` | Borrado lógico: marca el medicamento como `Eliminado` y deja de listarse |
 
 La administración de usuarios requiere el permiso `administrar_usuarios`, que solo tiene el rol Administrador. El cambio de contraseña del perfil está disponible para cualquier rol con sesión activa y exige la contraseña actual. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/business/security/passwords.js`; nunca se guardan en texto plano.
 
@@ -442,12 +443,14 @@ Los parámetros que antes vivían en una tabla se leen ahora desde `.env` en un 
 |---|---|
 | `MARGEN_ALERTA_DIAS` | Días de anticipación para la alerta de vencimiento (30 por defecto) |
 | `STOCK_SEGURIDAD` | Stock de seguridad por defecto para nuevos medicamentos (cada medicamento puede sobrescribirlo) |
+| `DIAS_REPOSICION` | Días de reposición por defecto para nuevos medicamentos (5 por defecto) |
+| `VENTANA_DEMANDA_DIAS` | Ventana de días usada para calcular la demanda diaria promedio (30 por defecto) |
 | `FARMACIA_NOMBRE` | Nombre que se imprime en el comprobante |
 | `FARMACIA_NIT` | NIT de la farmacia para el comprobante |
 | `FARMACIA_DIRECCION` | Dirección de la farmacia para el comprobante |
 | `FARMACIA_TELEFONO` | Teléfono de la farmacia para el comprobante |
 
-El módulo de alertas debe comparar con `fecha_vencimiento <= CURRENT_DATE + margen`, y el de ventas debe incluir `margenAlertaDias` y `farmacia` en la respuesta del comprobante. El inventario consume `stockSeguridad` como valor inicial al registrar un medicamento. `GET /api/parametros` expone estos valores a cualquier rol con `consultar_catalogo`. No requiere tablas ni pantallas nuevas.
+El módulo de alertas debe comparar con `fecha_vencimiento <= CURRENT_DATE + margen`, y el de ventas debe incluir `margenAlertaDias` y `farmacia` en la respuesta del comprobante. El inventario consume `stockSeguridad` y `diasReposicion` como valores iniciales al registrar un medicamento. `GET /api/parametros` expone estos valores a cualquier rol con `consultar_catalogo`.
 
 ### Formularios: estilo y validación
 
@@ -521,16 +524,20 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 ### 2. Gestión de inventario (Sprints 2 y 3)
 
 **Qué abarca**
-- **Catálogo (RF2):** registrar y actualizar medicamentos con nombre comercial, DCI, concentración, forma farmacéutica, categoría, precio, tipo de venta (libre o con receta) y código de barras. Búsqueda por nombre, principio activo, categoría o código de barras, mostrando precio y stock vigente.
+- **Catálogo (RF2):** registrar y actualizar medicamentos con nombre comercial, DCI, concentración, forma farmacéutica, categoría, precio, tipo de venta (libre o con receta) y código de barras. Los días de reposición (L) son obligatorios y deben ser >= 1; el stock de seguridad (SS) toma su valor inicial de `STOCK_SEGURIDAD` en `.env`. Permite baja lógica como `Eliminado`, conservando lotes e historial. Búsqueda por nombre, principio activo, categoría o código de barras, mostrando precio y stock vigente.
 - **Foto del catálogo:** opcionalmente se puede subir una imagen JPEG, PNG o WebP de hasta 5 MB; el archivo se guarda localmente y la base almacena su ruta.
 - **Proveedores y recepción de lotes (RF3):** registrar proveedores y recepcionar entregas exigiendo proveedor, número de lote, fecha de vencimiento y costo. La recepción suma al stock y la venta lo descuenta, sin permitir stock negativo.
-- **Reorden (RD4):** calcular el punto de reorden `ROP = (D × L) + SS` y alertar cuando el stock sea menor o igual a ese valor. La alerta es visual en pantalla; el aviso por correo quedó pendiente para una versión posterior.
+- **Reorden (RD4):** consultar la subsección «Punto de reorden (RD4)» más abajo.
 - **Baja de lotes vencidos (RF3):** solo el Administrador.
 - **Vencimientos (RF4 y RD2):** alerta 30 días antes (margen configurable), advertencia en caja y bloqueo de la venta de lotes vencidos.
 - Conservar lote y proveedor en cada entrada y salida (RD1).
 
 **Tablas:** `categoria`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicinesView`, `LotsView`, `SuppliersView`, `AlertsView`.
 **Pruebas:** CP-02, CP-12 (catálogo); CP-03, CP-10, CP-13 (lotes, stock y reorden); CP-04, CP-11 (vencimientos).
+
+#### Punto de reorden (RD4)
+
+`ROP = ceil(D × L) + SS`, donde D es el promedio de unidades dispensadas por día durante los últimos N días (incluye días sin ventas), N es `VENTANA_DEMANDA_DIAS` (30 por defecto), L son los días de reposición del medicamento (obligatorio, >= 1) y SS es su stock de seguridad. Se alerta cuando `stock_actual <= ROP`; el stock actual suma los lotes sin baja y no vencidos. La implementación del endpoint de alertas queda pendiente del Sprint 3.
 
 ### 3. Ventas y atención al cliente (Sprint 4)
 

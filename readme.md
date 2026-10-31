@@ -481,7 +481,7 @@ El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, R
 | Ventas y atención al cliente | Rodrigo | RF5, RD5, RNF2 |
 | Analítica y reportes | Víctor | RF6, RNF1 (historial) |
 
-Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibilidad y RNF5 mantenimiento) son responsabilidad de todo el equipo y se verifican en la integración del Sprint 3.
+Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibilidad y RNF5 mantenimiento) son responsabilidad de todo el equipo y se verifican en la integración del Sprint 5.
 
 ### 1. Seguridad y administración (Moisés)
 
@@ -546,53 +546,47 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 
 ## Planificación por sprint
 
-El proyecto se organiza en **3 sprints** (informe, secciones 11.1 y 12.3). Los módulos que no tienen entregable formal en un sprint pasan al siguiente, y pueden adelantar trabajo usando los datos de `database/02_inserts.sql`.
+El proyecto se organiza en **5 sprints**, del 20/10 al 10/11 (informe, secciones 11.1 y 12.3). Cada sprint cierra con pruebas, revisión y retrospectiva. Los módulos que no tienen entregable en un sprint pueden adelantar trabajo con los datos de `database/02_inserts.sql`.
 
-| Sprint | Fechas | Requisitos | Objetivo |
-|---|---|---|---|
-| Sprint 1 | 20/10 al 30/10 | RF1, RF2 | Preparar el acceso y el catálogo |
-| Sprint 2 | 02/11 al 06/11 | RF3, RF4 | Completar el inventario y el control de vencimientos |
-| Sprint 3 | 06/11 al 10/11 | RF5, RF6 | Completar ventas, reportes e integración del sistema |
+| Sprint | Fechas | Meta | Qué se entrega | Pruebas de cierre |
+|---|---|---|---|---|
+| 1 | 20/10 al 23/10 (4 días) | Acceso seguro y base de datos | RF1: inicio de sesión, cuentas y roles; diseño de la BD | CP-01 |
+| 2 | 26/10 al 30/10 (5 días) | Catálogo de medicamentos | RF2: registro, actualización y búsqueda | CP-02, CP-12 |
+| 3 | 02/11 al 04/11 (3 días) | Inventario completo | RF3: proveedores, lotes, stock y reorden; RF4: alertas a 30 días y bloqueo de vencidos | CP-03, CP-10, CP-13, CP-04, CP-11 |
+| 4 | 05/11 al 06/11 (2 días) | Ventas | RF5 completo: venta, recetas, comprobantes y descuento de stock | Pruebas de RF5: CP-05, CP-14 |
+| 5 | 09/11 al 10/11 (2 días) | Reportes y cierre | RF6: reportes e historial; integración; pruebas no funcionales (rendimiento, disponibilidad); validación final con la farmacia | Pruebas de RF6 y RNF3 a RNF5: CP-06, CP-07, CP-09, CP-15, CP-16 (y CP-08, usabilidad) |
 
-### Sprint 1: 20/10 al 30/10 (RF1 y RF2)
+### Quién hace qué en cada sprint
 
-Objetivo de la revisión: inicio de sesión, gestión de cuentas y búsqueda de medicamentos por nombre o código.
+Reparto por módulo. Un trabajo "adelantado" no cuenta como entrega del sprint, pero evita que el trabajo se acumule en los sprints cortos.
 
-| Módulo | Responsable | Debe quedar implementado |
-|---|---|---|
-| Seguridad y administración | Moisés | Inicio de sesión, usuarios y roles, perfil, middleware de permisos por rol y parámetros generales desde `.env` (ya implementados en la plantilla). |
-| Gestión de inventario | Bryan | Solo el catálogo (RF2): categorías y medicamentos con alta, edición y búsqueda por nombre, principio activo, categoría y código de barras. Registro con DCI, concentración y forma farmacéutica (RD3). |
-| Ventas y atención al cliente | Rodrigo | Sin entregable en este sprint. Pasa al Sprint 3. |
-| Analítica y reportes | Víctor | Sin entregable en este sprint. Pasa al Sprint 3. |
+| Sprint | Moisés (Seguridad) | Bryan (Inventario) | Rodrigo (Ventas) | Víctor (Reportes) |
+|---|---|---|---|---|
+| 1 | RF1: login, cuentas, roles y permisos (ya implementado en la plantilla) | Diseño de la BD (`01_init.sql`, `02_inserts.sql`) | Sin entregable | Sin entregable |
+| 2 | Aplicar `gestionar_catalogo` y `consultar_catalogo` a las rutas del catálogo | RF2: medicamentos y categorías; registro, actualización y búsqueda por nombre, principio activo, categoría y código de barras | Adelanta: estructura de ventas y clientes | Adelanta: estructura de reportes e historial |
+| 3 | Aplicar `gestionar_proveedores` y `dar_baja_lotes` a las rutas de inventario | RF3: proveedores, recepción de lotes, stock y punto de reorden; RF4: alertas a 30 días y bloqueo de vencidos | Adelanta: carrito, cálculo de total y cambio | Adelanta: reportes de ventas e inventario |
+| 4 | Aplicar `procesar_ventas` y apoyar al equipo | Apoyo: advertencia y bloqueo de lotes en caja, correcciones de inventario | **RF5 completo:** venta, receta, comprobante y descuento de stock | Adelanta: historial, reportes de vencimientos y exportación |
+| 5 | CP-07: verificar los permisos en todas las rutas; apoyo en la integración | Apoyo en la integración; rendimiento (CP-09) | Correcciones de ventas; usabilidad (CP-08) | **RF6:** reportes con exportación a PDF y Excel, e historial |
 
-Pruebas: CP-01, CP-02 y CP-12. Pruebas, revisión y retrospectiva: 29/10 y 30/10. Criterio de cierre: casos revisados y funcionalidades demostrables.
+### Detalle por sprint
 
-### Sprint 2: 02/11 al 06/11 (RF3 y RF4)
+**Sprint 1: 20/10 al 23/10.** Meta: acceso seguro y base de datos.
+- Se entrega: inicio de sesión, cuentas y roles (RF1) y el diseño de la base de datos.
+- Cierre: acceso válido e inválido probado; cuentas y permisos demostrables (CP-01).
 
-Objetivo de la revisión: recepción de lotes, movimientos de stock, alertas y bloqueo de vencidos.
+**Sprint 2: 26/10 al 30/10.** Meta: catálogo de medicamentos.
+- Se entrega: registro, actualización y búsqueda de medicamentos (RF2), con DCI, concentración y forma farmacéutica (RD3).
+- Cierre: registro y búsquedas verificadas (CP-02, CP-12). Pruebas, revisión y retrospectiva el 30/10.
 
-| Módulo | Responsable | Debe quedar implementado |
-|---|---|---|
-| Seguridad y administración | Moisés | Aplicar la matriz de permisos a las rutas de inventario (`autorizar(PERMISOS.X)`) y dar apoyo al resto del equipo. |
-| Gestión de inventario | Bryan | Proveedores, recepción de lotes y actualización de stock (RF3). Punto de reorden (RD4). Baja de lotes vencidos (solo Administrador). Alerta de 30 días y bloqueo de vencidos (RF4). |
-| Ventas y atención al cliente | Rodrigo | Sin entregable formal. Puede adelantar el repositorio, el servicio y la pantalla de ventas con los lotes de prueba de `02_inserts.sql`. |
-| Analítica y reportes | Víctor | Sin entregable formal. Puede adelantar la estructura de reportes e historial con los datos de ejemplo. |
+**Sprint 3: 02/11 al 04/11.** Meta: inventario completo.
+- Se entrega: proveedores, recepción de lotes, actualización de stock y punto de reorden (RF3), más alertas 30 días antes y bloqueo de lotes vencidos (RF4). Es el sprint más cargado para Inventario (3 días).
+- Cierre: recepción y movimientos de stock verificados; trazabilidad y reorden probados (CP-03, CP-10, CP-13); alertas y bloqueo probados (CP-04, CP-11).
 
-Criterio de cierre: recepción y movimientos de stock verificados; alertas y bloqueo de vencidos probados. Los casos de inventario y vencimiento (CP-03, CP-04, CP-10, CP-11 y CP-13) se prueban antes de la revisión y se repiten en la integración del Sprint 3.
+**Sprint 4: 05/11 al 06/11.** Meta: ventas.
+- Se entrega: venta completa con carrito, receta, comprobante y descuento de stock (RF5).
+- Cierre: pruebas de RF5 (CP-05 y CP-14). Para llegar en 2 días, la pantalla y el servicio de ventas deben estar adelantados desde el Sprint 3.
 
-### Sprint 3: 06/11 al 10/11 (RF5, RF6 e integración)
-
-Objetivo de la revisión: venta básica, reporte esencial e historial, integración de módulos y validación final con la farmacia.
-
-| Módulo | Responsable | Debe quedar implementado |
-|---|---|---|
-| Seguridad y administración | Moisés | Verificar que la matriz de permisos esté aplicada en todas las rutas (CP-07) y apoyar la integración. |
-| Gestión de inventario | Bryan | Correcciones de inventario y vencimientos; apoyo en la integración y en la prueba con 5 usuarios. |
-| Ventas y atención al cliente | Rodrigo | Flujo básico de venta (RF5): carrito, total, cambio, cliente, receta, comprobante y descuento de stock (06/11 al 09/11). |
-| Analítica y reportes | Víctor | Reporte esencial (se sugiere el de ventas) e historial de operaciones (06/11 al 09/11). Después, completar los 4 reportes con exportación a PDF y Excel. |
-
-Fechas clave:
-- **09/11:** integración y pruebas de todo el equipo: inventario, vencimiento, ventas, roles, usabilidad, trazabilidad, reorden y receta (CP-03 a CP-11 y CP-13 a CP-16). Incluye rendimiento con 5 usuarios (CP-09, RNF3), disponibilidad (CP-15, RNF4) y mantenimiento (CP-16, RNF5).
+**Sprint 5: 09/11 al 10/11.** Meta: reportes y cierre.
+- **09/11:** RF6 (reportes e historial), integración de módulos y pruebas no funcionales: rendimiento con 5 usuarios (CP-09, RNF3), disponibilidad (CP-15, RNF4) y mantenimiento (CP-16, RNF5).
 - **10/11:** validación final con la farmacia, revisión, retrospectiva e informe de entrega.
-
-Criterio de cierre: casos de prueba ejecutados, defectos críticos corregidos o documentados, y entrega revisada. Si el sistema responde en más de 2.5 segundos con 5 usuarios, se optimizan las consultas y se vuelve a medir hasta cumplir RNF3.
+- Cierre: pruebas de RF6 (CP-06, CP-07) y RNF3 a RNF5 ejecutadas; defectos críticos corregidos o documentados. Si el sistema responde en más de 2.5 segundos con 5 usuarios, se optimizan las consultas y se vuelve a medir hasta cumplir RNF3.

@@ -5,7 +5,7 @@ services:
   db:
     image: postgres:15-alpine
     container_name: farmacia_db
-    restart: unless-stopped
+    restart: no
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
@@ -27,7 +27,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: farmacia_pgadmin
-    restart: unless-stopped
+    restart: no
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmacia.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD in the root .env file}
@@ -45,7 +45,7 @@ services:
   backend:
     build: ./backend
     container_name: farmacia_backend
-    restart: unless-stopped
+    restart: no
     ports:
       - "3000:3000"
     environment:
@@ -76,7 +76,7 @@ services:
   frontend:
     build: ./frontend
     container_name: farmacia_frontend
-    restart: unless-stopped
+    restart: no
     ports:
       - "5173:5173"
     volumes:

@@ -2,7 +2,7 @@
 
 Este documento corresponde al punto **13.3 Capa de datos: modelo E/R, diagrama de clases y diseño de la base de datos**.
 
-> **Importante:** el esquema real vive en `database/01_init.sql`, `database/02_inserts.sql` y `database/03_estado_cuenta_eliminado.sql`. Todo lo que sigue documenta ese esquema y ubica cada regla en la capa que le corresponde.
+> **Importante:** el esquema real vive en `database/01_init.sql` y `database/02_inserts.sql`. Todo lo que sigue documenta ese esquema y ubica cada regla en la capa que le corresponde.
 
 ---
 

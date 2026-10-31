@@ -175,6 +175,29 @@ const eliminarLogicamente = async (idUsuario) => {
     return rowCount;
 };
 
+/** Hash de la contraseña de una cuenta activa (para el cambio desde el perfil). */
+const buscarHashPorId = async (idUsuario) => {
+    const { rows } = await db.query(
+        `SELECT contrasena_hash
+         FROM usuario
+         WHERE id_usuario = $1
+           AND estado_cuenta = 'Activo'`,
+        [idUsuario]
+    );
+    return rows[0] || null;
+};
+
+const actualizarContrasena = async (idUsuario, contrasenaHash) => {
+    const { rowCount } = await db.query(
+        `UPDATE usuario
+         SET contrasena_hash = $1
+         WHERE id_usuario = $2
+           AND estado_cuenta = 'Activo'`,
+        [contrasenaHash, idUsuario]
+    );
+    return rowCount;
+};
+
 module.exports = {
     listar,
     buscarPorCorreo,
@@ -185,4 +208,6 @@ module.exports = {
     cambiarEstado,
     contarImpacto,
     eliminarLogicamente,
+    buscarHashPorId,
+    actualizarContrasena,
 };

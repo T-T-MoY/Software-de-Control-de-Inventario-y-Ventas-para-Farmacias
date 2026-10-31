@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import ToastNotification from '../components/ToastNotification.vue'
 import {
   actualizarUsuario,
   cambiarEstadoUsuario,
@@ -46,14 +47,9 @@ const eliminandoId = ref(null)
 
 // Notificación flotante
 const notificacion = ref('')
-let temporizadorNotificacion = null
 
 const notificar = (texto) => {
   notificacion.value = texto
-  if (temporizadorNotificacion) clearTimeout(temporizadorNotificacion)
-  temporizadorNotificacion = setTimeout(() => {
-    notificacion.value = ''
-  }, 4500)
 }
 
 const formularioInicial = () => ({
@@ -445,10 +441,6 @@ const reintentarBaja = () => {
 }
 
 onMounted(cargarDatos)
-
-onBeforeUnmount(() => {
-  if (temporizadorNotificacion) clearTimeout(temporizadorNotificacion)
-})
 </script>
 
 <template>
@@ -802,14 +794,7 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Notificación flotante -->
-    <div class="toast-stack" aria-live="polite">
-      <Transition name="toast">
-        <div v-if="notificacion" class="toast-item" role="status">
-          <i class="fas fa-circle-check"></i>
-          <span>{{ notificacion }}</span>
-        </div>
-      </Transition>
-    </div>
+    <ToastNotification :message="notificacion" @close="notificacion = ''" />
 
     <!-- Modal de alta / edición -->
     <div v-if="modalAbierto" class="modal-backdrop-custom" @click.self="modalAbierto = false">
@@ -844,8 +829,10 @@ onBeforeUnmount(() => {
                 @input="alEscribir('nombres')"
                 @blur="alSalir('nombres')"
               >
-              <p v-if="errores.nombres && touched.nombres" class="error-text" role="alert">
-                <i class="fas fa-circle-exclamation"></i>{{ errores.nombres }}
+              <p class="error-text" role="alert">
+                <template v-if="errores.nombres && touched.nombres">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.nombres }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -864,11 +851,12 @@ onBeforeUnmount(() => {
                 @blur="alSalir('apellido_paterno')"
               >
               <p
-                v-if="errores.apellido_paterno && touched.apellido_paterno"
                 class="error-text"
                 role="alert"
               >
-                <i class="fas fa-circle-exclamation"></i>{{ errores.apellido_paterno }}
+                <template v-if="errores.apellido_paterno && touched.apellido_paterno">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.apellido_paterno }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -885,11 +873,12 @@ onBeforeUnmount(() => {
                 @blur="alSalir('apellido_materno')"
               >
               <p
-                v-if="errores.apellido_materno && touched.apellido_materno"
                 class="error-text"
                 role="alert"
               >
-                <i class="fas fa-circle-exclamation"></i>{{ errores.apellido_materno }}
+                <template v-if="errores.apellido_materno && touched.apellido_materno">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.apellido_materno }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -910,11 +899,12 @@ onBeforeUnmount(() => {
                 @blur="alSalir('fecha_nacimiento')"
               >
               <p
-                v-if="errores.fecha_nacimiento && touched.fecha_nacimiento"
                 class="error-text"
                 role="alert"
               >
-                <i class="fas fa-circle-exclamation"></i>{{ errores.fecha_nacimiento }}
+                <template v-if="errores.fecha_nacimiento && touched.fecha_nacimiento">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.fecha_nacimiento }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -933,8 +923,10 @@ onBeforeUnmount(() => {
                 @input="alEscribir('correo')"
                 @blur="alSalir('correo')"
               >
-              <p v-if="errores.correo && touched.correo" class="error-text" role="alert">
-                <i class="fas fa-circle-exclamation"></i>{{ errores.correo }}
+              <p class="error-text" role="alert">
+                <template v-if="errores.correo && touched.correo">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.correo }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -951,8 +943,10 @@ onBeforeUnmount(() => {
                 @input="alEscribir('ci')"
                 @blur="alSalir('ci')"
               >
-              <p v-if="errores.ci && touched.ci" class="error-text" role="alert">
-                <i class="fas fa-circle-exclamation"></i>{{ errores.ci }}
+              <p class="error-text" role="alert">
+                <template v-if="errores.ci && touched.ci">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.ci }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -971,8 +965,10 @@ onBeforeUnmount(() => {
                   {{ rol.nombre_rol }}
                 </option>
               </select>
-              <p v-if="errores.id_rol && touched.id_rol" class="error-text" role="alert">
-                <i class="fas fa-circle-exclamation"></i>{{ errores.id_rol }}
+              <p class="error-text" role="alert">
+                <template v-if="errores.id_rol && touched.id_rol">
+                  <i class="fas fa-circle-exclamation"></i>{{ errores.id_rol }}
+                </template>
               </p>
             </div>
             <div class="col-md-6">
@@ -992,7 +988,7 @@ onBeforeUnmount(() => {
                   :type="showPassword ? 'text' : 'password'"
                   maxlength="72"
                   autocomplete="new-password"
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                   :aria-invalid="Boolean(errores.contrasena && touched.contrasena)"
                   @input="alEscribir('contrasena')"
                   @blur="alSalir('contrasena')"
@@ -1013,7 +1009,7 @@ onBeforeUnmount(() => {
                 {{
                   editando
                     ? 'Déjalo vacío para conservar la contraseña actual.'
-                    : 'Mínimo 8 caracteres, con al menos una letra y un número. Sin espacios.'
+                    : 'Mínimo 6 caracteres, con al menos una letra y un número. Sin espacios.'
                 }}
               </div>
             </div>

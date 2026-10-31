@@ -7,7 +7,7 @@ const { aSesion } = require('../../data/mappers/user.mapper');
 const { verifyPassword } = require('../security/passwords');
 const { crearToken } = require('../security/session');
 const { obtenerPermisos } = require('../rules/permissions');
-const { errorNoAutorizado, errorProhibido } = require('../errors/app-error');
+const { ErrorAplicacion, errorNoAutorizado, errorProhibido } = require('../errors/app-error');
 
 const iniciarSesion = async ({ correo, contrasena }) => {
     const fila = await usuariosRepositorio.buscarPorCorreo(correo);
@@ -15,8 +15,24 @@ const iniciarSesion = async ({ correo, contrasena }) => {
         ? await verifyPassword(contrasena, fila.contrasena_hash)
         : false;
 
-    if (!fila || fila.estado_cuenta !== 'Activo' || !contrasenaValida) {
+    // El estado de la cuenta solo se revela cuando la contraseña es correcta,
+    // para no filtrar qué correos existen en el sistema.
+    if (!fila || !contrasenaValida) {
         throw errorNoAutorizado('Correo o contraseña incorrectos.');
+    }
+
+    if (fila.estado_cuenta === 'Eliminado') {
+        throw new ErrorAplicacion(
+            'Tu cuenta fue eliminada. Contacta al administrador.',
+            { estado: 403, codigo: 'CUENTA_ELIMINADA' }
+        );
+    }
+
+    if (fila.estado_cuenta !== 'Activo') {
+        throw new ErrorAplicacion(
+            'Tu cuenta está inhabilitada. Contacta al administrador.',
+            { estado: 403, codigo: 'CUENTA_INHABILITADA' }
+        );
     }
 
     const usuario = {

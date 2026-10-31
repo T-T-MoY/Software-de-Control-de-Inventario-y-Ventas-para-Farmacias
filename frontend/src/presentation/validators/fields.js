@@ -94,7 +94,7 @@ export function validarCi(valor, { requerido = true } = {}) {
 
 export function validarContrasena(
   valor,
-  { requerido = true, min = 8, max = LONGITUD_MAXIMA_CONTRASENA, exigirFuerza = true } = {}
+  { requerido = true, min = 6, max = LONGITUD_MAXIMA_CONTRASENA, exigirFuerza = true } = {}
 ) {
   const contrasena = String(valor ?? '')
   if (!contrasena) return requerido ? 'La contraseña es obligatoria.' : ''

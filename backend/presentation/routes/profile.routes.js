@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.use(autenticarUsuario);
 router.get('/', perfilControlador.obtenerPerfil);
+router.patch('/contrasena', perfilControlador.cambiarContrasena);
 
 module.exports = router;

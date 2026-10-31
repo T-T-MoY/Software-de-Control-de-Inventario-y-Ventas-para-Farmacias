@@ -1,15 +1,16 @@
-// Reparto temporal del equipo para identificar responsables en la interfaz.
+// Reparto del equipo según la planificación por sprint del readme.
 // Quitar este archivo y sus referencias en la versión final.
 
 export const RESPONSABLES = {
-  seguridad: 'Moisés',
-  inventario: 'Bryan',
-  ventas: 'Rodrigo',
-  reportes: 'Víctor'
+  seguridad: 'Moisés Pérez',
+  catalogo: 'Víctor Rojas',
+  inventario: 'Bryan Coyo',
+  ventas: 'Rodrigo Marca',
+  reportes: 'Víctor Zegarrundo'
 }
 
 export const MODULOS = [
-  { name: 'Medicamentos', icon: 'fa-pills', responsable: RESPONSABLES.inventario },
+  { name: 'Medicamentos', icon: 'fa-pills', responsable: RESPONSABLES.catalogo },
   { name: 'Lotes', icon: 'fa-boxes-stacked', responsable: RESPONSABLES.inventario },
   { name: 'Proveedores', icon: 'fa-truck', responsable: RESPONSABLES.inventario },
   { name: 'Ventas', icon: 'fa-cash-register', responsable: RESPONSABLES.ventas },

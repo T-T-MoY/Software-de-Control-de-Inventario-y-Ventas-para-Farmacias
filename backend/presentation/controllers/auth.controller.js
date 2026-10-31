@@ -35,6 +35,7 @@ const login = async (req, res) => {
             return res.status(error.estado).json({
                 success: false,
                 mensaje: error.message,
+                codigo: error.codigo,
             });
         }
         console.error('Error en el login:', error);

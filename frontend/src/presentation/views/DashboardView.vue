@@ -209,7 +209,7 @@ const stats = computed(() => [
 }
 
 .welcome-chip i {
-  color: #b8aee3;
+  color: var(--blue-400);
 }
 
 .welcome-emblem {
@@ -229,7 +229,7 @@ const stats = computed(() => [
 
 .welcome-emblem i {
   font-size: 2.7rem;
-  color: #b8aee3;
+  color: var(--blue-400);
 }
 
 .welcome-emblem span {
@@ -280,7 +280,7 @@ const stats = computed(() => [
 }
 
 [data-theme="dark"] .stat-icon.is-lavender {
-  color: #b8aee3;
+  color: var(--blue-400);
 }
 
 .stat-label {
@@ -347,7 +347,7 @@ const stats = computed(() => [
 }
 
 [data-theme="dark"] .module-icon.is-lavender {
-  color: #b8aee3;
+  color: var(--blue-400);
 }
 
 .module-arrow {
@@ -379,7 +379,7 @@ const stats = computed(() => [
 }
 
 [data-theme="dark"] .info-icon {
-  color: #b8aee3;
+  color: var(--blue-400);
 }
 
 @media (max-width: 767.98px) {

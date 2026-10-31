@@ -42,7 +42,7 @@ const validarCi = (valor) => {
     return null;
 };
 
-const validarContrasena = (valor, { etiqueta = 'La contraseña', min = 8 } = {}) => {
+const validarContrasena = (valor, { etiqueta = 'La contraseña', min = 6 } = {}) => {
     const contrasena = String(valor ?? '');
     if (!contrasena) return `${etiqueta} es obligatoria.`;
     if (contrasena.length < min) return `${etiqueta} debe tener al menos ${min} caracteres.`;

@@ -5,9 +5,7 @@
 -- en el mismo orden de los INSERT (las FK de abajo dependen de eso).
 --
 -- Contraseñas de prueba (cámbialas fuera de desarrollo):
---   admin@farmacia.bo       -> Admin123*
---   inventario@farmacia.bo  -> Inventario123*
---   ventas@farmacia.bo      -> Ventas123*
+--   Las tres cuentas usan la contraseña Passw123 (hash bcrypt, coste 12).
 -- =====================================================================
 
 -- ---------------------------------------------------------------------

@@ -70,8 +70,7 @@ const modules = MODULOS
       </ul>
     </div>
 
-    <div class="sidebar-footer mt-3 pt-3 d-flex align-items-center justify-content-between">
-      <small>Plantilla grupal</small>
+    <div class="sidebar-footer mt-3 pt-3 d-flex align-items-center justify-content-end">
       <span class="version-chip">v1.0</span>
     </div>
   </aside>

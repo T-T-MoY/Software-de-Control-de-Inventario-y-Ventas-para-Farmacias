@@ -90,4 +90,33 @@ const validarCambioEstado = (body) => (
         : 'El estado debe ser activo o inactivo.'
 );
 
-module.exports = { validarDatosUsuario, validarCambioEstado };
+/**
+ * Valida el cambio de contraseña desde el perfil del usuario autenticado.
+ * La contraseña actual solo se exige; la nueva cumple la política del sistema.
+ */
+const validarCambioContrasena = (body) => {
+    const actual = typeof body.contrasena_actual === 'string'
+        ? body.contrasena_actual
+        : '';
+    if (!actual) {
+        return 'Ingresa tu contraseña actual.';
+    }
+
+    const errorNueva = validarContrasena(body.contrasena_nueva, {
+        etiqueta: 'La nueva contraseña',
+        min: 6,
+    });
+    if (errorNueva) return errorNueva;
+
+    if (body.contrasena_nueva === actual) {
+        return 'La nueva contraseña debe ser diferente a la actual.';
+    }
+
+    return null;
+};
+
+module.exports = {
+    validarDatosUsuario,
+    validarCambioEstado,
+    validarCambioContrasena,
+};

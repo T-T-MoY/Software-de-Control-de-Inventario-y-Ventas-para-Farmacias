@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import ToastNotification from '../components/ToastNotification.vue'
 import { applyTheme } from '../theme'
 import {
   limpiarContrasena,
@@ -16,6 +17,8 @@ const router = useRouter()
 const correo = ref('')
 const password = ref('')
 const errorMessage = ref('')
+const notificacion = ref('')
+const notificacionTono = ref('error')
 const isLoading = ref(false)
 const showPassword = ref(false)
 
@@ -54,6 +57,7 @@ const handleInput = (campo) => {
   touched.value[campo] = true
   errores.value[campo] = validarCampo(campo, valorCampo(campo))
   if (errorMessage.value) errorMessage.value = '' // Limpiar error global
+  if (notificacion.value) notificacion.value = ''
 }
 
 const handleBlur = (campo) => {
@@ -87,6 +91,14 @@ const handleLogin = async () => {
       errorMessage.value = data.mensaje || 'Credenciales incorrectas.'
     }
   } catch (error) {
+    // Cuenta inhabilitada o eliminada: se avisa con una notificación,
+    // no con el mensaje de credenciales incorrectas.
+    if (error.codigo === 'CUENTA_INHABILITADA' || error.codigo === 'CUENTA_ELIMINADA') {
+      errorMessage.value = ''
+      notificacionTono.value = error.codigo === 'CUENTA_ELIMINADA' ? 'error' : 'warning'
+      notificacion.value = error.message
+      return
+    }
     errorMessage.value = error.status
       ? error.message
       : 'Error de conexión con el servidor.'
@@ -138,14 +150,7 @@ const handleLogin = async () => {
         </div>
 
         <div class="showcase-footer">
-          <div class="palette-dots" aria-hidden="true">
-            <span style="background:#05102D"></span>
-            <span style="background:#FFF7E3"></span>
-            <span style="background:#2A468B"></span>
-            <span style="background:#3D6AC1"></span>
-            <span style="background:#B8AEE3"></span>
-          </div>
-          <span>v1.0 · Gestión farmacéutica</span>
+          <span>v1.0</span>
         </div>
       </aside>
 
@@ -189,17 +194,18 @@ const handleLogin = async () => {
               @blur="handleBlur('correo')"
             >
             <p
-              v-if="errores.correo && touched.correo"
               id="login-correo-error"
               class="error-text"
               role="alert"
             >
-              <i class="fas fa-circle-exclamation"></i>{{ errores.correo }}
+              <template v-if="errores.correo && touched.correo">
+                <i class="fas fa-circle-exclamation"></i>{{ errores.correo }}
+              </template>
             </p>
           </div>
 
           <!-- Contraseña -->
-          <div class="mb-4">
+          <div class="mb-3">
             <label class="form-label" for="login-password">
               Contraseña <span class="req">*</span>
             </label>
@@ -227,12 +233,13 @@ const handleLogin = async () => {
               </button>
             </div>
             <p
-              v-if="errores.password && touched.password"
               id="login-password-error"
               class="error-text"
               role="alert"
             >
-              <i class="fas fa-circle-exclamation"></i>{{ errores.password }}
+              <template v-if="errores.password && touched.password">
+                <i class="fas fa-circle-exclamation"></i>{{ errores.password }}
+              </template>
             </p>
           </div>
 
@@ -257,6 +264,13 @@ const handleLogin = async () => {
         </p>
       </section>
     </div>
+
+    <ToastNotification
+      :message="notificacion"
+      :tone="notificacionTono"
+      :duration="7000"
+      @close="notificacion = ''"
+    />
   </div>
 </template>
 
@@ -476,7 +490,7 @@ const handleLogin = async () => {
   justify-content: center;
   border-radius: 0.45rem;
   background: rgba(184, 174, 227, 0.18);
-  color: #b8aee3;
+  color: var(--blue-400);
   font-size: 0.75rem;
   flex: 0 0 auto;
 }
@@ -490,18 +504,6 @@ const handleLogin = async () => {
   padding-top: 1.5rem;
   font-size: 0.65rem;
   color: rgba(255, 247, 227, 0.5);
-}
-
-.palette-dots {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.palette-dots span {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 247, 227, 0.35);
 }
 
 .login-card {

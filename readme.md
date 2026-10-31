@@ -39,9 +39,8 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 │   └── MODELO-DATOS.md
 │
 ├── database/                       # esquema y datos iniciales
-│   ├── 01_init.sql                 # tablas
-│   ├── 02_inserts.sql              # datos de ejemplo
-│   └── 03_estado_cuenta_eliminado.sql  # estado 'Eliminado' para usuarios
+│   ├── 01_init.sql                 # tablas (incluye el estado 'Eliminado')
+│   └── 02_inserts.sql              # datos de ejemplo
 │
 ├── backend/
 │   ├── Dockerfile
@@ -125,6 +124,7 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
             │   ├── Sidebar.vue
             │   ├── Topbar.vue
             │   ├── ThemeToggle.vue
+            │   ├── ToastNotification.vue   # notificación flotante reutilizable
             │   └── SaleReceipt.vue   # comprobante de 80 mm (nuevo)
             ├── router/
             │   └── index.js
@@ -366,7 +366,7 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 
 ### Ejecución manual (sin Docker)
 
-1. Crea una base PostgreSQL y ejecuta en orden `database/01_init.sql`, `database/02_inserts.sql` y `database/03_estado_cuenta_eliminado.sql`.
+1. Crea una base PostgreSQL y ejecuta en orden `database/01_init.sql` y `database/02_inserts.sql`.
 2. Configura las variables del backend indicadas arriba.
 3. Ejecuta backend y frontend con `npm install` y `npm run dev`.
 
@@ -377,6 +377,7 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 | `GET` | `/api/health` | Estado de la API y PostgreSQL |
 | `POST` | `/api/login` | Inicio de sesión |
 | `GET` | `/api/perfil` | Datos y permisos del usuario con sesión activa (cualquier rol) |
+| `PATCH` | `/api/perfil/contrasena` | Cambia la contraseña del usuario con sesión activa |
 | `GET` | `/api/parametros` | Margen de alerta, stock de seguridad por defecto y datos de la farmacia |
 | `GET` | `/api/usuarios` | Lista de usuarios activos e inactivos |
 | `GET` | `/api/usuarios/roles` | Lista de roles |
@@ -386,7 +387,9 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 | `PATCH` | `/api/usuarios/:id/estado` | Activa o desactiva una cuenta |
 | `DELETE` | `/api/usuarios/:id` | Borrado lógico: marca la cuenta como `Eliminado` y deja de listarse |
 
-La administración de usuarios requiere el permiso `administrar_usuarios`, que solo tiene el rol Administrador. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/business/security/passwords.js`; nunca se guardan en texto plano.
+La administración de usuarios requiere el permiso `administrar_usuarios`, que solo tiene el rol Administrador. El cambio de contraseña del perfil está disponible para cualquier rol con sesión activa y exige la contraseña actual. Las contraseñas se almacenan con bcrypt (coste 12) mediante `backend/business/security/passwords.js`; nunca se guardan en texto plano.
+
+El login distingue los motivos del rechazo sin filtrar qué correos existen: si la contraseña es incorrecta responde `401` con «Correo o contraseña incorrectos.»; si la contraseña es correcta pero la cuenta está `Inactivo` o `Eliminado`, responde `403` con `codigo: CUENTA_INHABILITADA` o `codigo: CUENTA_ELIMINADA`, y el frontend lo muestra con una notificación flotante (`ToastNotification.vue`) en lugar del mensaje de credenciales.
 
 ### Permisos por rol
 
@@ -467,7 +470,7 @@ const validarFormulario = () => {
 Reglas aplicadas:
 
 - **Correo:** formato `nombre@dominio.com`, máximo 120 caracteres y sin espacios.
-- **Contraseña:** entre 8 y 72 caracteres (6 en el login), solo letras, números y símbolos seguros; sin espacios, acentos ni emojis. Al registrar una cuenta debe incluir al menos una letra y un número.
+- **Contraseña:** entre 6 y 72 caracteres, solo letras, números y símbolos seguros; sin espacios, acentos ni emojis. Al registrar una cuenta o cambiar la contraseña desde el perfil debe incluir al menos una letra y un número.
 - **Nombre y apellidos:** solo letras, espacios, apóstrofes, puntos y guiones.
 - **CI / NIT:** entre 5 y 20 caracteres, solo números, letras y guion.
 - **Fecha de nacimiento:** fecha real, no futura y posterior a 1900.
@@ -490,6 +493,7 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 **Qué abarca**
 - Inicio de sesión: solo con credenciales válidas y cuenta activa.
 - Administración de cuentas: crear, modificar y desactivar usuarios, y asignar roles.
+- Cambio de la contraseña propia desde el perfil, verificando la contraseña actual.
 - Parámetros generales: margen de alerta de vencimiento (30 días por defecto) y datos de la farmacia para el comprobante, leídos desde `.env` mediante `backend/config/parameters.js`. Los usa el módulo de inventario y el de ventas.
 - Control de acceso por rol en toda la API, según la matriz de permisos.
 - Contraseñas cifradas (bcrypt).

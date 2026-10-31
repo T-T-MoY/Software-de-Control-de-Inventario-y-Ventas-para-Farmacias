@@ -49,7 +49,7 @@ export function validarCampoUsuario(campo, valor, { editando = false } = {}) {
     case 'contrasena':
       return validarContrasena(valor, {
         requerido: !editando,
-        min: 8,
+        min: 6,
         exigirFuerza: true
       })
     default:

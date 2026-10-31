@@ -10,6 +10,7 @@ node_modules/
 frontend/dist/
 
 # Archivos de usuario y registros
+backend/uploads/
 !backend/uploads/.gitkeep
 *.log
 npm-debug.log*

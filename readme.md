@@ -4,16 +4,17 @@ Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar lo
 
 ## Reparto del equipo
 
-El equipo trabaja con Scrum (sección 12 del informe). Los roles Scrum son: **Product Owner** Víctor Rojas, que prioriza y acepta los requisitos, y **Scrum Master** Moisés Pérez, que dirige la planificación, la Daily y la retrospectiva.
+El equipo trabaja con Scrum (sección 12 del informe). El trabajo se reparte **por sprint**: cada integrante es responsable de un sprint completo (lo planifica, lo programa con el apoyo del equipo y lo presenta en la revisión). Los roles Scrum son: **Product Owner** Víctor Rojas, que prioriza y acepta los requisitos, y **Scrum Master** Moisés Pérez, que dirige la planificación, la Daily y la retrospectiva.
 
-| Integrante | Sección / módulo | En pocas palabras (qué y dónde) |
-|---|---|---|
-| Moisés Pérez (Scrum Master) | Seguridad y administración | (login, usuarios, roles y permisos) |
-| Bryan Coyo (Developer) | Gestión de inventario | (medicamentos, lotes, proveedores y alertas) |
-| Rodrigo Marca (Developer) | Ventas y atención al cliente | (ventas, clientes, recetas y comprobante) |
-| Víctor Zegarrundo (Developer) | Analítica y reportes | (reportes, historial y exportaciones) |
+| Integrante | Rol Scrum | Sprint a cargo | Qué entrega |
+|---|---|---|---|
+| Moisés Pérez | Scrum Master | Sprint 1 (20/10 al 23/10) | RF1: acceso seguro y diseño de la BD |
+| Víctor Rojas | Product Owner | Sprint 2 (26/10 al 30/10) | RF2: catálogo de medicamentos |
+| Bryan Coyo | Developer | Sprint 3 (02/11 al 04/11) | RF3 y RF4: inventario completo, alertas y bloqueo de vencidos |
+| Rodrigo Marca | Developer | Sprint 4 (05/11 al 06/11) | RF5: ventas, recetas y comprobantes |
+| Víctor Zegarrundo | Developer | Sprint 5 (09/11 al 10/11) | RF6: reportes e historial; integración y cierre |
 
-Cada persona trabaja en su módulo. Las tablas, pantallas y pruebas de cada uno están detalladas en **Módulos del sistema**. Antes de tocar archivos compartidos (`server.js`, `router/index.js`, `database/` o `docker-compose.yml`), avisa al equipo.
+El detalle de apoyos y de lo que hace cada uno dentro de su sprint está en **Planificación por sprint**. Mientras otro integrante lidera el sprint en curso, cada responsable prepara el suyo (repositorios, servicios y pantallas con los datos de `database/02_inserts.sql`), para no llegar en blanco a los sprints cortos. Las tablas, pantallas y pruebas de cada parte del sistema están en **Módulos del sistema**. Antes de tocar archivos compartidos (`server.js`, `router/index.js`, `database/` o `docker-compose.yml`), avisa al equipo.
 
 ## Tecnologías
 
@@ -210,12 +211,13 @@ Reglas que todos deben respetar:
 
 ### Dónde trabaja cada integrante
 
-| Persona | Módulo | Backend | Frontend |
+| Persona | Sprint | Backend | Frontend |
 |---|---|---|---|
-| Moisés | Seguridad y administración | `presentation/*auth*`, `presentation/*users*`, `business/*auth*`, `business/*users*`, `business/rules/permissions.js`, `data/repositories/*users*` | `views/LoginView.vue`, `views/UsersView.vue`, `views/ProfileView.vue`, `business/session.js` |
-| Bryan | Inventario | Crear `presentation/*medicines*`, `presentation/*lots*`, `presentation/*suppliers*`; `business/services/*inventory*`; `business/rules/*inventory*`; `data/repositories/*medicines*`, `*lots*`, `*suppliers*` | `views/MedicinesView.vue`, `views/LotsView.vue`, `views/SuppliersView.vue`, `views/AlertsView.vue` y sus `data/endpoints/*` |
-| Rodrigo | Ventas | Crear `presentation/*sales*`, `presentation/*customers*`; `business/services/sales.service.js`; `business/rules/sales.rules.js`; `data/repositories/*sales*`, `*customers*` | `views/SalesView.vue`, `views/CustomersView.vue`, `components/SaleReceipt.vue` y `data/endpoints/sales.js` |
-| Víctor | Reportes | Crear `presentation/*reports*`, `presentation/*history*`; `business/services/reports.service.js`; `data/repositories/*reports*`, `*history*` | `views/ReportsView.vue`, `views/HistoryView.vue` y `data/endpoints/reports.js` |
+| Moisés | 1 | Ya creados: `presentation/*auth*`, `presentation/*users*`, `business/*auth*`, `business/*users*`, `business/rules/permissions.js`, `data/repositories/*users*` | `views/LoginView.vue`, `views/UsersView.vue`, `views/ProfileView.vue`, `business/session.js` |
+| Víctor Rojas | 2 | Crear `presentation/*medicines*`, `presentation/*categories*`; `business/services/medicines.service.js`; `business/rules/medicines.rules.js`; `data/repositories/*medicines*`, `*categories*` | `views/MedicinesView.vue` y `data/endpoints/medicines.js` |
+| Bryan | 3 | Crear `presentation/*suppliers*`, `presentation/*lots*`, `presentation/*alerts*`; `business/services/*inventory*`; `business/rules/*inventory*`; `data/repositories/*suppliers*`, `*lots*` | `views/SuppliersView.vue`, `views/LotsView.vue`, `views/AlertsView.vue` y sus `data/endpoints/*` |
+| Rodrigo | 4 | Crear `presentation/*sales*`, `presentation/*customers*`; `business/services/sales.service.js`; `business/rules/sales.rules.js`; `data/repositories/*sales*`, `*customers*` | `views/SalesView.vue`, `views/CustomersView.vue`, `components/SaleReceipt.vue` y `data/endpoints/sales.js` |
+| Víctor Zegarrundo | 5 | Crear `presentation/*reports*`, `presentation/*history*`; `business/services/reports.service.js`; `data/repositories/*reports*`, `*history*` | `views/ReportsView.vue`, `views/HistoryView.vue` y `data/endpoints/reports.js` |
 
 Cada integrante crea sus archivos siguiendo el mismo patrón: **repositorio → servicio → validador → controlador → ruta → endpoint → vista**. Antes de tocar archivos compartidos (`backend/server.js`, `frontend/src/presentation/router/index.js`, `backend/business/rules/permissions.js`, `database/` o `docker-compose.yml`), avisa al equipo.
 
@@ -299,7 +301,7 @@ Si `git push` es rechazado, es porque alguien subió antes que tú: ejecuta `git
 ### Reglas del equipo
 
 - Escribe los mensajes de commit con el requisito: `RF1: ...`, `RF3: ...`.
-- Cada integrante trabaja sobre los archivos de su módulo. Avisa antes de tocar archivos compartidos: `docker-compose.yml`, `database/01_init.sql`, `server.js` y `router/index.js`.
+- Cada integrante trabaja sobre los archivos de su sprint (ver «Dónde trabaja cada integrante»). Avisa antes de tocar archivos compartidos: `docker-compose.yml`, `database/01_init.sql`, `server.js` y `router/index.js`.
 - No subas `.env`, `credenciales.txt` ni `node_modules`.
 - Sube tus cambios antes de pasar la tarea a "En pruebas" en el tablero. El tablero tiene cuatro columnas: Por hacer, En curso, En pruebas y Hecho.
 - Daily de máximo 15 minutos en días hábiles, presencial o por videollamada. Quien no pueda asistir publica su avance en el canal grupal ese mismo día.
@@ -474,16 +476,16 @@ Reglas aplicadas:
 
 El sistema tiene 4 módulos, definidos en el informe de requisitos (RF1 a RF6, RNF y reglas de dominio RD).
 
-| Módulo | Responsable | Requisitos |
+| Módulo | Sprint | Requisitos |
 |---|---|---|
-| Seguridad y administración | Moisés | RF1, RNF1 |
-| Gestión de inventario | Bryan | RF2, RF3, RF4, RD1, RD2, RD3, RD4 |
-| Ventas y atención al cliente | Rodrigo | RF5, RD5, RNF2 |
-| Analítica y reportes | Víctor | RF6, RNF1 (historial) |
+| Seguridad y administración | Sprint 1 | RF1, RNF1 |
+| Gestión de inventario | Sprints 2 y 3 | RF2, RF3, RF4, RD1, RD2, RD3, RD4 |
+| Ventas y atención al cliente | Sprint 4 | RF5, RD5, RNF2 |
+| Analítica y reportes | Sprint 5 | RF6, RNF1 (historial) |
 
 Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibilidad y RNF5 mantenimiento) son responsabilidad de todo el equipo y se verifican en la integración del Sprint 5.
 
-### 1. Seguridad y administración (Moisés)
+### 1. Seguridad y administración (Sprint 1)
 
 **Qué abarca**
 - Inicio de sesión: solo con credenciales válidas y cuenta activa.
@@ -508,7 +510,7 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 **Tablas:** `rol`, `usuario`. **Pantallas:** `LoginView`, `UsersView`, `ProfileView`.
 **Pruebas:** CP-01 (acceso válido, inválido y cuenta desactivada) y CP-07 (rol sin permiso rechazado, contraseña cifrada).
 
-### 2. Gestión de inventario (Bryan)
+### 2. Gestión de inventario (Sprints 2 y 3)
 
 **Qué abarca**
 - **Catálogo (RF2):** registrar y actualizar medicamentos con nombre comercial, DCI, concentración, forma farmacéutica, categoría, precio, tipo de venta (libre o con receta) y código de barras. Búsqueda por nombre, principio activo, categoría o código de barras, mostrando precio y stock vigente.
@@ -521,7 +523,7 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 **Tablas:** `categoria`, `medicamento`, `proveedor`, `lote`. **Pantallas:** `MedicinesView`, `LotsView`, `SuppliersView`, `AlertsView`.
 **Pruebas:** CP-02, CP-12 (catálogo); CP-03, CP-10, CP-13 (lotes, stock y reorden); CP-04, CP-11 (vencimientos).
 
-### 3. Ventas y atención al cliente (Rodrigo)
+### 3. Ventas y atención al cliente (Sprint 4)
 
 **Qué abarca**
 - Carrito de venta: agregar productos buscándolos en el catálogo, con subtotal, total y cambio en bolivianos (Bs) con dos decimales, y descuento porcentual.
@@ -535,7 +537,7 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 **Tablas:** `cliente`, `venta`, `dispensa`, `comprobante_venta`. **Pantallas:** `SalesView`, `CustomersView`, `SaleReceipt.vue`.
 **Pruebas:** CP-05 (cálculo, cambio y rechazos), CP-14 (receta), CP-08 (venta de 3 productos en 3 minutos).
 
-### 4. Analítica y reportes (Víctor)
+### 4. Analítica y reportes (Sprint 5)
 
 **Qué abarca**
 - Reportes de ventas, inventario, lotes por vencer y lotes vencidos, filtrados por fecha y exportables a PDF o Excel. Solo el Administrador.
@@ -546,7 +548,7 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 
 ## Planificación por sprint
 
-El proyecto se organiza en **5 sprints**, del 20/10 al 10/11 (informe, secciones 11.1 y 12.3). Cada sprint cierra con pruebas, revisión y retrospectiva. Los módulos que no tienen entregable en un sprint pueden adelantar trabajo con los datos de `database/02_inserts.sql`.
+El proyecto se organiza en **5 sprints**, del 20/10 al 10/11 (informe, secciones 11.1 y 12.3). Cada sprint tiene un responsable y cierra con pruebas, revisión y retrospectiva. Quien no lidera el sprint en curso prepara el suyo con los datos de `database/02_inserts.sql`.
 
 | Sprint | Fechas | Meta | Qué se entrega | Pruebas de cierre |
 |---|---|---|---|---|
@@ -556,37 +558,40 @@ El proyecto se organiza en **5 sprints**, del 20/10 al 10/11 (informe, secciones
 | 4 | 05/11 al 06/11 (2 días) | Ventas | RF5 completo: venta, recetas, comprobantes y descuento de stock | Pruebas de RF5: CP-05, CP-14 |
 | 5 | 09/11 al 10/11 (2 días) | Reportes y cierre | RF6: reportes e historial; integración; pruebas no funcionales (rendimiento, disponibilidad); validación final con la farmacia | Pruebas de RF6 y RNF3 a RNF5: CP-06, CP-07, CP-09, CP-15, CP-16 (y CP-08, usabilidad) |
 
-### Quién hace qué en cada sprint
+### Responsable y apoyo por sprint
 
-Reparto por módulo. Un trabajo "adelantado" no cuenta como entrega del sprint, pero evita que el trabajo se acumule en los sprints cortos.
-
-| Sprint | Moisés (Seguridad) | Bryan (Inventario) | Rodrigo (Ventas) | Víctor (Reportes) |
-|---|---|---|---|---|
-| 1 | RF1: login, cuentas, roles y permisos (ya implementado en la plantilla) | Diseño de la BD (`01_init.sql`, `02_inserts.sql`) | Sin entregable | Sin entregable |
-| 2 | Aplicar `gestionar_catalogo` y `consultar_catalogo` a las rutas del catálogo | RF2: medicamentos y categorías; registro, actualización y búsqueda por nombre, principio activo, categoría y código de barras | Adelanta: estructura de ventas y clientes | Adelanta: estructura de reportes e historial |
-| 3 | Aplicar `gestionar_proveedores` y `dar_baja_lotes` a las rutas de inventario | RF3: proveedores, recepción de lotes, stock y punto de reorden; RF4: alertas a 30 días y bloqueo de vencidos | Adelanta: carrito, cálculo de total y cambio | Adelanta: reportes de ventas e inventario |
-| 4 | Aplicar `procesar_ventas` y apoyar al equipo | Apoyo: advertencia y bloqueo de lotes en caja, correcciones de inventario | **RF5 completo:** venta, receta, comprobante y descuento de stock | Adelanta: historial, reportes de vencimientos y exportación |
-| 5 | CP-07: verificar los permisos en todas las rutas; apoyo en la integración | Apoyo en la integración; rendimiento (CP-09) | Correcciones de ventas; usabilidad (CP-08) | **RF6:** reportes con exportación a PDF y Excel, e historial |
+| Sprint | Responsable | Apoyo | Reparto dentro del sprint |
+|---|---|---|---|
+| 1 | Moisés Pérez | Bryan Coyo | Moisés: RF1 (login, cuentas, roles y permisos; ya implementado en la plantilla) y diseño de la BD. Bryan: revisión del diseño de la BD (`01_init.sql`, `02_inserts.sql`). |
+| 2 | Víctor Rojas | Moisés Pérez | Rojas: RF2 (registro, actualización y búsqueda de medicamentos). Moisés: aplicar `gestionar_catalogo` y `consultar_catalogo` a las rutas del catálogo. |
+| 3 | Bryan Coyo | Víctor Rojas, Moisés Pérez | Bryan: RF3 (proveedores, lotes, stock y reorden). Rojas: RF4 (alertas a 30 días y bloqueo de vencidos). Moisés: permisos `gestionar_proveedores` y `dar_baja_lotes`. |
+| 4 | Rodrigo Marca | Bryan Coyo, Moisés Pérez | Rodrigo: RF5 completo (venta, receta, comprobante). Bryan: descuento de stock por lote y bloqueo de vencidos desde la venta. Moisés: permiso `procesar_ventas` y pruebas del flujo (CP-05, CP-14). |
+| 5 | Víctor Zegarrundo | Todo el equipo | Zegarrundo: RF6 (reportes con exportación a PDF y Excel, e historial). Moisés (Scrum Master): coordina la integración. Rojas (Product Owner): validación final con la farmacia. Bryan y Rodrigo: integración y pruebas de rendimiento (CP-09), usabilidad (CP-08), disponibilidad (CP-15) y mantenimiento (CP-16). |
 
 ### Detalle por sprint
 
 **Sprint 1: 20/10 al 23/10.** Meta: acceso seguro y base de datos.
+- Responsable: Moisés Pérez. Apoyo: Bryan Coyo.
 - Se entrega: inicio de sesión, cuentas y roles (RF1) y el diseño de la base de datos.
 - Cierre: acceso válido e inválido probado; cuentas y permisos demostrables (CP-01).
 
 **Sprint 2: 26/10 al 30/10.** Meta: catálogo de medicamentos.
+- Responsable: Víctor Rojas. Apoyo: Moisés Pérez.
 - Se entrega: registro, actualización y búsqueda de medicamentos (RF2), con DCI, concentración y forma farmacéutica (RD3).
 - Cierre: registro y búsquedas verificadas (CP-02, CP-12). Pruebas, revisión y retrospectiva el 30/10.
 
 **Sprint 3: 02/11 al 04/11.** Meta: inventario completo.
-- Se entrega: proveedores, recepción de lotes, actualización de stock y punto de reorden (RF3), más alertas 30 días antes y bloqueo de lotes vencidos (RF4). Es el sprint más cargado para Inventario (3 días).
+- Responsable: Bryan Coyo. Apoyo: Víctor Rojas (RF4) y Moisés Pérez (permisos).
+- Se entrega: proveedores, recepción de lotes, actualización de stock y punto de reorden (RF3), más alertas 30 días antes y bloqueo de lotes vencidos (RF4). Es el sprint más cargado (3 días), por eso se reparte entre dos personas: Bryan en RF3 y Rojas en RF4.
 - Cierre: recepción y movimientos de stock verificados; trazabilidad y reorden probados (CP-03, CP-10, CP-13); alertas y bloqueo probados (CP-04, CP-11).
 
 **Sprint 4: 05/11 al 06/11.** Meta: ventas.
+- Responsable: Rodrigo Marca. Apoyo: Bryan Coyo (stock y lotes) y Moisés Pérez (permisos y pruebas).
 - Se entrega: venta completa con carrito, receta, comprobante y descuento de stock (RF5).
 - Cierre: pruebas de RF5 (CP-05 y CP-14). Para llegar en 2 días, la pantalla y el servicio de ventas deben estar adelantados desde el Sprint 3.
 
 **Sprint 5: 09/11 al 10/11.** Meta: reportes y cierre.
+- Responsable: Víctor Zegarrundo. Apoyo: todo el equipo en la integración.
 - **09/11:** RF6 (reportes e historial), integración de módulos y pruebas no funcionales: rendimiento con 5 usuarios (CP-09, RNF3), disponibilidad (CP-15, RNF4) y mantenimiento (CP-16, RNF5).
 - **10/11:** validación final con la farmacia, revisión, retrospectiva e informe de entrega.
 - Cierre: pruebas de RF6 (CP-06, CP-07) y RNF3 a RNF5 ejecutadas; defectos críticos corregidos o documentados. Si el sistema responde en más de 2.5 segundos con 5 usuarios, se optimizan las consultas y se vuelve a medir hasta cumplir RNF3.

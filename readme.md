@@ -4,7 +4,7 @@ Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar lo
 
 ## Reparto del equipo
 
-El equipo trabaja con Scrum (sección 12 del informe). El trabajo se reparte **por sprint**: cada integrante es responsable de un sprint completo (lo planifica, lo programa con el apoyo del equipo y lo presenta en la revisión). Los roles Scrum son: **Product Owner** Víctor Rojas, que prioriza y acepta los requisitos, y **Scrum Master** Moisés Pérez, que dirige la planificación, la Daily y la retrospectiva.
+El equipo trabaja con Scrum (sección 12 del informe). El trabajo se reparte **por sprint**: cada integrante es responsable de un sprint completo (lo planifica, lo programa y lo presenta en la revisión). Los roles Scrum son: **Product Owner** Víctor Rojas, que prioriza y acepta los requisitos, y **Scrum Master** Moisés Pérez, que dirige la planificación, la Daily y la retrospectiva.
 
 | Integrante | Rol Scrum | Sprint a cargo | Qué entrega |
 |---|---|---|---|
@@ -14,7 +14,7 @@ El equipo trabaja con Scrum (sección 12 del informe). El trabajo se reparte **p
 | Rodrigo Marca | Developer | Sprint 4 (05/11 al 06/11) | RF5: ventas, recetas y comprobantes |
 | Víctor Zegarrundo | Developer | Sprint 5 (09/11 al 10/11) | RF6: reportes e historial; integración y cierre |
 
-El detalle de apoyos y de lo que hace cada uno dentro de su sprint está en **Planificación por sprint**. Mientras otro integrante lidera el sprint en curso, cada responsable prepara el suyo (repositorios, servicios y pantallas con los datos de `database/02_inserts.sql`), para no llegar en blanco a los sprints cortos. Las tablas, pantallas y pruebas de cada parte del sistema están en **Módulos del sistema**. Antes de tocar archivos compartidos (`server.js`, `router/index.js`, `database/` o `docker-compose.yml`), avisa al equipo.
+El detalle de cada sprint está en **Planificación por sprint**. Mientras otro integrante lidera el sprint en curso, cada responsable prepara el suyo (repositorios, servicios y pantallas con los datos de `database/02_inserts.sql`), para no llegar en blanco a los sprints cortos. Las tablas, pantallas y pruebas de cada parte del sistema están en **Módulos del sistema**. Antes de tocar archivos compartidos (`server.js`, `router/index.js`, `database/` o `docker-compose.yml`), avisa al equipo.
 
 ## Tecnologías
 
@@ -558,40 +558,42 @@ El proyecto se organiza en **5 sprints**, del 20/10 al 10/11 (informe, secciones
 | 4 | 05/11 al 06/11 (2 días) | Ventas | RF5 completo: venta, recetas, comprobantes y descuento de stock | Pruebas de RF5: CP-05, CP-14 |
 | 5 | 09/11 al 10/11 (2 días) | Reportes y cierre | RF6: reportes e historial; integración; pruebas no funcionales (rendimiento, disponibilidad); validación final con la farmacia | Pruebas de RF6 y RNF3 a RNF5: CP-06, CP-07, CP-09, CP-15, CP-16 (y CP-08, usabilidad) |
 
-### Responsable y apoyo por sprint
+### Responsable por sprint
 
-| Sprint | Responsable | Apoyo | Reparto dentro del sprint |
-|---|---|---|---|
-| 1 | Moisés Pérez | Bryan Coyo | Moisés: RF1 (login, cuentas, roles y permisos; ya implementado en la plantilla) y diseño de la BD. Bryan: revisión del diseño de la BD (`01_init.sql`, `02_inserts.sql`). |
-| 2 | Víctor Rojas | Moisés Pérez | Rojas: RF2 (registro, actualización y búsqueda de medicamentos). Moisés: aplicar `gestionar_catalogo` y `consultar_catalogo` a las rutas del catálogo. |
-| 3 | Bryan Coyo | Víctor Rojas, Moisés Pérez | Bryan: RF3 (proveedores, lotes, stock y reorden). Rojas: RF4 (alertas a 30 días y bloqueo de vencidos). Moisés: permisos `gestionar_proveedores` y `dar_baja_lotes`. |
-| 4 | Rodrigo Marca | Bryan Coyo, Moisés Pérez | Rodrigo: RF5 completo (venta, receta, comprobante). Bryan: descuento de stock por lote y bloqueo de vencidos desde la venta. Moisés: permiso `procesar_ventas` y pruebas del flujo (CP-05, CP-14). |
-| 5 | Víctor Zegarrundo | Todo el equipo | Zegarrundo: RF6 (reportes con exportación a PDF y Excel, e historial). Moisés (Scrum Master): coordina la integración. Rojas (Product Owner): validación final con la farmacia. Bryan y Rodrigo: integración y pruebas de rendimiento (CP-09), usabilidad (CP-08), disponibilidad (CP-15) y mantenimiento (CP-16). |
+| Sprint | Responsable | Qué hace |
+|---|---|---|
+| 1 | Moisés Pérez | RF1 (login, cuentas, roles y permisos; ya implementado en la plantilla) y diseño de la BD. |
+| 2 | Víctor Rojas | RF2: registro, actualización y búsqueda de medicamentos, con los permisos `gestionar_catalogo` y `consultar_catalogo` aplicados a sus rutas. |
+| 3 | Bryan Coyo | RF3 y RF4: proveedores, lotes, stock, reorden, alertas a 30 días y bloqueo de vencidos, con sus permisos aplicados. |
+| 4 | Rodrigo Marca | RF5 completo: venta, receta, comprobante y descuento de stock, con el permiso `procesar_ventas` aplicado. |
+| 5 | Víctor Zegarrundo | RF6: reportes con exportación a PDF y Excel, e historial. La integración y las pruebas las hace todo el equipo. |
+
+Cada responsable protege las rutas de su sprint con `autorizar(PERMISOS.X)`, según la matriz de permisos.
 
 ### Detalle por sprint
 
 **Sprint 1: 20/10 al 23/10.** Meta: acceso seguro y base de datos.
-- Responsable: Moisés Pérez. Apoyo: Bryan Coyo.
+- Responsable: Moisés Pérez.
 - Se entrega: inicio de sesión, cuentas y roles (RF1) y el diseño de la base de datos.
 - Cierre: acceso válido e inválido probado; cuentas y permisos demostrables (CP-01).
 
 **Sprint 2: 26/10 al 30/10.** Meta: catálogo de medicamentos.
-- Responsable: Víctor Rojas. Apoyo: Moisés Pérez.
+- Responsable: Víctor Rojas.
 - Se entrega: registro, actualización y búsqueda de medicamentos (RF2), con DCI, concentración y forma farmacéutica (RD3).
 - Cierre: registro y búsquedas verificadas (CP-02, CP-12). Pruebas, revisión y retrospectiva el 30/10.
 
 **Sprint 3: 02/11 al 04/11.** Meta: inventario completo.
-- Responsable: Bryan Coyo. Apoyo: Víctor Rojas (RF4) y Moisés Pérez (permisos).
-- Se entrega: proveedores, recepción de lotes, actualización de stock y punto de reorden (RF3), más alertas 30 días antes y bloqueo de lotes vencidos (RF4). Es el sprint más cargado (3 días), por eso se reparte entre dos personas: Bryan en RF3 y Rojas en RF4.
+- Responsable: Bryan Coyo.
+- Se entrega: proveedores, recepción de lotes, actualización de stock y punto de reorden (RF3), más alertas 30 días antes y bloqueo de lotes vencidos (RF4). Es el sprint más cargado (3 días), por eso conviene adelantar RF3 durante el Sprint 2.
 - Cierre: recepción y movimientos de stock verificados; trazabilidad y reorden probados (CP-03, CP-10, CP-13); alertas y bloqueo probados (CP-04, CP-11).
 
 **Sprint 4: 05/11 al 06/11.** Meta: ventas.
-- Responsable: Rodrigo Marca. Apoyo: Bryan Coyo (stock y lotes) y Moisés Pérez (permisos y pruebas).
+- Responsable: Rodrigo Marca.
 - Se entrega: venta completa con carrito, receta, comprobante y descuento de stock (RF5).
 - Cierre: pruebas de RF5 (CP-05 y CP-14). Para llegar en 2 días, la pantalla y el servicio de ventas deben estar adelantados desde el Sprint 3.
 
 **Sprint 5: 09/11 al 10/11.** Meta: reportes y cierre.
-- Responsable: Víctor Zegarrundo. Apoyo: todo el equipo en la integración.
+- Responsable: Víctor Zegarrundo. La integración y las pruebas las hace todo el equipo; Moisés (Scrum Master) coordina y Víctor Rojas (Product Owner) valida con la farmacia.
 - **09/11:** RF6 (reportes e historial), integración de módulos y pruebas no funcionales: rendimiento con 5 usuarios (CP-09, RNF3), disponibilidad (CP-15, RNF4) y mantenimiento (CP-16, RNF5).
 - **10/11:** validación final con la farmacia, revisión, retrospectiva e informe de entrega.
 - Cierre: pruebas de RF6 (CP-06, CP-07) y RNF3 a RNF5 ejecutadas; defectos críticos corregidos o documentados. Si el sistema responde en más de 2.5 segundos con 5 usuarios, se optimizan las consultas y se vuelve a medir hasta cumplir RNF3.

@@ -44,21 +44,52 @@ INSERT INTO categoria (nombre_categoria) VALUES
 -- ---------------------------------------------------------------------
 -- MEDICAMENTOS
 -- El medicamento 9 está 'Inactivo' (borrado lógico): no sale en el
--- catálogo ni se vende, pero se conserva para el historial.
+-- catálogo ni se vende, pero se conserva para el historial. Las fotos
+-- son opcionales y se cargan desde el catálogo después de iniciar el sistema.
 -- ---------------------------------------------------------------------
 INSERT INTO medicamento
     (codigo_barras, nombre_comercial, dci, concentracion, forma_farmaceutica, precio_unitario,
-     tipo_venta, stock_seguridad, dias_reposicion, estado_medicamento, id_categoria)
+     tipo_venta, stock_seguridad, dias_reposicion, estado_medicamento, foto_url, id_categoria)
 VALUES
-('7770000000011', 'Dolofin',         'Paracetamol',     '500 mg',      'Tableta', 5.00,  'Libre',      20, 3, 'Activo',   1),
-('7770000000028', 'Ibufen',          'Ibuprofeno',      '400 mg',      'Tableta', 12.00, 'Libre',      15, 3, 'Activo',   2),
-('7770000000035', 'Amoxibol',        'Amoxicilina',     '500 mg',      'Cápsula', 38.00, 'Con receta', 10, 5, 'Activo',   3),
-('7770000000042', 'Loratex',         'Loratadina',      '10 mg',       'Tableta', 15.00, 'Libre',      15, 3, 'Activo',   4),
-('7770000000059', 'Omeprazol Andes', 'Omeprazol',       '20 mg',       'Cápsula', 22.00, 'Libre',      10, 3, 'Activo',   5),
-('7770000000066', 'VitaC Plus',      'Ácido ascórbico', '500 mg',      'Tableta', 30.00, 'Libre',      10, 5, 'Activo',   6),
-('7770000000073', 'Bronquil',        'Ambroxol',        '15 mg/5 mL',  'Jarabe',  25.00, 'Libre',       8, 3, 'Activo',   7),
-('7770000000080', 'Diclogel',        'Diclofenaco',     '1 %',         'Crema',   18.00, 'Libre',       8, 3, 'Activo',   2),
-('7770000000097', 'Cafiaspin',       'Ácido acetilsalicílico', '500 mg', 'Tableta', 6.00, 'Libre',     10, 3, 'Inactivo', 1);
+('7770000000011', 'Dolofin',         'Paracetamol',     '500 mg',      'Tableta', 5.00,  'Libre',      20, 3, 'Activo',   NULL, 1),
+('7770000000028', 'Ibufen',          'Ibuprofeno',      '400 mg',      'Tableta', 12.00, 'Libre',      15, 3, 'Activo',   NULL, 2),
+('7770000000035', 'Amoxibol',        'Amoxicilina',     '500 mg',      'Cápsula', 38.00, 'Con receta', 10, 5, 'Activo',   NULL, 3),
+('7770000000042', 'Loratex',         'Loratadina',      '10 mg',       'Tableta', 15.00, 'Libre',      15, 3, 'Activo',   NULL, 4),
+('7770000000059', 'Omeprazol Andes', 'Omeprazol',       '20 mg',       'Cápsula', 22.00, 'Libre',      10, 3, 'Activo',   NULL, 5),
+('7770000000066', 'VitaC Plus',      'Ácido ascórbico', '500 mg',      'Tableta', 30.00, 'Libre',      10, 5, 'Activo',   NULL, 6),
+('7770000000073', 'Bronquil',        'Ambroxol',        '15 mg/5 mL',  'Jarabe',  25.00, 'Libre',       8, 3, 'Activo',   NULL, 7),
+('7770000000080', 'Diclogel',        'Diclofenaco',     '1 %',         'Crema',   18.00, 'Libre',       8, 3, 'Activo',   NULL, 2),
+('7770000000097', 'Cafiaspin',       'Ácido acetilsalicílico', '500 mg', 'Tableta', 6.00, 'Libre',     10, 3, 'Inactivo', NULL, 1);
+
+-- ---------------------------------------------------------------------
+-- MEDICAMENTOS (NUEVOS): 9 tuplas con referencias reales del catálogo
+-- de farmacorp.com (Shopify). Datos verificados en el sitio oficial:
+-- https://farmacorp.com/collections/medicamentos
+--   Aspirineta             -> Analgésicos (Ácido acetilsalicílico 100mg)
+--   Dolo Febrex             -> Antiinflamatorios (Ibuprofeno 600mg)
+--   Dioxadol               -> Analgésicos (Dipirona 500mg)
+--   Divafen                -> Antiinflamatorios (Diclofenaco sódico 50mg)
+--   Melox-Letic            -> Antiinflamatorios (Meloxicam 15mg)
+--   Actron                 -> Antiinflamatorios (Ibuprofeno 600mg)
+--   Terracolin             -> Gastrointestinales (Nifuroxazida 200mg)
+--   Quetorol               -> Antiinflamatorios (Ketorolaco 30mg)
+--   Vacuna Influvac Tetra -> Respiratorios (Vacuna Influenza Tetra)
+-- Las fotos son opcionales y se cargan desde el catálogo después de
+-- iniciar el sistema; el stock vigente se registra con los lotes.
+-- ---------------------------------------------------------------------
+INSERT INTO medicamento
+    (codigo_barras, nombre_comercial, dci, concentracion, forma_farmaceutica, precio_unitario,
+     tipo_venta, stock_seguridad, dias_reposicion, estado_medicamento, foto_url, id_categoria)
+VALUES
+('7770000000101', 'Aspirineta',            'Ácido acetilsalicílico', '100 mg',           'Tableta',    0.81,  'Libre',      25, 3, 'Activo',   NULL, 1),
+('7770000000118', 'Dolo Febrex',           'Ibuprofeno',              '600 mg',           'Tableta',    1.68,  'Libre',      20, 3, 'Activo',   NULL, 2),
+('7770000000125', 'Dioxadol',              'Dipirona',                '500 mg',           'Tableta',    3.57,  'Libre',      12, 3, 'Activo',   NULL, 1),
+('7770000000132', 'Divafen',               'Diclofenaco sódico',      '50 mg',            'Tableta',    0.97,  'Libre',      18, 5, 'Activo',   NULL, 2),
+('7770000000149', 'Melox-Letic',           'Meloxicam',               '15 mg',            'Tableta',    2.88,  'Libre',      10, 5, 'Activo',   NULL, 2),
+('7770000000156', 'Actron',                'Ibuprofeno',              '600 mg',           'Cápsula',    5.51,  'Libre',      10, 3, 'Activo',   '/uploads/medicamentos/e4c7ab01-e2b0-49a3-8fd3-c7a9ca5dfc0b.jpg', 2),
+('7770000000163', 'Terracolin',            'Nifuroxazida',            '200 mg',           'Tableta',    1.94,  'Libre',      30, 3, 'Activo',   NULL, 5),
+('7770000000170', 'Quetorol',              'Ketorolaco',              '30 mg',            'Tableta',    5.00,  'Libre',       8, 5, 'Activo',   NULL, 2),
+('7770000000187', 'Vacuna Influvac Tetra', 'Influenza',              'Quadrivalente',    'Inyectable', 212.00, 'Libre',      10, 30, 'Activo',   NULL, 7);
 
 -- ---------------------------------------------------------------------
 -- PROVEEDORES

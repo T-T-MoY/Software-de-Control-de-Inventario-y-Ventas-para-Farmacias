@@ -36,6 +36,15 @@ const modules = MODULOS
           </router-link>
         </li>
         <li class="nav-item">
+          <router-link to="/medicamentos" class="nav-link d-flex align-items-center">
+            <i class="fas fa-pills me-3"></i>
+            <span class="flex-grow-1">
+              Medicamentos
+              <small class="module-owner">({{ RESPONSABLES.catalogo }})</small>
+            </span>
+          </router-link>
+        </li>
+        <li class="nav-item">
           <router-link to="/perfil" class="nav-link d-flex align-items-center">
             <i class="fas fa-circle-user me-3"></i>
             <span>Mi perfil</span>

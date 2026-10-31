@@ -1,5 +1,7 @@
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+export const apiAssetUrl = (path) => new URL(path, apiBaseUrl).toString()
+
 export async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers || {})
   const token = localStorage.getItem('tokenSession')

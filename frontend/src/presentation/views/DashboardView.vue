@@ -36,8 +36,10 @@ const stats = computed(() => [
   },
   {
     label: 'Módulos activos',
-    value: '3',
-    hint: 'Panel, usuarios y perfil',
+    value: String(isAdmin.value ? 4 : 3),
+    hint: isAdmin.value
+      ? 'Panel, usuarios, perfil y catálogo'
+      : 'Panel, perfil y catálogo',
     icon: 'fa-table-cells-large',
     tone: 'blue'
   },
@@ -60,10 +62,17 @@ const stats = computed(() => [
           <span class="eyebrow eyebrow-light">{{ greeting }}</span>
           <h2 class="welcome-title">Hola, {{ firstName }}</h2>
           <p class="welcome-text mb-0">
-            La base del sistema de farmacia está lista. La gestión de usuarios y el perfil
-            ya están habilitados; los demás módulos se incorporarán durante el trabajo del equipo.
+            La base del sistema de farmacia está lista. La gestión de usuarios, el perfil y
+            el catálogo de medicamentos ya están habilitados; los demás módulos se incorporarán
+            durante el trabajo del equipo.
           </p>
           <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
+            <router-link
+              to="/medicamentos"
+              class="btn btn-cream rounded-pill px-4"
+            >
+              <i class="fas fa-pills me-2"></i>Ver catálogo
+            </router-link>
             <router-link
               v-if="isAdmin"
               to="/usuarios"

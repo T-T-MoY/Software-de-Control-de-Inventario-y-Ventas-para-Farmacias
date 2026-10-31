@@ -22,6 +22,17 @@ export function inicialesDeNombre(nombre) {
   return partes.slice(0, 2).map((parte) => parte[0]).join('').toUpperCase()
 }
 
+/** Precio en bolivianos con dos decimales: Bs 12,50. */
+export function formatearPrecio(valor) {
+  const numero = Number(valor)
+  if (!Number.isFinite(numero)) return 'Bs 0,00'
+
+  return `Bs ${numero.toLocaleString('es-BO', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`
+}
+
 export function formatearFecha(valor, conHora = false) {
   if (!valor) return 'No registrada'
 

@@ -3,6 +3,7 @@ import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import UsersView from '../views/UsersView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import MedicinesView from '../views/MedicinesView.vue'
 import { RESPONSABLES } from '../../config/distribution'
 import { estaAutenticado, esAdministrador } from '../../business/session'
 
@@ -26,6 +27,16 @@ const router = createRouter({
       name: 'perfil',
       component: ProfileView,
       meta: { requiresAuth: true, title: 'Mi perfil' }
+    },
+    {
+      path: '/medicamentos',
+      name: 'medicamentos',
+      component: MedicinesView,
+      meta: {
+        requiresAuth: true,
+        title: 'Catálogo de medicamentos',
+        responsable: RESPONSABLES.catalogo
+      }
     },
     {
       path: '/usuarios',

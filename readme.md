@@ -1,6 +1,6 @@
 # Sistema de Control de Inventario y Ventas para Farmacias
 
-Plantilla de trabajo grupal para administrar el acceso de usuarios y preparar los módulos de farmacia. Están implementados el inicio de sesión, la gestión de usuarios y roles, el perfil del usuario, el middleware de permisos por rol y los parámetros generales del sistema; los demás módulos se muestran como pendientes para que cada integrante los desarrolle.
+Sistema de control de inventario y ventas para farmacias. Están implementados el inicio de sesión, la gestión de usuarios y roles, el perfil del usuario, el middleware de permisos por rol, los parámetros generales y el catálogo de medicamentos (RF2); los módulos restantes se muestran como pendientes para que cada integrante los desarrolle.
 
 ## Reparto del equipo
 
@@ -38,11 +38,12 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 │   ├── ARQUITECTURA-MULTICAPA.md
 │   ├── MODELO-DATOS.md
 │   ├── PRUEBAS-SPRINT-1.md          # evidencia de CP-01 y CP-07
+│   ├── PRUEBAS-SPRINT-2.md          # evidencia de RF2
 │   └── pruebas/POSTMAN/             # colección, entorno y capturas
 │
 ├── database/                       # esquema y datos iniciales
 │   ├── 01_init.sql                 # tablas (incluye el estado 'Eliminado')
-│   └── 02_inserts.sql              # datos de ejemplo
+│   ├── 02_inserts.sql              # datos de ejemplo
 │
 ├── backend/
 │   ├── Dockerfile
@@ -365,7 +366,7 @@ docker compose down               # detiene todo y conserva los datos
 docker compose down -v            # detiene todo y BORRA la base de datos
 ```
 
-Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL crea un volumen vacío**. Para conservar los datos al reiniciar, usa `docker compose down` (sin `-v`).
+Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL crea un volumen vacío**. Para conservar los datos al reiniciar, usa `docker compose down` (sin `-v`). Las fotos son opcionales: `database/02_inserts.sql` las inicializa como `NULL` y se cargan desde el catálogo.
 
 ### Ejecución manual (sin Docker)
 
@@ -521,6 +522,7 @@ Los requisitos que afectan a todo el sistema (RNF3 rendimiento, RNF4 disponibili
 
 **Qué abarca**
 - **Catálogo (RF2):** registrar y actualizar medicamentos con nombre comercial, DCI, concentración, forma farmacéutica, categoría, precio, tipo de venta (libre o con receta) y código de barras. Búsqueda por nombre, principio activo, categoría o código de barras, mostrando precio y stock vigente.
+- **Foto del catálogo:** opcionalmente se puede subir una imagen JPEG, PNG o WebP de hasta 5 MB; el archivo se guarda localmente y la base almacena su ruta.
 - **Proveedores y recepción de lotes (RF3):** registrar proveedores y recepcionar entregas exigiendo proveedor, número de lote, fecha de vencimiento y costo. La recepción suma al stock y la venta lo descuenta, sin permitir stock negativo.
 - **Reorden (RD4):** calcular el punto de reorden `ROP = (D × L) + SS` y alertar cuando el stock sea menor o igual a ese valor. La alerta es visual en pantalla; el aviso por correo quedó pendiente para una versión posterior.
 - **Baja de lotes vencidos (RF3):** solo el Administrador.
@@ -587,7 +589,7 @@ Cada responsable protege las rutas de su sprint con `autorizar(PERMISOS.X)`, seg
 **Sprint 2: 26/10 al 30/10.** Meta: catálogo de medicamentos.
 - Responsable: Víctor Rojas.
 - Se entrega: registro, actualización y búsqueda de medicamentos (RF2), con DCI, concentración y forma farmacéutica (RD3).
-- Cierre: registro y búsquedas verificadas (CP-02, CP-12). Pruebas, revisión y retrospectiva el 30/10.
+- Cierre: registro y búsquedas verificadas (CP-02, CP-12). Evidencia: [`docs/PRUEBAS-SPRINT-2.md`](docs/PRUEBAS-SPRINT-2.md).
 
 **Sprint 3: 02/11 al 04/11.** Meta: inventario completo.
 - Responsable: Bryan Coyo.

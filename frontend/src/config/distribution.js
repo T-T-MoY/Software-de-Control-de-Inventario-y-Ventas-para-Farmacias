@@ -10,7 +10,6 @@ export const RESPONSABLES = {
 }
 
 export const MODULOS = [
-  { name: 'Medicamentos', icon: 'fa-pills', responsable: RESPONSABLES.catalogo },
   { name: 'Lotes', icon: 'fa-boxes-stacked', responsable: RESPONSABLES.inventario },
   { name: 'Proveedores', icon: 'fa-truck', responsable: RESPONSABLES.inventario },
   { name: 'Ventas', icon: 'fa-cash-register', responsable: RESPONSABLES.ventas },

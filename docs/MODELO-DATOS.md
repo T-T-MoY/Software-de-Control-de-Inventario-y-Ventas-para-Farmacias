@@ -58,6 +58,7 @@ erDiagram
         int stock_seguridad
         int dias_reposicion
         varchar estado_medicamento
+        text foto_url
         int id_categoria FK
     }
 
@@ -194,6 +195,7 @@ classDiagram
         +int stock_seguridad
         +int dias_reposicion
         +string estado_medicamento
+        +string foto_url
         +int id_categoria
         +requiereReceta() bool
         +puntoReorden(demanda, leadTime) int
@@ -346,6 +348,7 @@ classDiagram
 | `stock_seguridad` | `INT` | NOT NULL, ≥ 0 |
 | `dias_reposicion` | `INT` | NOT NULL, ≥ 0 |
 | `estado_medicamento` | `VARCHAR(10)` | NOT NULL, `Activo` / `Inactivo` |
+| `foto_url` | `TEXT` | Opcional; ruta relativa del archivo en `backend/uploads/medicamentos` |
 | `id_categoria` | `INT` | NOT NULL, FK → `categoria` |
 
 ### `proveedor`

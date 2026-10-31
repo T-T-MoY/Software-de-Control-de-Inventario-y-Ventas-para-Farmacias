@@ -8,6 +8,7 @@ const authRutas = require('./presentation/routes/auth.routes');
 const usuariosRutas = require('./presentation/routes/users.routes');
 const perfilRutas = require('./presentation/routes/profile.routes');
 const parametrosRutas = require('./presentation/routes/parameters.routes');
+const medicamentosRutas = require('./presentation/routes/medicines.routes');
 const { noEncontrado, manejarErrores } = require('./presentation/middleware/errors');
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api', authRutas);
 app.use('/api/usuarios', usuariosRutas);
 app.use('/api/perfil', perfilRutas);
 app.use('/api/parametros', parametrosRutas);
+app.use('/api/medicamentos', medicamentosRutas);
 
 app.use(noEncontrado);
 app.use(manejarErrores);

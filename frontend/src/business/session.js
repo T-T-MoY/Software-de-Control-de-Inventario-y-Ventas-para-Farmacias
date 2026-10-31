@@ -52,6 +52,16 @@ export function esAdministrador() {
   return localStorage.getItem(CLAVES.rol) === 'Administrador'
 }
 
+/**
+ * Refleja el permiso `gestionar_catalogo` de la matriz de roles.
+ * El backend vuelve a comprobarlo en cada ruta; esto solo oculta
+ * acciones que el usuario no podría completar.
+ */
+export function puedeGestionarCatalogo() {
+  return ['Administrador', 'Encargado de inventario']
+    .includes(localStorage.getItem(CLAVES.rol))
+}
+
 /** Borra solo los datos de sesión; el tema visual se conserva. */
 export function cerrarSesion() {
   Object.values(CLAVES).forEach((clave) => localStorage.removeItem(clave))

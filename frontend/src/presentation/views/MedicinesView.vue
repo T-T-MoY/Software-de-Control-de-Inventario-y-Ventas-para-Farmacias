@@ -54,7 +54,7 @@ const fotoVisible = computed(() => (
 const search = ref('')
 const filtroCategoria = ref('Todos')
 const filtroEstado = ref('Todos')
-const porPagina = 10
+const porPagina = 12
 const paginaActual = ref(1)
 
 // Cambio de estado (borrado lógico del catálogo)
@@ -698,204 +698,109 @@ onMounted(cargarDatos)
       </div>
 
       <template v-else>
-        <!-- Vista de escritorio: tabla -->
-        <div class="panel-table-wrap">
-          <table class="panel-table">
-            <thead>
-              <tr>
-                <th class="cell-index">#</th>
-                <th class="cell-photo">Foto</th>
-                <th style="width: 30%">Medicamento</th>
-                <th style="width: 16%">Categoría</th>
-                <th style="width: 12%">Precio</th>
-                <th style="width: 9%">Stock</th>
-                <th style="width: 12%">Estado</th>
-                <th class="cell-actions text-end">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(medicamento, indice) in medicamentosPaginados"
-                :key="medicamento.id_medicamento"
+        
+        <div class="medicines-grid">
+          <article
+            v-for="medicamento in medicamentosPaginados"
+            :key="medicamento.id_medicamento"
+            class="medicine-card"
+          >
+            <div class="medicine-card-header-img">
+              <img
+                v-if="medicamento.foto_url"
+                :src="apiAssetUrl(medicamento.foto_url)"
+                :alt="`Foto de ${medicamento.nombre_comercial}`"
+                loading="lazy"
               >
-                <td class="cell-index">
-                  {{ (paginaActual - 1) * porPagina + indice + 1 }}
-                </td>
-                <td class="medicine-photo-cell">
-                  <img
-                    v-if="medicamento.foto_url"
-                    class="medicine-thumbnail"
-                    :src="apiAssetUrl(medicamento.foto_url)"
-                    :alt="`Foto de ${medicamento.nombre_comercial}`"
-                    loading="lazy"
-                  >
-                  <span v-else class="medicine-photo-placeholder" aria-label="Sin foto">
-                    <i class="fas fa-pills"></i>
-                  </span>
-                </td>
-                <td class="cell-truncate">
-                  <span
-                    class="truncate fw-semibold"
-                    :title="medicamento.nombre_comercial"
-                  >
+              <span v-else class="no-photo-text">
+                <i class="fas fa-pills" aria-hidden="true"></i>
+                Sin foto
+              </span>
+            </div>
+            
+            <div class="medicine-card-body">
+              <div class="medicine-info">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h4 class="medicine-title truncate" :title="medicamento.nombre_comercial">
                     {{ medicamento.nombre_comercial }}
-                  </span>
-                  <small
-                    class="truncate text-muted"
-                    :title="`${medicamento.dci} · ${medicamento.concentracion} · ${medicamento.forma_farmaceutica}`"
-                  >
-                    {{ medicamento.dci }} · {{ medicamento.concentracion }}
-                  </small>
-                </td>
-                <td class="cell-truncate">
-                  <span class="truncate" :title="medicamento.nombre_categoria">
-                    {{ medicamento.nombre_categoria }}
-                  </span>
-                </td>
-                <td class="cell-truncate">
-                  <span class="truncate fw-semibold">
-                    {{ formatearPrecio(medicamento.precio_unitario) }}
-                  </span>
-                </td>
-                <td>
-                  <span
-                    class="stock-value"
-                    :class="{ 'is-empty': medicamento.stock_vigente <= 0 }"
-                  >
-                    {{ medicamento.stock_vigente }}
-                  </span>
-                </td>
-                <td>
+                  </h4>
                   <span
                     class="badge-estado"
                     :class="esActivo(medicamento) ? 'is-active' : 'is-inactive'"
                   >
                     {{ medicamento.estado_medicamento }}
                   </span>
-                </td>
-                <td>
-                  <div v-if="puedeGestionar" class="action-stack">
-                    <button
-                      type="button"
-                      class="btn-row"
-                      @click="abrirEdicion(medicamento)"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-row"
-                      :class="esActivo(medicamento) ? 'is-danger' : 'is-success'"
-                      @click="abrirCambioEstado(medicamento)"
-                    >
-                      {{ esActivo(medicamento) ? 'Desactivar' : 'Activar' }}
-                    </button>
-                    <button
-                      type="button"
-                      class="btn-row is-danger"
-                      :disabled="eliminandoId === medicamento.id_medicamento"
-                      title="Eliminar medicamento sin borrar su historial"
-                      @click="abrirBaja(medicamento)"
-                    >
-                      {{ eliminandoId === medicamento.id_medicamento ? 'Cargando…' : 'Eliminar' }}
-                    </button>
-                  </div>
-                  <span v-else class="text-muted small">Solo lectura</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
 
-        <!-- Vista móvil: cards -->
-        <div class="mobile-list">
-          <article
-            v-for="(medicamento, indice) in medicamentosPaginados"
-            :key="`movil-${medicamento.id_medicamento}`"
-            class="mobile-card"
-          >
-            <div class="mobile-card-head">
-              <span class="mobile-index">
-                {{ (paginaActual - 1) * porPagina + indice + 1 }}
-              </span>
-              <img
-                v-if="medicamento.foto_url"
-                class="medicine-thumbnail"
-                :src="apiAssetUrl(medicamento.foto_url)"
-                :alt="`Foto de ${medicamento.nombre_comercial}`"
-                loading="lazy"
-              >
-              <span v-else class="medicine-photo-placeholder" aria-label="Sin foto">
-                <i class="fas fa-pills"></i>
-              </span>
-              <div class="mobile-card-title">
-                <h4 class="truncate" :title="medicamento.nombre_comercial">
-                  {{ medicamento.nombre_comercial }}
-                </h4>
-                <p class="truncate" :title="medicamento.dci">
-                  {{ medicamento.dci }} · {{ medicamento.concentracion }}
+                <p class="medicine-desc truncate-2-lines" :title="`${medicamento.dci} · ${medicamento.concentracion} · ${medicamento.forma_farmaceutica}`">
+                  {{ medicamento.dci }} · {{ medicamento.concentracion }} · {{ medicamento.forma_farmaceutica }}
                 </p>
+
+                <div class="medicine-stats">
+                  <div>
+                    <span>Categoría</span>
+                    <strong class="truncate" :title="medicamento.nombre_categoria">{{ medicamento.nombre_categoria }}</strong>
+                  </div>
+                  <div>
+                    <span>Precio</span>
+                    <strong>{{ formatearPrecio(medicamento.precio_unitario) }}</strong>
+                  </div>
+                  <div>
+                    <span>Stock</span>
+                    <strong :class="{ 'is-empty': medicamento.stock_vigente <= 0 }">
+                      {{ medicamento.stock_vigente }} u.
+                    </strong>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="mobile-meta">
-              <div class="min-w-0">
-                <p>Categoría</p>
-                <strong class="truncate" :title="medicamento.nombre_categoria">
-                  {{ medicamento.nombre_categoria }}
-                </strong>
-              </div>
-              <div>
-                <p>Precio</p>
-                <strong>{{ formatearPrecio(medicamento.precio_unitario) }}</strong>
-              </div>
-              <div>
-                <p>Stock vigente</p>
-                <strong
-                  class="stock-value"
-                  :class="{ 'is-empty': medicamento.stock_vigente <= 0 }"
+            <div class="medicine-card-footer">
+              <template v-if="puedeGestionar">
+                <button
+                  type="button"
+                  class="medicine-action is-edit"
+                  title="Editar medicamento"
+                  @click="abrirEdicion(medicamento)"
                 >
-                  {{ medicamento.stock_vigente }}
-                </strong>
-              </div>
-              <div>
-                <p>Estado</p>
-                <span
-                  class="badge-estado"
-                  :class="esActivo(medicamento) ? 'is-active' : 'is-inactive'"
+                  <i class="fas fa-pen" aria-hidden="true"></i>
+                  <span>Editar</span>
+                </button>
+                <button
+                  type="button"
+                  class="medicine-action"
+                  :class="esActivo(medicamento) ? 'is-warning' : 'is-success'"
+                  :title="esActivo(medicamento) ? 'Desactivar' : 'Activar'"
+                  :aria-label="esActivo(medicamento) ? 'Desactivar medicamento' : 'Activar medicamento'"
+                  @click="abrirCambioEstado(medicamento)"
                 >
-                  {{ medicamento.estado_medicamento }}
-                </span>
-              </div>
-            </div>
-
-            <div v-if="puedeGestionar" class="mobile-actions">
-              <button type="button" class="btn-row" @click="abrirEdicion(medicamento)">
-                Editar
-              </button>
-              <button
-                type="button"
-                class="btn-row"
-                :class="esActivo(medicamento) ? 'is-danger' : 'is-success'"
-                @click="abrirCambioEstado(medicamento)"
-              >
-                {{ esActivo(medicamento) ? 'Desactivar' : 'Activar' }}
-              </button>
-              <button
-                type="button"
-                class="btn-row is-danger"
-                :disabled="eliminandoId === medicamento.id_medicamento"
-                title="Eliminar medicamento sin borrar su historial"
-                @click="abrirBaja(medicamento)"
-              >
-                {{ eliminandoId === medicamento.id_medicamento ? 'Cargando…' : 'Eliminar' }}
-              </button>
+                  <i
+                    class="fas"
+                    :class="esActivo(medicamento) ? 'fa-ban' : 'fa-check'"
+                    aria-hidden="true"
+                  ></i>
+                  <span>{{ esActivo(medicamento) ? 'Desactivar' : 'Activar' }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="medicine-action is-danger"
+                  :disabled="eliminandoId === medicamento.id_medicamento"
+                  title="Eliminar medicamento"
+                  aria-label="Eliminar medicamento"
+                  @click="abrirBaja(medicamento)"
+                >
+                  <i v-if="eliminandoId === medicamento.id_medicamento" class="fas fa-spinner fa-spin"></i>
+                  <i v-else class="fas fa-trash-alt" aria-hidden="true"></i>
+                  <span>Eliminar</span>
+                </button>
+              </template>
+              <span v-else class="text-muted small w-100 text-center">Modo de solo lectura</span>
             </div>
           </article>
         </div>
 
         <!-- Paginación numerada -->
-        <div v-if="totalPaginas > 1" class="panel-footer">
+        <div v-if="totalPaginas > 1" class="panel-footer mt-4 border-top pt-3">
           <p>
             Página <strong>{{ paginaActual }}</strong> de <strong>{{ totalPaginas }}</strong>
           </p>
@@ -993,6 +898,7 @@ onMounted(cargarDatos)
 
         <form class="mt-4" novalidate @submit.prevent="guardarMedicamento">
           <div class="row g-3">
+            <!-- (Campos de formulario intactos) -->
             <div class="col-md-6">
               <label class="form-label" for="codigo-barras">
                 Código de barras <span class="req">*</span>
@@ -1232,7 +1138,8 @@ onMounted(cargarDatos)
           <div class="medicine-photo-editor mt-3">
             <div class="medicine-photo-preview">
               <img v-if="fotoVisible" :src="fotoVisible" alt="Vista previa de la foto">
-              <span v-else><i class="fas fa-pills"></i> Sin foto</span>
+              <!-- Cero íconos en todo el componente, sustituido por texto -->
+              <span v-else class="no-photo-text" style="font-size: 0.75rem;">Sin foto</span>
             </div>
             <div class="medicine-photo-actions">
               <label class="form-label" for="foto-medicamento">
@@ -1420,64 +1327,276 @@ onMounted(cargarDatos)
   width: min(100%, 820px);
 }
 
-.panel-table .cell-photo {
-  width: 64px;
+/* ============================================== */
+/* GRID Y TARJETAS TIPO E-COMMERCE                */
+/* ============================================== */
+.medicines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  align-items: stretch;
+  gap: 1rem;
+  padding: 1rem;
 }
 
-.medicine-photo-cell {
-  text-align: center;
+.medicine-card {
+  min-width: 0;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.medicine-thumbnail,
-.medicine-photo-placeholder {
-  width: 44px;
-  height: 44px;
+.medicine-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.medicine-card-header-img {
+  height: 168px;
+  /* Forzamos un fondo blanco para que las fotos de los medicamentos se vean bien en modo claro y oscuro */
+  background: #ffffff; 
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.medicine-card-header-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.medicine-card:hover .medicine-card-header-img img {
+  transform: scale(1.04);
+}
+
+.no-photo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Ajuste de color para los textos "Sin foto" que ahora están sobre fondo blanco */
+.medicine-card-header-img .no-photo-text,
+.medicine-photo-preview .no-photo-text {
+  color: #64748b; /* Gris oscuro para que se lea bien */
+}
+
+.no-photo-text i {
+  color: var(--text-accent);
+  font-size: 1.6rem;
+}
+
+.medicine-card-header-img .no-photo-text i,
+.medicine-photo-preview .no-photo-text i {
+  color: #94a3b8; /* Ícono grisáceo visible sobre blanco */
+}
+
+.medicine-card-body {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.medicine-info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.medicine-title {
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.medicine-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0.4rem 0 0.9rem;
+  line-height: 1.4;
+}
+
+.truncate-2-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2; /* <-- Propiedad estándar añadida para quitar la advertencia */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.medicine-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  margin-top: auto;
+}
+
+.medicine-stats div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-input);
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--border-color);
+}
+
+.medicine-stats span {
+  color: var(--text-soft);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
+}
+
+.medicine-stats strong {
+  overflow: hidden;
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medicine-stats strong.is-empty {
+  color: var(--danger);
+}
+
+.medicine-card-footer {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.medicine-card-footer > span {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+}
+
+.medicine-action {
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  overflow: hidden;
+  gap: 0.35rem;
+  padding: 0.5rem 0.4rem;
   border: 1px solid var(--border-color);
-  border-radius: 0.6rem;
-  background: var(--bg-body);
+  border-radius: 0.7rem;
+  background: var(--bg-card);
   color: var(--text-muted);
-  object-fit: cover;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background-color 0.18s ease, border-color 0.18s ease,
+    color 0.18s ease, transform 0.18s ease;
 }
 
-.mobile-card-head .medicine-thumbnail,
-.mobile-card-head .medicine-photo-placeholder {
-  width: 40px;
-  height: 40px;
+.medicine-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  color: var(--primary);
 }
 
+.medicine-action.is-warning {
+  color: var(--warning);
+}
+
+.medicine-action.is-warning:hover:not(:disabled) {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.medicine-action.is-success {
+  color: var(--success);
+}
+
+.medicine-action.is-success:hover:not(:disabled) {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.medicine-action.is-danger {
+  color: var(--danger);
+}
+
+.medicine-action.is-danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.medicine-action:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.medicine-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === EDICIÓN FOTO MODAL === */
 .medicine-photo-editor {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 1.25rem;
+  padding: 1.25rem;
   border: 1px solid var(--border-color);
   border-radius: 0.8rem;
+  background: var(--bg-card);
 }
 
 .medicine-photo-preview {
-  width: 112px;
-  height: 112px;
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-strong);
   border-radius: 0.75rem;
-  background: var(--bg-body);
+  /* Forzamos fondo blanco para que la vista previa sea consistente */
+  background: #ffffff; 
   color: var(--text-muted);
-  font-size: 0.82rem;
 }
 
 .medicine-photo-preview img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  padding: 8px;
 }
 
 .medicine-photo-actions {
@@ -1485,26 +1604,29 @@ onMounted(cargarDatos)
   flex: 1;
 }
 
-.stock-value {
-  font-weight: 700;
-}
-
-.stock-value.is-empty {
-  color: var(--danger);
-}
-
 @media (max-width: 575.98px) {
   .panel-modal.is-wide {
     width: 100%;
   }
-
   .medicine-photo-editor {
     align-items: flex-start;
   }
-
   .medicine-photo-preview {
-    width: 84px;
-    height: 84px;
+    width: 90px;
+    height: 90px;
+  }
+  .medicines-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  .medicine-card-footer {
+    padding: 0.65rem 0.75rem 0.75rem;
+  }
+  .medicine-action {
+    gap: 0.25rem;
+    padding-inline: 0.25rem;
+    font-size: 0.7rem;
   }
 }
 </style>

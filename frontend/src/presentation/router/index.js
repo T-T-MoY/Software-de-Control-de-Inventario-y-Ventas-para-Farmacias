@@ -4,8 +4,11 @@ import DashboardView from '../views/DashboardView.vue'
 import UsersView from '../views/UsersView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import MedicinesView from '../views/MedicinesView.vue'
+import SuppliersView from '../views/SuppliersView.vue'
+import LotsView from '../views/LotsView.vue'
 import { RESPONSABLES } from '../../config/distribution'
-import { estaAutenticado, esAdministrador } from '../../business/session'
+import { estaAutenticado, esAdministrador, obtenerSesion } from '../../business/session'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +42,27 @@ const router = createRouter({
       }
     },
     {
+      path: '/proveedores',
+      name: 'proveedores',
+      component: SuppliersView,
+      meta: {
+        requiresAuth: true,
+        requiresSupplierManagement: true,
+        title: 'Gestión de proveedores',
+        responsable: RESPONSABLES.inventario
+      }
+    },
+    {
+      path: '/lotes',
+      name: 'lotes',
+      component: LotsView,
+      meta: {
+        requiresAuth: true,
+        title: 'Gestión de lotes',
+        responsable: RESPONSABLES.inventario
+      }
+    },
+    {
       path: '/usuarios',
       name: 'usuarios',
       component: UsersView,
@@ -65,6 +89,11 @@ router.beforeEach((to) => {
     return { name: 'dashboard' }
   }
   if (to.name === 'login' && authenticated) return { name: 'dashboard' }
+  if (to.meta.requiresSupplierManagement && !['Administrador', 'Encargado de inventario']
+    .includes(obtenerSesion().rol)) {
+    return { name: 'dashboard' }
+  }
+
   return true
 })
 

@@ -1,9 +1,14 @@
 <script setup>
 import { computed } from 'vue'
 import { MODULOS, RESPONSABLES } from '../../config/distribution'
-import { esAdministrador } from '../../business/session'
+import { esAdministrador, obtenerSesion } from '../../business/session'
 
 const isAdmin = computed(() => esAdministrador())
+
+const puedeGestionarProveedores = computed(() =>
+  ['Administrador', 'Encargado de inventario']
+    .includes(obtenerSesion().rol)
+)
 
 const modules = MODULOS
 </script>
@@ -64,16 +69,51 @@ const modules = MODULOS
       <div class="sidebar-section-label">MÓDULOS DEL SISTEMA</div>
       <ul class="nav flex-column gap-1">
         <li v-for="module in modules" :key="module.name" class="nav-item">
+          <router-link
+            v-if="module.name === 'Lotes'"
+            to="/lotes"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">
+                ({{ module.responsable }})
+              </small>
+            </span>
+          </router-link>
+
+          <router-link
+            v-else-if="module.name === 'Proveedores' && puedeGestionarProveedores"
+            to="/proveedores"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">
+                ({{ module.responsable }})
+              </small>
+            </span>
+          </router-link>
+
           <span
+            v-else
             class="nav-link d-flex align-items-center module-pending"
             :title="`${module.name}: en desarrollo (${module.responsable})`"
           >
             <i class="fas me-3" :class="module.icon"></i>
+
             <span class="flex-grow-1">
               {{ module.name }}
-              <small class="module-owner">({{ module.responsable }})</small>
+              <small class="module-owner">
+                ({{ module.responsable }})
+              </small>
             </span>
-            <span class="pending-dot" aria-label="En desarrollo"></span>
+
+            <span class="pending-dot"></span>
           </span>
         </li>
       </ul>

@@ -87,6 +87,37 @@ const lotesPaginados = computed(() => {
   )
 })
 
+const numerosPagina = computed(() => {
+  const total = totalPaginas.value
+  const actual = paginaActual.value
+  const maxVisible = 5
+
+  if (total <= maxVisible + 2) {
+    return Array.from({ length: total }, (_, indice) => indice + 1)
+  }
+
+  const paginas = [1]
+  let inicio = Math.max(2, actual - 1)
+  let fin = Math.min(total - 1, actual + 1)
+
+  if (actual <= 3) {
+    inicio = 2
+    fin = 4
+  } else if (actual >= total - 2) {
+    inicio = total - 3
+    fin = total - 1
+  }
+
+  if (inicio > 2) paginas.push('...')
+  for (let pagina = inicio; pagina <= fin; pagina += 1) {
+    paginas.push(pagina)
+  }
+  if (fin < total - 1) paginas.push('...')
+  paginas.push(total)
+
+  return paginas
+})
+
 const indiceInicio = computed(() =>
   lotesFiltrados.value.length
     ? (paginaActual.value - 1) * porPagina + 1
@@ -109,6 +140,11 @@ watch(totalPaginas, (total) => {
     paginaActual.value = total
   }
 })
+
+const limpiarFiltros = () => {
+  search.value = ''
+  filtroEstado.value = 'Todos'
+}
 
 // =====================================================
 // ESTADÍSTICAS
@@ -434,7 +470,15 @@ onMounted(cargarDatos)
       class="notice notice-error"
       role="alert"
     >
-      {{ error }}
+      <span><i class="fas fa-circle-exclamation me-2"></i>{{ error }}</span>
+      <button
+        type="button"
+        class="notice-close"
+        aria-label="Cerrar aviso"
+        @click="error = ''"
+      >
+        ×
+      </button>
     </div>
 
     <!-- ESTADÍSTICAS -->
@@ -463,7 +507,7 @@ onMounted(cargarDatos)
     </div>
 
     <!-- TABLA -->
-    <div class="panel">
+    <div class="panel lots-list-panel">
 
       <div class="panel-title-bar">
         <h3>Inventario por lotes</h3>
@@ -490,6 +534,7 @@ onMounted(cargarDatos)
               type="search"
               class="form-control panel-control"
               placeholder="Buscar medicamento, proveedor o número de lote..."
+              autocomplete="off"
             >
 
           </div>
@@ -511,17 +556,30 @@ onMounted(cargarDatos)
               <option value="Vencido">Vencidos</option>
               <option value="Baja">Dados de baja</option>
             </select>
-
+          </div>
+          <div class="field">
+            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+            <button
+              type="button"
+              class="btn-panel btn-panel-ghost"
+              :disabled="!search && filtroEstado === 'Todos'"
+              @click="limpiarFiltros"
+            >
+              Limpiar filtros
+            </button>
           </div>
 
         </div>
 
-        <p class="panel-count mt-3">
+        <p class="panel-count">
           Mostrando
           <strong>{{ indiceInicio }}-{{ indiceFin }}</strong>
           de
           <strong>{{ lotesFiltrados.length }}</strong>
           lotes
+          <span v-if="search || filtroEstado !== 'Todos'">
+            (filtrados de {{ totalLotes }} en total)
+          </span>
         </p>
 
       </div>
@@ -532,11 +590,22 @@ onMounted(cargarDatos)
       </div>
 
       <div
+        v-else-if="error"
+        class="panel-state is-error"
+      >
+        No se pudo cargar el inventario.
+      </div>
+
+      <div
         v-else-if="lotesFiltrados.length === 0"
         class="panel-state"
       >
         <i class="fas fa-box-open fs-4 d-block mb-2"></i>
-        No se encontraron lotes.
+        {{
+          search || filtroEstado !== 'Todos'
+            ? 'No se encontraron lotes que coincidan con los filtros.'
+            : 'No hay lotes registrados.'
+        }}
       </div>
 
       <template v-else>
@@ -547,36 +616,45 @@ onMounted(cargarDatos)
 
             <thead>
               <tr>
-                <th>Número de lote</th>
+                <th class="cell-index">#</th>
+                <th>Lote</th>
                 <th>Medicamento</th>
                 <th>Proveedor</th>
                 <th>Vencimiento</th>
                 <th>Cantidad</th>
                 <th>Costo unitario</th>
                 <th>Estado</th>
-                <th v-if="puedeDarBaja">Acciones</th>
+                <th v-if="puedeDarBaja" class="cell-actions text-end">Acciones</th>
               </tr>
             </thead>
 
             <tbody>
 
               <tr
-                v-for="lote in lotesPaginados"
+                v-for="(lote, indice) in lotesPaginados"
                 :key="lote.id_lote"
               >
 
                 <td>
+                  {{ (paginaActual - 1) * porPagina + indice + 1 }}
+                </td>
+
+                <td class="cell-truncate">
                   <strong>{{ lote.lote_numero }}</strong>
                 </td>
 
-                <td>
+                <td class="cell-truncate">
                   <strong>{{ lote.medicamento }}</strong>
                   <small class="d-block text-muted">
                     {{ lote.codigo_barras }}
                   </small>
                 </td>
 
-                <td>{{ lote.proveedor }}</td>
+                <td class="cell-truncate">
+                  <span class="truncate" :title="lote.proveedor">
+                    {{ lote.proveedor }}
+                  </span>
+                </td>
 
                 <td>
                   {{ formatearFecha(lote.fecha_vencimiento) }}
@@ -607,23 +685,25 @@ onMounted(cargarDatos)
 
                 <td v-if="puedeDarBaja">
 
-                  <button
-                    v-if="lote.estado_lote === 'Vencido'"
-                    type="button"
-                    class="btn-row lot-action-danger"
-                    :disabled="procesandoBaja === lote.id_lote"
-                    @click="ejecutarBaja(lote)"
-                  >
-                    {{
-                      procesandoBaja === lote.id_lote
-                        ? 'Procesando...'
-                        : 'Dar de baja'
-                    }}
-                  </button>
+                  <div class="action-stack">
+                    <button
+                      v-if="lote.estado_lote === 'Vencido'"
+                      type="button"
+                      class="btn-row is-danger"
+                      :disabled="procesandoBaja === lote.id_lote"
+                      @click="ejecutarBaja(lote)"
+                    >
+                      {{
+                        procesandoBaja === lote.id_lote
+                          ? 'Procesando...'
+                          : 'Dar de baja'
+                      }}
+                    </button>
 
-                  <span v-else class="text-muted">
-                    —
-                  </span>
+                    <span v-else class="text-muted text-center">
+                      —
+                    </span>
+                  </div>
 
                 </td>
 
@@ -635,6 +715,81 @@ onMounted(cargarDatos)
 
         </div>
 
+        <div class="mobile-list">
+          <article
+            v-for="(lote, indice) in lotesPaginados"
+            :key="`movil-${lote.id_lote}`"
+            class="mobile-card"
+          >
+            <div class="mobile-card-head">
+              <span class="mobile-index">
+                {{ (paginaActual - 1) * porPagina + indice + 1 }}
+              </span>
+              <span class="avatar-soft">
+                <i class="fas fa-box"></i>
+              </span>
+              <div class="mobile-card-title">
+                <h4 class="truncate" :title="lote.medicamento">
+                  {{ lote.medicamento }}
+                </h4>
+                <p class="truncate" :title="lote.lote_numero">
+                  Lote {{ lote.lote_numero }}
+                </p>
+              </div>
+              <span
+                class="lot-status"
+                :class="claseEstado(lote.estado_lote)"
+              >
+                {{ lote.estado_lote }}
+              </span>
+            </div>
+
+            <div class="mobile-meta">
+              <div class="min-w-0">
+                <p>Proveedor</p>
+                <strong class="truncate" :title="lote.proveedor">
+                  {{ lote.proveedor }}
+                </strong>
+              </div>
+              <div>
+                <p>Existencias</p>
+                <strong>{{ lote.cantidad_stock }}</strong>
+              </div>
+              <div>
+                <p>Vencimiento</p>
+                <strong>{{ formatearFecha(lote.fecha_vencimiento) }}</strong>
+                <small class="d-block text-muted">
+                  {{
+                    Number(lote.dias_para_vencer) < 0
+                      ? `Venció hace ${Math.abs(Number(lote.dias_para_vencer))} días`
+                      : `${lote.dias_para_vencer} días restantes`
+                  }}
+                </small>
+              </div>
+              <div>
+                <p>Costo unitario</p>
+                <strong>{{ formatearPrecio(lote.costo_unitario) }}</strong>
+              </div>
+            </div>
+
+            <div v-if="puedeDarBaja" class="mobile-actions">
+              <button
+                v-if="lote.estado_lote === 'Vencido'"
+                type="button"
+                class="btn-row is-danger"
+                :disabled="procesandoBaja === lote.id_lote"
+                @click="ejecutarBaja(lote)"
+              >
+                {{
+                  procesandoBaja === lote.id_lote
+                    ? 'Procesando...'
+                    : 'Dar de baja lote'
+                }}
+              </button>
+            </div>
+          </article>
+        </div>
+
         <!-- PAGINACIÓN -->
         <div
           v-if="totalPaginas > 1"
@@ -642,30 +797,64 @@ onMounted(cargarDatos)
         >
 
           <p>
-            Página {{ paginaActual }} de {{ totalPaginas }}
+            Página <strong>{{ paginaActual }}</strong>
+            de <strong>{{ totalPaginas }}</strong>
           </p>
 
-          <div class="d-flex gap-2">
-
+          <nav class="pagination" aria-label="Paginación de lotes">
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="page-btn"
+              title="Primera página"
               :disabled="paginaActual === 1"
-              @click="paginaActual--"
+              @click="paginaActual = 1"
             >
-              Anterior
+              «
             </button>
-
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
-              :disabled="paginaActual === totalPaginas"
-              @click="paginaActual++"
+              class="page-btn"
+              title="Página anterior"
+              :disabled="paginaActual === 1"
+              @click="paginaActual = Math.max(1, paginaActual - 1)"
             >
-              Siguiente
+              ‹
             </button>
-
-          </div>
+            <template
+              v-for="(numero, indice) in numerosPagina"
+              :key="`pagina-${indice}`"
+            >
+              <span v-if="numero === '...'" class="page-ellipsis">…</span>
+              <button
+                v-else
+                type="button"
+                class="page-btn"
+                :class="{ 'is-current': paginaActual === numero }"
+                :aria-current="paginaActual === numero ? 'page' : undefined"
+                @click="paginaActual = numero"
+              >
+                {{ numero }}
+              </button>
+            </template>
+            <button
+              type="button"
+              class="page-btn"
+              title="Página siguiente"
+              :disabled="paginaActual === totalPaginas"
+              @click="paginaActual = Math.min(totalPaginas, paginaActual + 1)"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              class="page-btn"
+              title="Última página"
+              :disabled="paginaActual === totalPaginas"
+              @click="paginaActual = totalPaginas"
+            >
+              »
+            </button>
+          </nav>
 
         </div>
 
@@ -947,14 +1136,104 @@ onMounted(cargarDatos)
   grid-template-columns: minmax(0, 1fr);
 }
 
+.lots-list-panel {
+  container-type: inline-size;
+}
+
 @media (min-width: 992px) {
   .lot-filters {
-    grid-template-columns: minmax(0, 3fr) minmax(200px, 1fr);
+    grid-template-columns:
+      minmax(0, 5fr) minmax(180px, 2fr) minmax(150px, 1.5fr);
   }
 }
 
 .lot-table {
-  min-width: 1050px;
+  min-width: 0;
+  table-layout: auto;
+}
+
+.lot-table thead th {
+  padding: 0.55rem 0.4rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+.lot-table tbody td {
+  padding: 0.65rem 0.4rem;
+  font-size: 0.76rem;
+}
+
+.lot-table thead th:first-child,
+.lot-table tbody td:first-child {
+  padding-left: 0.75rem;
+}
+
+.lot-table thead th:nth-child(2) {
+  width: 12%;
+}
+
+.lot-table thead th:nth-child(3) {
+  width: 17%;
+}
+
+.lot-table thead th:nth-child(4) {
+  width: 14%;
+}
+
+.lot-table thead th:nth-child(5) {
+  width: 14%;
+}
+
+.lot-table thead th:nth-child(6) {
+  width: 7%;
+}
+
+.lot-table thead th:nth-child(7) {
+  width: 11%;
+}
+
+.lot-table thead th:nth-child(8) {
+  width: 9%;
+}
+
+.lot-table thead th:nth-child(n + 2):nth-child(-n + 6),
+.lot-table tbody td:nth-child(n + 2):nth-child(-n + 6) {
+  padding-right: 0.2rem;
+  padding-left: 0.2rem;
+}
+
+.lot-table .lot-status {
+  padding: 0.28rem 0.45rem;
+  font-size: 0.65rem;
+}
+
+@container (max-width: 1250px) {
+  .lot-table thead th {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.02em;
+  }
+
+  .lot-table tbody td {
+    padding: 0.55rem 0.3rem;
+    font-size: 0.7rem;
+  }
+
+  .lot-table thead th:first-child,
+  .lot-table tbody td:first-child {
+    padding-left: 0.65rem;
+  }
+
+  .lot-table thead th:nth-child(n + 2):nth-child(-n + 6),
+  .lot-table tbody td:nth-child(n + 2):nth-child(-n + 6) {
+    padding-right: 0.15rem;
+    padding-left: 0.15rem;
+  }
+
+  .lot-table .lot-status {
+    padding: 0.25rem 0.38rem;
+    font-size: 0.62rem;
+  }
 }
 
 .lot-modal {
@@ -991,16 +1270,20 @@ onMounted(cargarDatos)
   color: #64748b;
 }
 
-.lot-action-danger {
-  color: var(--danger);
-}
-
-.lot-action-danger:hover {
-  color: var(--danger);
-}
-
 .lot-modal .error-text {
   display: block;
   min-height: 1.1rem;
+}
+
+.mobile-card .truncate {
+  overflow-wrap: anywhere;
+}
+
+.mobile-card .mobile-meta strong {
+  overflow-wrap: anywhere;
+}
+
+.mobile-card .mobile-meta .truncate {
+  white-space: normal;
 }
 </style>

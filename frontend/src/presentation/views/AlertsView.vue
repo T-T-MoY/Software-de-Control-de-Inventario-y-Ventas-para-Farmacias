@@ -178,7 +178,7 @@ onMounted(cargarAlertas)
         </div>
 
         <div v-else class="panel-table-wrap">
-          <table class="panel-table">
+          <table class="panel-table alert-table">
 
             <thead>
               <tr>
@@ -252,7 +252,7 @@ onMounted(cargarAlertas)
 
         <div v-else class="panel-table-wrap">
 
-          <table class="panel-table">
+          <table class="panel-table alert-table">
 
             <thead>
               <tr>
@@ -331,7 +331,7 @@ onMounted(cargarAlertas)
 
         <div v-else class="panel-table-wrap">
 
-          <table class="panel-table">
+          <table class="panel-table alert-table">
 
             <thead>
               <tr>
@@ -406,6 +406,7 @@ onMounted(cargarAlertas)
 <style scoped>
 .alert-panel {
   margin-bottom: 1.2rem;
+  container-type: inline-size;
 }
 
 .alert-panel .panel-title-bar {
@@ -470,7 +471,57 @@ onMounted(cargarAlertas)
   font-size: 0.8rem;
 }
 
-.alert-panel .panel-table {
-  min-width: 800px;
+.alert-table {
+  min-width: 0;
+  table-layout: auto;
+}
+
+.alert-table thead th {
+  padding: 0.55rem 0.45rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+.alert-table tbody td {
+  padding: 0.65rem 0.45rem;
+  font-size: 0.76rem;
+}
+
+.alert-table thead th:first-child,
+.alert-table tbody td:first-child {
+  padding-left: 0.9rem;
+}
+
+.alert-table thead th:nth-child(3),
+.alert-table tbody td:nth-child(3) {
+  padding-right: 0.2rem;
+}
+
+.alert-table thead th:nth-child(4),
+.alert-table tbody td:nth-child(4) {
+  padding-left: 0.2rem;
+}
+
+.alert-table td,
+.alert-table th {
+  overflow-wrap: anywhere;
+}
+
+@container (max-width: 1250px) {
+  .alert-table thead th {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.02em;
+  }
+
+  .alert-table tbody td {
+    padding: 0.55rem 0.3rem;
+    font-size: 0.7rem;
+  }
+
+  .alert-table thead th:first-child,
+  .alert-table tbody td:first-child {
+    padding-left: 0.75rem;
+  }
 }
 </style>

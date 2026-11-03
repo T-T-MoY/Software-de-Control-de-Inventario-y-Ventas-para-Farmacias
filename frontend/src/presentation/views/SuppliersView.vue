@@ -81,6 +81,37 @@ const proveedoresPaginados = computed(() => {
   )
 })
 
+const numerosPagina = computed(() => {
+  const total = totalPaginas.value
+  const actual = paginaActual.value
+  const maxVisible = 5
+
+  if (total <= maxVisible + 2) {
+    return Array.from({ length: total }, (_, indice) => indice + 1)
+  }
+
+  const paginas = [1]
+  let inicio = Math.max(2, actual - 1)
+  let fin = Math.min(total - 1, actual + 1)
+
+  if (actual <= 3) {
+    inicio = 2
+    fin = 4
+  } else if (actual >= total - 2) {
+    inicio = total - 3
+    fin = total - 1
+  }
+
+  if (inicio > 2) paginas.push('...')
+  for (let pagina = inicio; pagina <= fin; pagina += 1) {
+    paginas.push(pagina)
+  }
+  if (fin < total - 1) paginas.push('...')
+  paginas.push(total)
+
+  return paginas
+})
+
 const indiceInicio = computed(() => (
   proveedoresFiltrados.value.length === 0
     ? 0
@@ -433,7 +464,7 @@ onMounted(cargarProveedores)
     </div>
 
     <!-- PANEL PRINCIPAL -->
-    <div class="panel">
+    <div class="panel supplier-list-panel">
 
       <div class="panel-title-bar">
         <h3>Proveedores registrados</h3>
@@ -534,7 +565,7 @@ onMounted(cargarProveedores)
         <!-- TABLA PARA ESCRITORIO -->
         <div class="panel-table-wrap">
 
-          <table class="panel-table">
+          <table class="panel-table supplier-table">
 
             <thead>
               <tr>
@@ -663,11 +694,11 @@ onMounted(cargarProveedores)
 
               <div class="mobile-card-title">
 
-                <h4 class="truncate">
+                <h4>
                   {{ proveedor.nombre_comercial }}
                 </h4>
 
-                <p class="truncate">
+                <p>
                   RUC/NIT: {{ proveedor.ruc_nit }}
                 </p>
 
@@ -686,14 +717,14 @@ onMounted(cargarProveedores)
 
               <div class="min-w-0">
                 <p>Correo electrónico</p>
-                <strong class="truncate">
+                <strong class="supplier-mobile-value">
                   {{ proveedor.correo_electronico || 'No registrado' }}
                 </strong>
               </div>
 
               <div class="min-w-0" style="grid-column: 1 / -1">
                 <p>Dirección</p>
-                <strong>
+                <strong class="supplier-mobile-value">
                   {{ proveedor.direccion || 'No registrada' }}
                 </strong>
               </div>
@@ -738,23 +769,58 @@ onMounted(cargarProveedores)
             <button
               type="button"
               class="page-btn"
+              title="Primera página"
+              :disabled="paginaActual === 1"
+              @click="paginaActual = 1"
+            >
+              «
+            </button>
+
+            <button
+              type="button"
+              class="page-btn"
+              title="Página anterior"
               :disabled="paginaActual === 1"
               @click="paginaActual = Math.max(1, paginaActual - 1)"
             >
               ‹
             </button>
 
-            <span class="page-btn is-current">
-              {{ paginaActual }}
-            </span>
+            <template
+              v-for="(numero, indice) in numerosPagina"
+              :key="`pagina-${indice}`"
+            >
+              <span v-if="numero === '...'" class="page-ellipsis">…</span>
+              <button
+                v-else
+                type="button"
+                class="page-btn"
+                :class="{ 'is-current': paginaActual === numero }"
+                :aria-current="paginaActual === numero ? 'page' : undefined"
+                @click="paginaActual = numero"
+              >
+                {{ numero }}
+              </button>
+            </template>
 
             <button
               type="button"
               class="page-btn"
+              title="Página siguiente"
               :disabled="paginaActual === totalPaginas"
               @click="paginaActual = Math.min(totalPaginas, paginaActual + 1)"
             >
               ›
+            </button>
+
+            <button
+              type="button"
+              class="page-btn"
+              title="Última página"
+              :disabled="paginaActual === totalPaginas"
+              @click="paginaActual = totalPaginas"
+            >
+              »
             </button>
 
           </nav>
@@ -1068,6 +1134,10 @@ onMounted(cargarProveedores)
 </template>
 
 <style scoped>
+.supplier-list-panel {
+  container-type: inline-size;
+}
+
 .supplier-modal {
   width: min(100%, 760px);
 }
@@ -1076,9 +1146,64 @@ onMounted(cargarProveedores)
   grid-template-columns: minmax(0, 1fr);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .supplier-filters {
-    grid-template-columns: minmax(0, 4fr) minmax(150px, 1fr);
+    grid-template-columns: minmax(0, 5fr) minmax(150px, 1.5fr);
+  }
+}
+
+.supplier-table {
+  min-width: 0;
+  table-layout: auto;
+}
+
+.supplier-table thead th {
+  padding: 0.55rem 0.4rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+}
+
+.supplier-table tbody td {
+  padding: 0.65rem 0.4rem;
+  font-size: 0.76rem;
+}
+
+.supplier-table .cell-actions {
+  width: 76px;
+}
+
+.supplier-mobile-value {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.mobile-card-title h4 {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.mobile-card-title p {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+@container (max-width: 1250px) {
+  .supplier-table thead th {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.02em;
+  }
+
+  .supplier-table tbody td {
+    padding: 0.55rem 0.3rem;
+    font-size: 0.7rem;
+  }
+
+  .supplier-table .avatar-soft {
+    width: 28px;
+    height: 28px;
+    font-size: 0.62rem;
   }
 }
 </style>

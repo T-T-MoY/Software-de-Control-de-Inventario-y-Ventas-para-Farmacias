@@ -1,6 +1,6 @@
 # Sistema de Control de Inventario y Ventas para Farmacias
 
-Sistema de control de inventario y ventas para farmacias. Están implementados el inicio de sesión, la gestión de usuarios y roles, el perfil del usuario, el middleware de permisos por rol, los parámetros generales y el catálogo de medicamentos (RF2); los módulos restantes se muestran como pendientes para que cada integrante los desarrolle.
+Sistema de control de inventario y ventas para farmacias. Están implementados el inicio de sesión, la gestión de usuarios y roles, el perfil del usuario, el middleware de permisos por rol, los parámetros generales, el catálogo e inventario, las alertas y el módulo de ventas y clientes (RF5).
 
 ## Reparto del equipo
 
@@ -57,25 +57,32 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 │   │   │   ├── auth.routes.js
 │   │   │   ├── users.routes.js
 │   │   │   ├── profile.routes.js
-│   │   │   └── parameters.routes.js
+│   │   │   ├── parameters.routes.js
+│   │   │   ├── sales.routes.js
+│   │   │   └── customers.routes.js
 │   │   ├── controllers/
 │   │   │   ├── auth.controller.js
 │   │   │   ├── users.controller.js
 │   │   │   ├── profile.controller.js
-│   │   │   └── parameters.controller.js
+│   │   │   ├── parameters.controller.js
+│   │   │   ├── sales.controller.js
+│   │   │   └── customers.controller.js
 │   │   ├── middleware/
 │   │   │   ├── authentication.js
 │   │   │   ├── authorization.js
 │   │   │   └── errors.js
 │   │   └── validators/
 │   │       ├── fields.js
-│   │       └── user.validator.js
+│   │       ├── user.validator.js
+│   │       └── sales.validator.js
 │   ├── business/                   # Capa 13.2
 │   │   ├── services/
 │   │   │   ├── auth.service.js
 │   │   │   ├── users.service.js
 │   │   │   ├── profile.service.js
-│   │   │   └── parameters.service.js
+│   │   │   ├── parameters.service.js
+│   │   │   ├── sales.service.js
+│   │   │   └── customers.service.js
 │   │   ├── rules/
 │   │   │   ├── permissions.js
 │   │   │   └── users.rules.js
@@ -88,7 +95,9 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 │   │   ├── connection.js           # pool de PostgreSQL + conTransaccion()
 │   │   ├── repositories/
 │   │   │   ├── users.repository.js
-│   │   │   └── roles.repository.js
+│   │   │   ├── roles.repository.js
+│   │   │   ├── sales.repository.js
+│   │   │   └── customers.repository.js
 │   │   └── mappers/
 │   │       └── user.mapper.js
 │   ├── scripts/
@@ -117,7 +126,8 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
         │   └── endpoints/
         │       ├── auth.js
         │       ├── users.js
-        │       └── profile.js
+        │       ├── profile.js
+        │       └── sales.js
         ├── business/             # Capa 13.2
         │   ├── format.js
         │   └── session.js
@@ -138,7 +148,9 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
                 ├── DashboardView.vue
                 ├── LoginView.vue
                 ├── ProfileView.vue
-                └── UsersView.vue
+                ├── UsersView.vue
+                ├── SalesView.vue
+                └── CustomersView.vue
 ```
 
 ## Arquitectura multicapa
@@ -219,7 +231,7 @@ Reglas que todos deben respetar:
 | Moisés | 1 | Ya creados: `presentation/*auth*`, `presentation/*users*`, `business/*auth*`, `business/*users*`, `business/rules/permissions.js`, `data/repositories/*users*` | `views/LoginView.vue`, `views/UsersView.vue`, `views/ProfileView.vue`, `business/session.js` |
 | Víctor Rojas | 2 | Crear `presentation/*medicines*`, `presentation/*categories*`; `business/services/medicines.service.js`; `business/rules/medicines.rules.js`; `data/repositories/*medicines*`, `*categories*` | `views/MedicinesView.vue` y `data/endpoints/medicines.js` |
 | Bryan | 3 | Crear `presentation/*suppliers*`, `presentation/*lots*`, `presentation/*alerts*`; `business/services/*inventory*`; `business/rules/*inventory*`; `data/repositories/*suppliers*`, `*lots*` | `views/SuppliersView.vue`, `views/LotsView.vue`, `views/AlertsView.vue` y sus `data/endpoints/*` |
-| Rodrigo | 4 | Crear `presentation/*sales*`, `presentation/*customers*`; `business/services/sales.service.js`; `business/rules/sales.rules.js`; `data/repositories/*sales*`, `*customers*` | `views/SalesView.vue`, `views/CustomersView.vue`, `components/SaleReceipt.vue` y `data/endpoints/sales.js` |
+| Rodrigo | 4 | Implementado: ventas y clientes protegidos, validación de recetas y transacción de stock | `SalesView.vue`, `CustomersView.vue`, `SaleReceipt.vue` y `data/endpoints/sales.js` |
 | Víctor Zegarrundo | 5 | Crear `presentation/*reports*`, `presentation/*history*`; `business/services/reports.service.js`; `data/repositories/*reports*`, `*history*` | `views/ReportsView.vue`, `views/HistoryView.vue` y `data/endpoints/reports.js` |
 
 Cada integrante crea sus archivos siguiendo el mismo patrón: **repositorio → servicio → validador → controlador → ruta → endpoint → vista**. Antes de tocar archivos compartidos (`backend/server.js`, `frontend/src/presentation/router/index.js`, `backend/business/rules/permissions.js`, `database/` o `docker-compose.yml`), avisa al equipo.

@@ -9,6 +9,7 @@ const firstName = computed(() => sesion.nombrePila || 'Usuario')
 const fullName = computed(() => sesion.nombre || firstName.value)
 const role = computed(() => sesion.rol || 'Usuario')
 const isAdmin = computed(() => sesion.rol === 'Administrador')
+const puedeProcesarVentas = computed(() => ['Administrador', 'Ventas'].includes(sesion.rol))
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -36,9 +37,9 @@ const stats = computed(() => [
   },
   {
     label: 'Módulos activos',
-    value: String(isAdmin.value ? 4 : 3),
-    hint: isAdmin.value
-      ? 'Panel, usuarios, perfil y catálogo'
+    value: String((isAdmin.value ? 4 : 3) + (puedeProcesarVentas.value ? 2 : 0)),
+    hint: puedeProcesarVentas.value
+      ? 'Ventas y clientes disponibles según tu rol'
       : 'Panel, perfil y catálogo',
     icon: 'fa-table-cells-large',
     tone: 'blue'
@@ -62,9 +63,8 @@ const stats = computed(() => [
           <span class="eyebrow eyebrow-light">{{ greeting }}</span>
           <h2 class="welcome-title">Hola, {{ firstName }}</h2>
           <p class="welcome-text mb-0">
-            La base del sistema de farmacia está lista. La gestión de usuarios, el perfil y
-            el catálogo de medicamentos ya están habilitados; los demás módulos se incorporarán
-            durante el trabajo del equipo.
+            Gestiona el catálogo, inventario y ventas de la farmacia desde un solo lugar.
+            Las opciones disponibles dependen de los permisos de tu sesión.
           </p>
           <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
             <router-link
@@ -79,6 +79,13 @@ const stats = computed(() => [
               class="btn btn-cream rounded-pill px-4"
             >
               <i class="fas fa-users me-2"></i>Gestionar usuarios
+            </router-link>
+            <router-link
+              v-if="puedeProcesarVentas"
+              to="/ventas"
+              class="btn btn-cream rounded-pill px-4"
+            >
+              <i class="fas fa-cash-register me-2"></i>Ir a ventas
             </router-link>
             <span class="welcome-chip">
               <i class="fas fa-shield-halved"></i>

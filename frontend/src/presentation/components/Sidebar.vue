@@ -10,6 +10,10 @@ const puedeGestionarProveedores = computed(() =>
     .includes(obtenerSesion().rol)
 )
 
+const puedeProcesarVentas = computed(() =>
+  ['Administrador', 'Ventas'].includes(obtenerSesion().rol)
+)
+
 const modules = MODULOS
 </script>
 
@@ -68,7 +72,11 @@ const modules = MODULOS
 
       <div class="sidebar-section-label">MÓDULOS DEL SISTEMA</div>
       <ul class="nav flex-column gap-1">
-        <li v-for="module in modules" :key="module.name" class="nav-item">
+        <template v-for="module in modules" :key="module.name">
+          <li
+            v-if="!['Ventas', 'Clientes'].includes(module.name) || puedeProcesarVentas"
+            class="nav-item"
+          >
           <router-link
             v-if="module.name === 'Lotes'"
             to="/lotes"
@@ -96,6 +104,30 @@ const modules = MODULOS
               <small class="module-owner">
                 ({{ module.responsable }})
               </small>
+            </span>
+          </router-link>
+
+          <router-link
+            v-else-if="module.name === 'Ventas'"
+            to="/ventas"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">({{ module.responsable }})</small>
+            </span>
+          </router-link>
+
+          <router-link
+            v-else-if="module.name === 'Clientes'"
+            to="/clientes"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">({{ module.responsable }})</small>
             </span>
           </router-link>
 
@@ -130,7 +162,8 @@ const modules = MODULOS
 
             <span class="pending-dot"></span>
           </span>
-        </li>
+          </li>
+        </template>
       </ul>
     </div>
 

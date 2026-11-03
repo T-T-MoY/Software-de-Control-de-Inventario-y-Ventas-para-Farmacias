@@ -7,6 +7,8 @@ import MedicinesView from '../views/MedicinesView.vue'
 import SuppliersView from '../views/SuppliersView.vue'
 import LotsView from '../views/LotsView.vue'
 import AlertsView from '../views/AlertsView.vue'
+import SalesView from '../views/SalesView.vue'
+import CustomersView from '../views/CustomersView.vue'
 import { RESPONSABLES } from '../../config/distribution'
 import { estaAutenticado, esAdministrador, obtenerSesion } from '../../business/session'
 
@@ -74,6 +76,28 @@ const router = createRouter({
       }
     },
     {
+      path: '/ventas',
+      name: 'ventas',
+      component: SalesView,
+      meta: {
+        requiresAuth: true,
+        requiresSalesAccess: true,
+        title: 'Punto de venta',
+        responsable: RESPONSABLES.ventas
+      }
+    },
+    {
+      path: '/clientes',
+      name: 'clientes',
+      component: CustomersView,
+      meta: {
+        requiresAuth: true,
+        requiresSalesAccess: true,
+        title: 'Gestión de clientes',
+        responsable: RESPONSABLES.ventas
+      }
+    },
+    {
       path: '/usuarios',
       name: 'usuarios',
       component: UsersView,
@@ -101,6 +125,10 @@ router.beforeEach((to) => {
   }
   if (to.name === 'login' && authenticated) return { name: 'dashboard' }
   if (to.meta.requiresSupplierManagement && !['Administrador', 'Encargado de inventario']
+    .includes(obtenerSesion().rol)) {
+    return { name: 'dashboard' }
+  }
+  if (to.meta.requiresSalesAccess && !['Administrador', 'Ventas']
     .includes(obtenerSesion().rol)) {
     return { name: 'dashboard' }
   }

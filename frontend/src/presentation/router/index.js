@@ -6,6 +6,7 @@ import ProfileView from '../views/ProfileView.vue'
 import MedicinesView from '../views/MedicinesView.vue'
 import SuppliersView from '../views/SuppliersView.vue'
 import LotsView from '../views/LotsView.vue'
+import AlertsView from '../views/AlertsView.vue'
 import { RESPONSABLES } from '../../config/distribution'
 import { estaAutenticado, esAdministrador, obtenerSesion } from '../../business/session'
 
@@ -59,6 +60,16 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         title: 'Gestión de lotes',
+        responsable: RESPONSABLES.inventario
+      }
+    },
+    {
+      path: '/alertas',
+      name: 'alertas',
+      component: AlertsView,
+      meta: {
+        requiresAuth: true,
+        title: 'Alertas de inventario',
         responsable: RESPONSABLES.inventario
       }
     },

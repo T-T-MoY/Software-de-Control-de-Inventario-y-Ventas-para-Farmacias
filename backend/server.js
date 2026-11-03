@@ -11,6 +11,7 @@ const parametrosRutas = require('./presentation/routes/parameters.routes');
 const medicamentosRutas = require('./presentation/routes/medicines.routes');
 const proveedoresRutas = require('./presentation/routes/suppliers.routes');
 const lotesRutas = require('./presentation/routes/lots.routes');
+const alertasRutas = require('./presentation/routes/alerts.routes');
 const { noEncontrado, manejarErrores } = require('./presentation/middleware/errors');
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/api/parametros', parametrosRutas);
 app.use('/api/medicamentos', medicamentosRutas);
 app.use('/api/proveedores', proveedoresRutas);
 app.use('/api/lotes', lotesRutas);
+app.use('/api/alertas', alertasRutas);
 // Sprint 3 montará aquí /api/alertas, /api/proveedores y /api/lotes;
 // cada ruta debe usar autenticación y autorizar(PERMISOS.X).
 

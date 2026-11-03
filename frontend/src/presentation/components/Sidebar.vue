@@ -99,6 +99,21 @@ const modules = MODULOS
             </span>
           </router-link>
 
+          <router-link
+            v-else-if="module.name === 'Alertas'"
+            to="/alertas"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">
+                ({{ module.responsable }})
+              </small>
+            </span>
+          </router-link>
+
           <span
             v-else
             class="nav-link d-flex align-items-center module-pending"

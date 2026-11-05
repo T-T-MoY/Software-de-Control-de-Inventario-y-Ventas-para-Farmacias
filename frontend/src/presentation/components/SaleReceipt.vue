@@ -163,7 +163,7 @@ const imprimir = () => {
 
     <div v-if="mostrarAcciones" class="receipt-actions">
       <button type="button" class="btn btn-primary rounded-pill w-100" @click="imprimir">
-        <i class="fas fa-print me-2"></i>Imprimir comprobante
+        <i class="fas fa-print me-2"></i>Imprimir
       </button>
     </div>
   </article>

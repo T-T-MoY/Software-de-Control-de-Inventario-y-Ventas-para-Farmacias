@@ -151,6 +151,11 @@ VALUES
 ('María Elena', 'Quispe', 'Condori', '5876543', '76543210', 'Av. Buenos Aires #1234, La Paz'),
 ('Pedro Luis',  'Apaza',  'Ticona',  '3987120', '70123456', 'Zona Villa Fátima, La Paz');
 
+INSERT INTO cliente
+    (nombres, apellido_paterno, ci_nit, telefono, domicilio)
+VALUES
+('Cliente general', NULL, '00000', NULL, 'Consumidor final');
+
 -- ---------------------------------------------------------------------
 -- VENTAS (sin descuento) y DISPENSA (líneas de cada venta)
 --   Las ventas 2 y 4 incluyen Cefixima (Con receta): la receta se validó

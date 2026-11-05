@@ -14,6 +14,7 @@ const listarCatalogo = async (buscar = '') => {
             m.dci,
             m.concentracion,
             m.forma_farmaceutica,
+            m.foto_url AS imagen_url,
             m.precio_unitario::text AS precio_unitario,
             m.tipo_venta,
             COALESCE(stock.disponible, 0)::bigint AS stock_disponible,
@@ -60,6 +61,7 @@ const buscarMedicamentos = async (ids) => {
                 WHERE l.id_medicamento = m.id_medicamento
                   AND l.fecha_baja IS NULL
                   AND l.fecha_vencimiento >= CURRENT_DATE
+                  AND l.cantidad_stock > 0
             ), 0)::bigint AS stock_disponible
          FROM medicamento AS m
          WHERE m.id_medicamento = ANY($1::int[])`,

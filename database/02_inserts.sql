@@ -60,34 +60,36 @@ INSERT INTO medicamento
     (codigo_barras, nombre_comercial, dci, concentracion, forma_farmaceutica, precio_unitario,
      tipo_venta, stock_seguridad, dias_reposicion, estado_medicamento, foto_url, id_categoria)
 VALUES
-('7770000001001', 'Terracolin',            'Nifuroxazida',                  '200 mg',           'Tableta',    1.94,  'Libre',      30,  3, 'Activo',   NULL, 5),  -- 1
-('7770000001002', 'Domper',                'Domperidona',                   '10 mg',            'Tableta',    4.89,  'Libre',      15,  3, 'Activo',   NULL, 5),  -- 2
-('7770000001003', 'Diposan',               'Dimetilpolisiloxano',           '100 mg',           'Tableta',    2.75,  'Libre',      20,  3, 'Activo',   NULL, 5),  -- 3
-('7770000001004', 'Ome-Gastrin',           'Omeprazol',                     '20 mg',            'Cápsula',    3.95,  'Libre',      20,  3, 'Activo',   NULL, 5),  -- 4
-('7770000001005', 'Zoltum',                'Pantoprazol',                   '40 mg',            'Tableta',   20.58,  'Libre',      10,  5, 'Activo',   NULL, 5),  -- 5
-('7770000001006', 'Alumag',                'Magaldrato + Simeticona',       '800 mg / 100 mg',  'Tableta',    5.86,  'Libre',      15,  3, 'Activo',   NULL, 5),  -- 6
-('7770000001007', 'Ibumed',                'Ibuprofeno',                    '600 mg',           'Cápsula',    4.50,  'Libre',      20,  3, 'Activo',   NULL, 2),  -- 7
-('7770000001008', 'Dolo Febrex',           'Ibuprofeno',                    '600 mg',           'Tableta',    1.68,  'Libre',      20,  3, 'Activo',   NULL, 2),  -- 8
-('7770000001009', 'Divafen',               'Diclofenaco sódico',            '50 mg',            'Tableta',    0.97,  'Libre',      18,  5, 'Activo',   NULL, 2),  -- 9
-('7770000001010', 'Melox-Letic',           'Meloxicam',                     '15 mg',            'Tableta',    2.88,  'Libre',      10,  5, 'Activo',   NULL, 2),  -- 10
-('7770000001011', 'Quetorol',              'Ketorolaco',                    '30 mg',            'Tableta',    5.00,  'Libre',       8,  5, 'Activo',   NULL, 2),  -- 11
-('7770000001012', 'Aspirineta',            'Ácido acetilsalicílico',        '100 mg',           'Tableta',    0.81,  'Libre',      25,  3, 'Activo',   NULL, 1),  -- 12
-('7770000001013', 'Dioxadol',              'Dipirona',                      '500 mg',           'Tableta',    3.57,  'Libre',      12,  3, 'Activo',   NULL, 1),  -- 13
-('7770000001014', 'Dormyn Zzz',            'Doxilamina',                    '25 mg',            'Tableta',    3.69,  'Libre',      10,  3, 'Activo',   NULL, 4),  -- 14
-('7770000001015', 'Ciprofloxacina',        'Ciprofloxacina',                '500 mg',           'Tableta',    2.27,  'Con receta', 15,  5, 'Activo',   NULL, 3),  -- 15
-('7770000001016', 'Levofloxacina',         'Levofloxacina',                 '500 mg',           'Tableta',    7.89,  'Con receta', 10,  5, 'Activo',   NULL, 3),  -- 16
-('7770000001017', 'Cefixima',              'Cefixima',                      '400 mg',           'Cápsula',    6.76,  'Con receta', 10,  5, 'Activo',   NULL, 3),  -- 17
-('7770000001018', 'Montetricina',          'Montelukast',                   '10 mg',            'Tableta',    6.24,  'Con receta',  8,  5, 'Activo',   NULL, 7),  -- 18
-('7770000001019', 'Vacuna Influvac Tetra', 'Virus de la influenza',         'Tetravalente',     'Inyectable',212.00, 'Libre',      10, 30, 'Activo',   NULL, 7),  -- 19
-('7770000001020', 'Vitamina C La Sante',   'Ácido ascórbico',               '500 mg',           'Tableta',    1.27,  'Libre',      30,  5, 'Activo',   NULL, 6),  -- 20
-('7770000001021', 'Zinc Genérico',         'Zinc',                          '50 mg',            'Tableta',    2.19,  'Libre',      20,  5, 'Activo',   NULL, 6),  -- 21
-('7770000001022', 'Vimin D3',              'Colecalciferol (Vitamina D3)',  '1000 UI',          'Cápsula',    3.14,  'Libre',      15,  5, 'Activo',   NULL, 6),  -- 22
-('7770000001023', 'Complejo B',            'Vitaminas del complejo B',      'Multivitamínico',  'Tableta',    1.31,  'Libre',      20,  5, 'Activo',   NULL, 6),  -- 23
-('7770000001024', 'Zinc Vimin',            'Zinc',                          '20 mg / 5 mL',     'Jarabe',    73.00,  'Libre',       8,  5, 'Activo',   NULL, 6),  -- 24
-('7770000001025', 'Atorvastatina',         'Atorvastatina',                 '10 mg',            'Tableta',    2.59,  'Con receta', 20,  5, 'Activo',   NULL, 8),  -- 25
-('7770000001026', 'Pressaliv',             'Losartán potásico',             '50 mg',            'Tableta',    0.90,  'Con receta', 20,  5, 'Activo',   NULL, 8),  -- 26
-('7770000001027', 'Furosemida',            'Furosemida',                    '40 mg',            'Tableta',    1.70,  'Con receta', 15,  5, 'Activo',   NULL, 8),  -- 27
-('7770000001028', 'Ultracilina',           'Dexametasona + Gentamicina + Bifonazol', '0.05 % / 0.1 % / 1 %', 'Crema', 72.36, 'Con receta', 5, 5, 'Inactivo', NULL, 9);  -- 28
+('7770000001006', 'Alumag',                'Magaldrato - Simeticona',       '800 mg / 100 mg',  'Tableta',    5.86,  'Libre',      15,  3, 'Activo',   '/uploads/medicamentos/d84b09c6-658c-4ce1-9504-b3b7f7ccd414.png', 5),
+('7770000001012', 'Aspirineta',            'Ácido acetilsalicílico',        '100 mg',           'Tableta',    0.81,  'Libre',      25,  3, 'Activo',   '/uploads/medicamentos/bba9f873-c9c0-442c-86f1-2226f9b824e9.png', 1),
+('7770000001025', 'Atorvastatina',         'Atorvastatina',                 '10 mg',            'Tableta',    2.59,  'Con receta', 20,  5, 'Activo',   '/uploads/medicamentos/95e8cff0-701e-4f2e-93bd-dcd1fd94b42b.png', 8),
+('7770000001017', 'Cefixima',              'Cefixima',                      '400 mg',           'Cápsula',    6.76,  'Con receta', 10,  5, 'Activo',   '/uploads/medicamentos/428248c7-ca77-4bfa-9097-5ed5859e5a9d.png', 3),
+('7770000001015', 'Ciprofloxacina',        'Ciprofloxacina',                '500 mg',           'Tableta',    2.27,  'Con receta', 15,  5, 'Activo',   '/uploads/medicamentos/0c7d7069-e2a3-48b7-9a93-fc4ffe547b21.png', 3),
+('7770000001023', 'Complejo B',            'Vitaminas del complejo B',      'Multivitamínico',  'Tableta',    1.31,  'Libre',      20,  5, 'Activo',   '/uploads/medicamentos/5e9677eb-98db-4adb-b78f-ce7f4db283e0.png', 6),
+('7770000001013', 'Dioxadol',              'Dipirona',                      '500 mg',           'Tableta',    3.57,  'Libre',      12,  3, 'Activo',   '/uploads/medicamentos/186f2d6d-232c-49cb-9363-50468df147a1.png', 1),
+('7770000001003', 'Diposan',               'Dimetilpolisiloxano',           '100 mg',           'Tableta',    2.75,  'Libre',      20,  3, 'Activo',   '/uploads/medicamentos/75cee036-607c-4803-a632-362b4d8f04ee.png', 5),
+('7770000001009', 'Divafen',               'Diclofenaco sódico',            '50 mg',            'Tableta',    0.97,  'Libre',      18,  5, 'Activo',   '/uploads/medicamentos/be9a1b9d-96d9-47b9-869f-92d21e22fdc7.png', 2),
+('7770000001008', 'Dolo Febrex',           'Ibuprofeno',                    '600 mg',           'Tableta',    1.68,  'Libre',      20,  3, 'Activo',   '/uploads/medicamentos/480e4ec6-ca17-4e29-ac11-01ba190bfc54.png', 2),
+('7770000001002', 'Domper',                'Domperidona',                   '10 mg',            'Tableta',    4.89,  'Libre',      15,  3, 'Activo',   '/uploads/medicamentos/4febc6a7-6f4a-4606-8c3f-849dbce8ab90.png', 5),
+('7770000001014', 'Dormyn Zzz',            'Doxilamina',                    '25 mg',            'Tableta',    3.69,  'Libre',      10,  3, 'Activo',   '/uploads/medicamentos/565fb63b-0acb-4cf5-b074-081ed6849704.png', 4),
+('7770000001027', 'Furosemida',            'Furosemida',                    '40 mg',            'Tableta',    1.70,  'Con receta', 15,  5, 'Activo',   '/uploads/medicamentos/1d2aa7fb-3049-48cc-b4c4-d20675cb5018.png', 8),
+('7770000001007', 'Ibumed',                'Ibuprofeno',                    '600 mg',           'Cápsula',    4.50,  'Libre',      20,  3, 'Activo',   '/uploads/medicamentos/1ebc2b2b-be46-4d56-951e-fb3ed97fd370.png', 2),
+('7770000001016', 'Levofloxacina',         'Levofloxacina',                 '500 mg',           'Tableta',    7.89,  'Con receta', 10,  5, 'Activo',   '/uploads/medicamentos/0d0473eb-5d59-464f-81ad-1c5649557b3f.png', 3),
+('7770000001010', 'Melox-Letic',           'Meloxicam',                     '15 mg',            'Tableta',    2.88,  'Libre',      10,  5, 'Activo',   '/uploads/medicamentos/6693ece1-e9f8-4d80-bfec-9c4197f590f3.png', 2),
+('7770000001018', 'Montetricina',          'Montelukast',                   '10 mg',            'Tableta',    6.24,  'Con receta',  8,  5, 'Activo',   '/uploads/medicamentos/17de534f-d70b-4285-8048-e209b6dcd990.png', 7),
+('7770000001004', 'Ome-Gastrin',           'Omeprazol',                     '20 mg',            'Cápsula',    3.95,  'Libre',      20,  3, 'Activo',   '/uploads/medicamentos/c2460446-048a-44ea-ba16-289fbbc60a39.png', 5),
+('7770000001026', 'Pressaliv',             'Losartán potásico',             '50 mg',            'Tableta',    0.90,  'Con receta', 20,  5, 'Activo',   '/uploads/medicamentos/f6905cff-1bc5-4e41-b7fc-43d2d3a2417b.png', 8),
+('7770000001011', 'Quetorol',              'Ketorolaco',                    '30 mg',            'Tableta',    5.00,  'Libre',       8,  5, 'Activo',   '/uploads/medicamentos/803cbe8b-a496-4d3e-a76a-452749510df8.png', 2),
+('7770000001001', 'Terracolin',            'Nifuroxazida',                  '200 mg',           'Tableta',    1.94,  'Libre',      30,  3, 'Activo',   '/uploads/medicamentos/774592f5-c46e-4634-9977-0d2e0d08bbb3.png', 5),
+('7770000001028', 'Ultracilina',           'Dexametasona - Gentamicina Bifonazol', '0.05 % / 0.1 % / 1 %', 'Crema', 72.36, 'Con receta', 5, 5, 'Inactivo', '/uploads/medicamentos/387d9e2c-f598-447e-9bf2-95d4ec304db9.png', 9),
+('7770000001019', 'Vacuna Influvac Tetra', 'Virus de la influenza',         'Tetravalente',     'Inyectable',212.00, 'Libre',      10, 30, 'Activo',   '/uploads/medicamentos/f9520070-0910-4329-aa6e-2c6ce74ba1ef.png', 7),
+('7770000001022', 'Vimin D3',              'Colecalciferol (Vitamina D3)',  '1000 UI',          'Cápsula',    3.14,  'Libre',      15,  5, 'Activo',   '/uploads/medicamentos/43d1b0b9-52e4-405a-904e-0a180594e814.png', 6),
+('7770000001020', 'Vitamina C La Sante',   'Ácido ascórbico',               '500 mg',           'Tableta',    1.27,  'Libre',      30,  5, 'Activo',   '/uploads/medicamentos/1fefd506-7198-4188-9aff-2762115f20fd.png', 6),
+('7770000001021', 'Zinc Genérico',         'Zinc',                          '50 mg',            'Tableta',    2.19,  'Libre',      20,  5, 'Activo',   '/uploads/medicamentos/9cc6a27d-db76-4373-bb04-e8e2e45141c5.png', 6),
+('7770000001024', 'Zinc Vimin',            'Zinc',                          '20 mg / 5 mL',     'Jarabe',    73.00,  'Libre',       8,  5, 'Activo',   '/uploads/medicamentos/80e0452c-0dc0-4853-a2bf-ee4245986b57.png', 6),
+('7770000001005', 'Zoltum',                'Pantoprazol',                   '40 mg',            'Tableta',   20.58,  'Libre',      10,  5, 'Activo',   '/uploads/medicamentos/9c241090-5859-48e3-ba49-8f4bac4ff0c0.png', 5);
+
+
 
 -- ---------------------------------------------------------------------
 -- PROVEEDORES

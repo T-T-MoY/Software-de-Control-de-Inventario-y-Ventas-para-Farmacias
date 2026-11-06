@@ -15,7 +15,6 @@ const route = useRoute()
 
 const { totales } = useAlertMonitor()
 const totalAlertas = computed(() => totales.value.total)
-const hayLotesVencidos = computed(() => totales.value.vencidos > 0)
 const navLinkClasses = 'sidebar-link flex min-h-11 items-center gap-3 rounded-xl border-l-[3px] border-l-transparent px-3 py-2.5 text-sm font-medium text-[#fff7e3]/75 no-underline transition hover:translate-x-0.5 hover:bg-white/10 hover:text-[#fff7e3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8aee3]'
 const isCurrentRoute = (path) => route.path === path
 
@@ -91,12 +90,18 @@ const modules = computed(() => modulosVisibles(obtenerSesion().rol))
 
                 <span
                   v-if="module.name === 'Alertas' && totalAlertas > 0"
-                  class="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 px-1.5 text-[0.68rem] font-extrabold leading-none text-white shadow-[0_0_0_2px_rgba(255,247,227,0.14)]"
-                  :class="{ 'bg-red-600': hayLotesVencidos }"
+                  class="relative inline-flex size-2 shrink-0 items-center justify-center"
                   :title="`${totalAlertas} alertas de inventario`"
                   :aria-label="`${totalAlertas} alertas de inventario`"
                 >
-                  {{ totalAlertas > 99 ? '99+' : totalAlertas }}
+                  <span
+                    class="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-60"
+                    aria-hidden="true"
+                  ></span>
+                  <span
+                    class="relative inline-flex size-1.5 rounded-full bg-red-400 shadow-[0_0_6px_2px_rgba(248,113,113,0.75)]"
+                    aria-hidden="true"
+                  ></span>
                 </span>
               </a>
             </router-link>

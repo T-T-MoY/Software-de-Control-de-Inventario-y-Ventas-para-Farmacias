@@ -1878,31 +1878,25 @@ select.panel-control {
 
 .toast-stack {
     position: fixed;
-    right: 1.25rem;
-    bottom: 1.25rem;
+    top: max(1.5rem, env(safe-area-inset-top));
+    right: 1.5rem;
     z-index: 1090;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    width: min(360px, calc(100vw - 2rem));
+    width: min(380px, calc(100vw - 3rem));
     pointer-events: none;
-}
-
-/* Avisos globales: debajo de la barra superior para no tapar el menú. */
-.toast-stack.is-top-right {
-    top: 5.5rem;
-    bottom: auto;
 }
 
 .toast-item {
     display: flex;
     align-items: flex-start;
     gap: 0.6rem;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border-color);
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--success);
     border-radius: 0.9rem;
     background: var(--bg-card);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg), 0 3px 10px rgba(5, 16, 45, 0.12);
     color: var(--text-main);
     font-size: 0.85rem;
     font-weight: 500;
@@ -1916,8 +1910,7 @@ select.panel-control {
 }
 
 .toast-item.is-error {
-    border-color: rgba(180, 69, 95, 0.35);
-    color: var(--danger);
+    border-color: var(--danger);
 }
 
 .toast-item.is-error i {
@@ -1925,8 +1918,7 @@ select.panel-control {
 }
 
 .toast-item.is-warning {
-    border-color: rgba(154, 106, 18, 0.35);
-    color: var(--warning);
+    border-color: var(--warning);
 }
 
 .toast-item.is-warning i {

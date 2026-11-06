@@ -321,23 +321,31 @@ const guardarRecepcion = async () => {
 }
 
 const procesandoBaja = ref(null)
+const lotePendienteBaja = ref(null)
 
-const ejecutarBaja = async (lote) => {
+const solicitarBaja = (lote) => {
   if (!puedeDarBaja.value || lote.estado_lote !== 'Vencido') {
     return
   }
 
-  const confirmar = window.confirm(
-    `¿Dar de baja el lote ${lote.lote_numero} de ${lote.medicamento}? Esta operación quedará registrada en el historial.`
-  )
+  lotePendienteBaja.value = lote
+}
 
-  if (!confirmar) return
+const cancelarBaja = () => {
+  if (procesandoBaja.value !== null) return
+  lotePendienteBaja.value = null
+}
+
+const confirmarBaja = async () => {
+  const lote = lotePendienteBaja.value
+  if (!lote || !puedeDarBaja.value || lote.estado_lote !== 'Vencido') return
 
   procesandoBaja.value = lote.id_lote
 
   try {
     await darBajaLote(lote.id_lote)
 
+    lotePendienteBaja.value = null
     await cargarDatos()
 
     notificar('Lote dado de baja correctamente.')
@@ -633,7 +641,7 @@ onMounted(cargarDatos)
                       type="button"
                       class="btn-row is-danger"
                       :disabled="procesandoBaja === lote.id_lote"
-                      @click="ejecutarBaja(lote)"
+                      @click="solicitarBaja(lote)"
                     >
                       {{
                         procesandoBaja === lote.id_lote
@@ -720,7 +728,7 @@ onMounted(cargarDatos)
                 type="button"
                 class="btn-row is-danger"
                 :disabled="procesandoBaja === lote.id_lote"
-                @click="ejecutarBaja(lote)"
+                @click="solicitarBaja(lote)"
               >
                 {{
                   procesandoBaja === lote.id_lote
@@ -1061,10 +1069,159 @@ onMounted(cargarDatos)
 
     </div>
 
+    <div
+      v-if="lotePendienteBaja"
+      class="panel-modal-backdrop"
+      @mousedown.self="cancelarBaja"
+    >
+      <section
+        class="panel-modal lot-discharge-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="baja-lote-title"
+        aria-describedby="baja-lote-description"
+      >
+        <div class="panel-modal-head">
+          <div class="discharge-modal-heading">
+            <span class="discharge-modal-icon" aria-hidden="true">
+              <i class="fas fa-triangle-exclamation"></i>
+            </span>
+            <div>
+              <span class="discharge-modal-eyebrow">Acción irreversible</span>
+              <h3 id="baja-lote-title">Dar de baja lote</h3>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="panel-modal-close"
+            aria-label="Cerrar"
+            :disabled="procesandoBaja !== null"
+            @click="cancelarBaja"
+          >
+            ×
+          </button>
+        </div>
+
+        <p id="baja-lote-description" class="discharge-modal-description">
+          Confirma la baja del lote vencido. Esta acción quedará registrada en el historial.
+        </p>
+
+        <dl class="discharge-lot-details">
+          <div>
+            <dt>Medicamento</dt>
+            <dd>{{ lotePendienteBaja.medicamento }}</dd>
+          </div>
+          <div>
+            <dt>Número de lote</dt>
+            <dd>{{ lotePendienteBaja.lote_numero }}</dd>
+          </div>
+          <div>
+            <dt>Existencias</dt>
+            <dd>{{ lotePendienteBaja.cantidad_stock }}</dd>
+          </div>
+        </dl>
+
+        <div class="panel-modal-actions">
+          <button
+            type="button"
+            class="btn-panel btn-panel-ghost"
+            :disabled="procesandoBaja !== null"
+            @click="cancelarBaja"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger rounded-pill px-4"
+            :disabled="procesandoBaja !== null"
+            @click="confirmarBaja"
+          >
+            <span
+              v-if="procesandoBaja !== null"
+              class="spinner-border spinner-border-sm me-2"
+              aria-hidden="true"
+            ></span>
+            <i v-else class="fas fa-box-archive me-2" aria-hidden="true"></i>
+            {{ procesandoBaja !== null ? 'Procesando...' : 'Confirmar baja' }}
+          </button>
+        </div>
+      </section>
+    </div>
+
   </section>
 </template>
 
 <style scoped>
+.lot-discharge-modal {
+  width: min(100%, 480px);
+}
+
+.discharge-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.discharge-modal-icon {
+  display: inline-flex;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.discharge-modal-eyebrow {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--danger);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.discharge-modal-description {
+  margin: 1.1rem 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.discharge-lot-details {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  background: var(--bg-body);
+}
+
+.discharge-lot-details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.discharge-lot-details dt {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.discharge-lot-details dd {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: right;
+}
+
 .lot-filters {
   grid-template-columns: minmax(0, 1fr);
   align-items: end;

@@ -87,7 +87,6 @@ onBeforeUnmount(detenerMonitor)
     v-if="!bienvenidaActiva"
     :message="aviso"
     tone="warning"
-    position="top-right"
     @close="limpiarAviso"
   />
 

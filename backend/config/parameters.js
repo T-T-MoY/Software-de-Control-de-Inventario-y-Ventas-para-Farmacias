@@ -24,7 +24,8 @@ const parametros = {
     ),
     // Valor por defecto para nuevos medicamentos. Cada medicamento puede
     // sobrescribirlo en su columna stock_seguridad.
-    stockSeguridad: numeroEnteroNoNegativo(
+
+        stockSeguridad: numeroEnteroNoNegativo(
         Number(process.env.STOCK_SEGURIDAD),
         0
     ),
@@ -36,6 +37,8 @@ const parametros = {
         Number(process.env.VENTANA_DEMANDA_DIAS),
         30
     ),
+    // Zona horaria de la farmacia para reportes e historial (RF6).
+    zonaHoraria: process.env.ZONA_HORARIA || 'America/La_Paz',
     // Datos que se imprimen en el encabezado del comprobante de venta.
     farmacia: {
         nombre: texto(process.env.FARMACIA_NOMBRE),

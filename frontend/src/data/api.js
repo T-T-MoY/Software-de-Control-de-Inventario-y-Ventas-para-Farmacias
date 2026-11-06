@@ -20,3 +20,20 @@ export async function apiRequest(path, options = {}) {
   }
   return data
 }
+
+/** Descarga un archivo (PDF, Excel) enviando el token; devuelve un Blob. */
+export async function apiDownload(path) {
+  const headers = new Headers()
+  const token = localStorage.getItem('tokenSession')
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+
+  const response = await fetch(`${apiBaseUrl}${path}`, { headers })
+  if (!response.ok) {
+    let data = {}
+    try { data = await response.json() } catch { /* respuesta sin JSON */ }
+    const error = new Error(data.error || 'No se pudo generar el archivo.')
+    error.status = response.status
+    throw error
+  }
+  return response.blob()
+}

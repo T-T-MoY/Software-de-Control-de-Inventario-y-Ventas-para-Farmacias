@@ -15,6 +15,8 @@ const alertasRutas = require('./presentation/routes/alerts.routes');
 const ventasRutas = require('./presentation/routes/sales.routes');
 const clientesRutas = require('./presentation/routes/customers.routes');
 const parametrosServicio = require('./business/services/parameters.service');
+const reportesRutas = require('./presentation/routes/reports.routes');
+const historialRutas = require('./presentation/routes/history.routes');
 const { noEncontrado, manejarErrores } = require('./presentation/middleware/errors');
 
 const app = express();
@@ -47,6 +49,8 @@ app.use('/api/lotes', lotesRutas);
 app.use('/api/alertas', alertasRutas);
 app.use('/api/ventas', ventasRutas);
 app.use('/api/clientes', clientesRutas);
+app.use('/api/reportes', reportesRutas);
+app.use('/api/historial', historialRutas);
 
 app.use(noEncontrado);
 app.use(manejarErrores);

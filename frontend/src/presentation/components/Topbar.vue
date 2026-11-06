@@ -86,6 +86,16 @@ const salir = async () => {
       </div>
 
       <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+        <a
+          v-if="role === 'Administrador'"
+          href="#"
+          class="inline-flex size-10 items-center justify-center rounded-xl border border-[var(--border-color)] bg-transparent text-[var(--text-muted)] transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          aria-label="Manual de usuario"
+          title="Manual de usuario"
+          @click.prevent
+        >
+          <i class="fas fa-circle-question" aria-hidden="true"></i>
+        </a>
         <ThemeToggle />
 
         <div ref="menuRef" class="profile-menu">

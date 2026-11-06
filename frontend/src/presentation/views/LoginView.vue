@@ -339,6 +339,10 @@ const handleLogin = async () => {
   padding-right: 4.9rem;
 }
 
+#login-password::-ms-reveal {
+  display: none;
+}
+
 .password-toggle-text {
   position: absolute;
   right: 1rem;
@@ -411,9 +415,12 @@ const handleLogin = async () => {
   z-index: 1;
 }
 
+.showcase-brand {
+  display: flex;
+}
+
 .showcase-brand,
 .login-mobile-brand {
-  display: flex;
   align-items: center;
   gap: 0.85rem;
 }

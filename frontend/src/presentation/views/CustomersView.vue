@@ -214,13 +214,13 @@ onMounted(cargarClientes)
           <div class="panel-table-wrap">
           <table class="panel-table">
             <thead>
-              <tr><th>Nombre completo</th><th>CI/NIT</th><th class="text-right">Acciones</th></tr>
+              <tr><th>Nombre completo</th><th>CI/NIT</th><th class="customer-actions">Acciones</th></tr>
             </thead>
             <tbody>
               <tr v-for="cliente in clientesFiltrados" :key="cliente.id_cliente">
                 <td class="font-semibold">{{ nombreCliente(cliente) }}</td>
                 <td>{{ cliente.ci_nit }}</td>
-                <td class="text-right">
+                <td class="customer-actions">
                   <button
                     type="button"
                     class="btn-row ml-auto max-w-28"
@@ -318,6 +318,10 @@ onMounted(cargarClientes)
 </template>
 
 <style scoped>
+.customer-actions {
+  text-align: center;
+}
+
 .customer-modal {
   width: min(620px, calc(100vw - 2rem));
 }

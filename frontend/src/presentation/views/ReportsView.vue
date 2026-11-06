@@ -32,7 +32,7 @@ const filtros = () => (tipoActual.value.conRango
   : {})
 
 const mensajeError = (err) => (err.status === 401
-  ? 'Tu sesiÃ³n expirÃ³. Inicia sesiÃ³n nuevamente.'
+  ? 'Tu sesión expiró. Inicia sesión nuevamente.'
   : err.message || 'No se pudo generar el reporte.')
 
 const validarFechas = () => {
@@ -105,11 +105,18 @@ const numero = (valor, decimales) => Number(valor).toLocaleString('es-BO', {
 })
 
 const celda = (columna, valor) => {
-  if (valor === null || valor === undefined || valor === '') return 'â€”'
+  if (valor === null || valor === undefined || valor === '') return '—'
   if (columna.tipo === 'moneda' || columna.tipo === 'decimal') return numero(valor, 2)
   if (columna.tipo === 'entero') return numero(valor, 0)
   if (columna.tipo === 'fecha') return formatearFecha(valor)
-  if (columna.tipo === 'fechahora') return formatearFecha(valor, true)
+  
+  // Formato compacto para fecha y hora, evita que la tabla se desborde
+  if (columna.tipo === 'fechahora') {
+    const d = new Date(valor)
+    if (isNaN(d.getTime())) return valor
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+  
   return valor
 }
 
@@ -121,13 +128,14 @@ onMounted(generar)
 
 <template>
   <section class="admin-panel">
+    <!-- ENCABEZADO -->
     <div class="panel-heading">
       <div>
         <span class="eyebrow">Reportes e historial</span>
         <h2>Reportes</h2>
         <p>Consulta y exporta ventas, inventario y estado de los lotes.</p>
       </div>
-      <div class="panel-heading-actions">
+      <div class="panel-heading-actions flex flex-wrap gap-2">
         <button
           type="button"
           class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
@@ -151,58 +159,78 @@ onMounted(generar)
       </div>
     </div>
 
-    <div v-if="error" class="notice notice-error" role="alert">
+    <!-- NOTIFICACIONES -->
+    <div v-if="error" class="notice notice-error mb-4" role="alert">
       <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ error }}</span>
     </div>
-    <div v-if="aviso" class="notice notice-success" role="status">
+    <div v-if="aviso" class="notice notice-success mb-4" role="status">
       <span class="flex items-start gap-2"><i class="fas fa-circle-check mt-0.5 shrink-0" aria-hidden="true"></i>{{ aviso }}</span>
     </div>
 
-    <div class="panel mb-4 p-4 sm:p-5">
-      <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
-        <select
-          class="form-select panel-control"
-          :value="tipo"
-          aria-label="Tipo de reporte"
-          @change="elegirTipo($event.target.value)"
-        >
-          <option v-for="t in TIPOS" :key="t.clave" :value="t.clave">{{ t.nombre }}</option>
-        </select>
+    <!-- FILTROS -->
+    <div class="panel mb-6 p-4 sm:p-5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)]">
+      <div class="flex flex-col lg:flex-row items-end gap-4 w-full">
+        
+        <!-- Selector de Reporte -->
+        <div class="w-full lg:w-1/4">
+          <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Tipo de reporte</label>
+          <select
+            class="form-select panel-control w-full h-11 bg-[var(--bg-base)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow"
+            :value="tipo"
+            @change="elegirTipo($event.target.value)"
+          >
+            <option v-for="t in TIPOS" :key="t.clave" :value="t.clave">{{ t.nombre }}</option>
+          </select>
+        </div>
 
+        <!-- Fechas -->
         <template v-if="tipoActual.conRango">
-          <label class="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
-            Desde
-            <input v-model="fechaInicio" type="date" class="form-input panel-control" />
-          </label>
-          <label class="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
-            Hasta
-            <input v-model="fechaFin" type="date" class="form-input panel-control" />
-          </label>
+          <div class="w-full lg:w-1/4">
+            <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Desde</label>
+            <input v-model="fechaInicio" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
+          </div>
+          <div class="w-full lg:w-1/4">
+            <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Hasta</label>
+            <input v-model="fechaFin" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
+          </div>
         </template>
-        <span v-else class="text-sm text-[var(--text-muted)]">Existencias vigentes al día de hoy.</span>
+        
+        <!-- Texto para inventario -->
+        <div v-else class="w-full lg:w-2/4 flex items-center h-11">
+          <span class="text-sm text-[var(--text-muted)] italic flex items-center gap-2">
+            <i class="fas fa-info-circle"></i> Existencias vigentes al día de hoy.
+          </span>
+        </div>
 
-        <button
-          type="button"
-          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
-          :disabled="loading"
-          @click="generar"
-        >
-          <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-          Generar
-        </button>
+        <!-- Botón Generar -->
+        <div class="w-full lg:w-1/4 flex justify-end">
+          <button
+            type="button"
+            class="inline-flex w-full lg:w-auto min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-8 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+            :disabled="loading"
+            @click="generar"
+          >
+            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+            Generar
+          </button>
+        </div>
       </div>
+      
       <small v-if="tipo !== 'ventas' && tipoActual.conRango" class="mt-3 block text-xs text-[var(--text-muted)]">
         Fechas opcionales: sin ellas se usa el margen de alerta o todos los vencidos.
       </small>
     </div>
 
-    <div v-if="loading" class="panel-state" role="status">
-      <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" aria-hidden="true"></span>
+    <!-- ESTADOS DE CARGA -->
+    <div v-if="loading" class="panel-state py-12">
+      <span class="mr-2 inline-block size-5 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" aria-hidden="true"></span>
       Generando reporte...
     </div>
 
+    <!-- CONTENIDO DEL REPORTE -->
     <template v-else-if="reporte">
-      <div class="stats-grid">
+      <!-- TARJETAS DE TOTALES -->
+      <div class="stats-grid mb-6">
         <div class="stat-card">
           <p>Registros</p>
           <strong>{{ reporte.total_filas }}</strong>
@@ -217,50 +245,62 @@ onMounted(generar)
 
       <ReportCharts v-if="reporte.filas.length > 0" :tipo="reporte.tipo" :filas="reporte.filas" :totales="reporte.totales" />
 
-      <div v-if="reporte.filas.length === 0" class="panel panel-state">
-        Sin registros para los filtros seleccionados.
+      <!-- SIN REGISTROS -->
+      <div v-if="reporte.filas.length === 0" class="panel panel-state py-10">
+        <i class="fas fa-folder-open text-4xl mb-3 opacity-20"></i>
+        <p>Sin registros para los filtros seleccionados.</p>
       </div>
 
-      <div v-else class="panel overflow-hidden">
+      <!-- TABLA OPTIMIZADA: No sobreocupa el diseño y mantiene los números alineados -->
+      <div v-else class="panel mx-auto w-full max-w-full overflow-hidden bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)]">
         <div class="overflow-x-auto">
-        <table class="panel-table min-w-[40rem]">
-          <thead>
-            <tr>
-              <th
-                v-for="c in reporte.columnas"
-                :key="c.clave"
-                :class="{ 'text-right': esNumerica(c) }"
-              >
-                {{ c.titulo }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(fila, i) in reporte.filas" :key="i">
-              <td
-                v-for="c in reporte.columnas"
-                :key="c.clave"
-                :class="{ 'text-right': esNumerica(c) }"
-              >
-                {{ celda(c, fila[c.clave]) }}
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <th
-                v-for="(c, i) in reporte.columnas"
-                :key="c.clave"
-                :class="{ 'text-right': esNumerica(c) }"
-              >
-                <template v-if="i === 0">TOTAL</template>
-                <template v-else-if="reporte.totales[c.clave] !== undefined">
-                  {{ celda(c, reporte.totales[c.clave]) }}
-                </template>
-              </th>
-            </tr>
-          </tfoot>
-        </table>
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-[var(--bg-base)] border-b border-[var(--border-color)]">
+              <tr>
+                <th
+                  v-for="c in reporte.columnas"
+                  :key="c.clave"
+                  class="px-4 py-3 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider"
+                  :class="{ 'text-right': esNumerica(c) }"
+                >
+                  {{ c.titulo }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border-color)]">
+              <tr v-for="(fila, i) in reporte.filas" :key="i" class="hover:bg-[var(--accent-soft)] transition-colors">
+                <td
+                  v-for="c in reporte.columnas"
+                  :key="c.clave"
+                  class="px-4 py-3 text-[var(--text-main)]"
+                  :class="{ 
+                    'text-right tabular-nums whitespace-nowrap': esNumerica(c), 
+                    'min-w-[120px] max-w-[250px]': !esNumerica(c) 
+                  }"
+                >
+                  {{ celda(c, fila[c.clave]) }}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-[var(--bg-base)] border-t-2 border-[var(--border-color)]">
+              <tr>
+                <th
+                  v-for="(c, i) in reporte.columnas"
+                  :key="c.clave"
+                  class="px-4 py-3 font-bold text-[var(--text-main)]"
+                  :class="{ 
+                    'text-right tabular-nums whitespace-nowrap': esNumerica(c), 
+                    'text-[var(--primary)]': i === 0 
+                  }"
+                >
+                  <template v-if="i === 0">TOTAL</template>
+                  <template v-else-if="reporte.totales[c.clave] !== undefined">
+                    {{ celda(c, reporte.totales[c.clave]) }}
+                  </template>
+                </th>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
     </template>

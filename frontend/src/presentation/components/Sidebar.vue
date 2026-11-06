@@ -1,203 +1,112 @@
 <script setup>
 import { computed } from 'vue'
-import { modulosVisibles, RESPONSABLES } from '../../config/distribution'
-import { esAdministrador, obtenerSesion } from '../../business/session'
+import { useRoute } from 'vue-router'
+import { modulosVisibles } from '../../config/distribution'
+import { obtenerSesion } from '../../business/session'
 import { useAlertMonitor } from '../composables/useAlertMonitor'
 
-const isAdmin = computed(() => esAdministrador())
+defineProps({
+  isOpen: { type: Boolean, default: false }
+})
+
+defineEmits(['close'])
+
+const route = useRoute()
 
 const { totales } = useAlertMonitor()
 const totalAlertas = computed(() => totales.value.total)
 const hayLotesVencidos = computed(() => totales.value.vencidos > 0)
+const navLinkClasses = 'sidebar-link flex min-h-11 items-center gap-3 rounded-xl border-l-[3px] border-l-transparent px-3 py-2.5 text-sm font-medium text-[#fff7e3]/75 no-underline transition hover:translate-x-0.5 hover:bg-white/10 hover:text-[#fff7e3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8aee3]'
+const isCurrentRoute = (path) => route.path === path
 
 // El sidebar muestra solo los módulos del rol de la sesión.
-const modules = computed(() =>
-  modulosVisibles(obtenerSesion().rol).map(module => ({
-    ...module,
-    to: module.to || (
-      module.name === 'Reportes' ? '/reportes' :
-      module.name === 'Historial' ? '/historial' : null
-    )
-  }))
-)
+const modules = computed(() => modulosVisibles(obtenerSesion().rol))
 </script>
 
 <template>
-  <aside id="sidebar" class="floating-sidebar d-flex flex-column p-3">
+  <aside
+    id="sidebar"
+    class="fixed inset-y-3 left-3 z-[1040] flex w-[min(18rem,calc(100vw-1.5rem))] -translate-x-[115%] flex-col overflow-hidden rounded-[1.35rem] border border-white/10 bg-[image:var(--sidebar-bg)] p-3 shadow-2xl transition-transform duration-300 ease-in-out lg:inset-y-6 lg:left-6 lg:w-[250px] lg:translate-x-0"
+    :class="{ 'translate-x-0': isOpen }"
+  >
     <router-link
       to="/"
-      class="sidebar-brand d-flex align-items-center text-decoration-none mb-4 mt-2 flex-shrink-0"
+      class="sidebar-link mb-4 mt-2 flex shrink-0 items-center text-[#fff7e3] no-underline"
       aria-label="Ir al panel principal"
+      @click="$emit('close')"
     >
-      <div class="brand-icon d-flex justify-content-center align-items-center shadow-sm">
-        <i class="fas fa-capsules text-white fs-5"></i>
+      <div class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#3d6ac1] to-[#b8aee3] text-lg text-white shadow-lg">
+        <i class="fas fa-capsules" aria-hidden="true"></i>
       </div>
-      <div class="ms-3 d-flex flex-column">
-        <span class="brand-text fs-6 fw-bold">FARMACIA</span>
-        <span class="brand-subtext">Inventario &amp; Ventas</span>
+      <div class="ml-3 flex min-w-0 flex-1 flex-col">
+        <span class="truncate text-sm font-extrabold tracking-[0.14em] text-[#fff7e3]">FARMACIA</span>
+        <span class="text-[0.63rem] uppercase tracking-[0.08em] text-[#fff7e3]/60">Inventario &amp; Ventas</span>
       </div>
+      <button
+        type="button"
+        class="ml-2 inline-flex size-9 shrink-0 items-center justify-center rounded-full text-[#fff7e3]/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-[#b8aee3] lg:hidden"
+        aria-label="Cerrar menú de navegación"
+        @click.stop.prevent="$emit('close')"
+      >
+        <i class="fas fa-xmark" aria-hidden="true"></i>
+      </button>
     </router-link>
 
-    <hr class="sidebar-divider mb-3 flex-shrink-0">
+    <hr class="mb-3 shrink-0 border-0 border-t border-solid border-white/15">
 
-    <div class="menu-scroll-container flex-grow-1 pe-1">
-      <div class="sidebar-section-label">GENERAL</div>
-      <ul class="nav nav-pills flex-column gap-1 mb-4">
+    <div class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto pr-1">
+      <div class="px-3 pb-2 text-[0.64rem] font-extrabold tracking-[0.14em] text-[#5c86d8]">GENERAL</div>
+      <ul class="mb-4 flex list-none flex-col gap-1 p-0">
         <li class="nav-item">
-          <router-link to="/" class="nav-link d-flex align-items-center">
-            <i class="fas fa-chart-pie me-3"></i>
-            <span>Panel principal</span>
-          </router-link>
-        </li>
-        <li class="nav-item">
-          <router-link to="/medicamentos" class="nav-link d-flex align-items-center">
-            <i class="fas fa-pills me-3"></i>
-            <span class="flex-grow-1">
-              Medicamentos
-              <small class="module-owner">({{ RESPONSABLES.catalogo }})</small>
-            </span>
-          </router-link>
-        </li>
-        <li v-if="isAdmin" class="nav-item">
-          <router-link to="/usuarios" class="nav-link d-flex align-items-center">
-            <i class="fas fa-users me-3"></i>
-            <span class="flex-grow-1">
-              Usuarios
-              <small class="module-owner">({{ RESPONSABLES.seguridad }})</small>
-            </span>
+          <router-link
+            to="/"
+            :class="[navLinkClasses, { 'border-l-[#3d6ac1] bg-gradient-to-r from-[#3d6ac1]/40 to-[#3d6ac1]/10 font-bold text-[#fff7e3]': isCurrentRoute('/') }]"
+            @click="$emit('close')"
+          >
+            <i class="fas fa-chart-pie w-5 shrink-0 text-center" aria-hidden="true"></i>
+            <span class="min-w-0 flex-1 truncate">Panel principal</span>
           </router-link>
         </li>
       </ul>
 
-      <div class="sidebar-section-label">MÓDULOS DEL SISTEMA</div>
-      <ul class="nav flex-column gap-1">
+      <div class="px-3 pb-2 text-[0.64rem] font-extrabold tracking-[0.14em] text-[#5c86d8]">MÓDULOS DEL SISTEMA</div>
+      <ul class="flex list-none flex-col gap-1 p-0">
         <template v-for="module in modules" :key="module.name">
           <li class="nav-item">
-            <router-link
-              v-if="module.to"
-              :to="module.to"
-              class="nav-link d-flex align-items-center"
-            >
-              <i class="fas me-3" :class="module.icon"></i>
-
-              <span class="flex-grow-1">
-                {{ module.name }}
-                <small class="module-owner">
-                  ({{ module.responsable }})
-                </small>
-              </span>
-
-              <span
-                v-if="module.name === 'Alertas' && totalAlertas > 0"
-                class="alert-badge"
-                :class="{ 'is-danger': hayLotesVencidos }"
-                :title="`${totalAlertas} alertas de inventario`"
-                :aria-label="`${totalAlertas} alertas de inventario`"
+            <router-link :to="module.to" v-slot="{ isActive, href, navigate }">
+              <a
+                :href="href"
+                :class="[navLinkClasses, { 'border-l-[#3d6ac1] bg-gradient-to-r from-[#3d6ac1]/40 to-[#3d6ac1]/10 font-bold text-[#fff7e3]': isActive }]"
+                @click="navigate($event); $emit('close')"
               >
-                {{ totalAlertas > 99 ? '99+' : totalAlertas }}
-              </span>
+                <i
+                  class="fas w-5 shrink-0 text-center"
+                  :class="[module.icon, { 'text-[#5c86d8]': isActive }]"
+                  aria-hidden="true"
+                ></i>
+
+                <span class="min-w-0 flex-1">
+                  {{ module.name }}
+                </span>
+
+                <span
+                  v-if="module.name === 'Alertas' && totalAlertas > 0"
+                  class="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-amber-600 px-1.5 text-[0.68rem] font-extrabold leading-none text-white shadow-[0_0_0_2px_rgba(255,247,227,0.14)]"
+                  :class="{ 'bg-red-600': hayLotesVencidos }"
+                  :title="`${totalAlertas} alertas de inventario`"
+                  :aria-label="`${totalAlertas} alertas de inventario`"
+                >
+                  {{ totalAlertas > 99 ? '99+' : totalAlertas }}
+                </span>
+              </a>
             </router-link>
-
-            <span
-              v-else
-              class="nav-link d-flex align-items-center module-pending"
-              :title="`${module.name}: en desarrollo (${module.responsable})`"
-            >
-              <i class="fas me-3" :class="module.icon"></i>
-
-              <span class="flex-grow-1">
-                {{ module.name }}
-                <small class="module-owner">
-                  ({{ module.responsable }})
-                </small>
-              </span>
-
-              <span class="pending-dot"></span>
-            </span>
           </li>
         </template>
       </ul>
     </div>
 
-    <div class="sidebar-footer mt-3 pt-3 d-flex align-items-center justify-content-end">
-      <span class="version-chip">v1.0</span>
+    <div class="mt-3 flex shrink-0 items-center justify-end border-t border-white/15 pt-3 text-white/55">
+      <span class="rounded-full border border-[#b8aee3]/30 px-2 py-1 text-[0.62rem] font-bold tracking-wider text-[#fff7e3]/70">v1.0</span>
     </div>
   </aside>
 </template>
-
-<style scoped>
-.brand-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  background: linear-gradient(135deg, #3d6ac1, #b8aee3);
-  flex: 0 0 auto;
-}
-
-.floating-sidebar .nav-link {
-  font-size: 0.92rem;
-  padding: 0.68rem 0.8rem;
-}
-
-.floating-sidebar .nav-link i {
-  width: 20px;
-  text-align: center;
-}
-
-.module-pending {
-  cursor: default !important;
-  font-size: 0.88rem !important;
-}
-
-.module-pending:hover {
-  background: transparent !important;
-  transform: none !important;
-  color: rgba(255, 247, 227, 0.55) !important;
-}
-
-.module-owner {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: rgba(255, 247, 227, 0.5);
-}
-
-.alert-badge {
-  flex: 0 0 auto;
-  min-width: 20px;
-  height: 20px;
-  margin-left: 0.4rem;
-  padding: 0 0.4rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: #d97706;
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: 0 0 0 2px rgba(255, 247, 227, 0.14);
-}
-
-.alert-badge.is-danger {
-  background: #dc2626;
-}
-
-.pending-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #b8aee3;
-  box-shadow: 0 0 0 3px rgba(184, 174, 227, 0.16);
-}
-
-.version-chip {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 0.18rem 0.45rem;
-  border-radius: 999px;
-  color: rgba(255, 247, 227, 0.7);
-  border: 1px solid rgba(184, 174, 227, 0.28);
-}
-</style>

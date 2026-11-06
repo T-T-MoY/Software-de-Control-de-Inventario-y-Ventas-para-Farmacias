@@ -17,7 +17,6 @@ export function applyTheme(theme) {
   const root = document.documentElement
 
   root.setAttribute('data-theme', nextTheme)
-  root.setAttribute('data-bs-theme', nextTheme)
   localStorage.setItem(THEME_KEY, nextTheme)
   currentTheme.value = nextTheme
 

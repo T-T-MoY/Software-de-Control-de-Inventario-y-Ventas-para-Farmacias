@@ -32,26 +32,35 @@ const props = defineProps({
   }
 })
 
-const items = computed(() => props.venta.items || props.venta.detalles || [])
+const items = computed(() => props.venta.items ?? props.venta.detalles ?? [])
 
 const subtotal = computed(() => {
-  if (props.venta.subtotal !== undefined) return Number(props.venta.subtotal)
+  const valor = props.venta.subtotal ?? props.venta.subtotal_monto
+  if (valor !== undefined) return Number(valor)
   return items.value.reduce((total, item) => {
     const linea = item.subtotal !== undefined
       ? Number(item.subtotal)
-      : Number(item.cantidad || 0) * Number(item.precioUnitario || item.precio_venta || 0)
+      : Number(item.cantidad || 0) * Number(
+          item.precioUnitario || item.precio_unitario || item.precio_venta || 0
+        )
     return total + linea
   }, 0)
 })
 
-const descuento = computed(() => Number(props.venta.descuento || 0))
+const descuento = computed(() => Number(
+  props.venta.descuento ?? props.venta.descuento_monto ?? 0
+))
 
 const total = computed(() => {
-  if (props.venta.total !== undefined) return Number(props.venta.total)
+  if (props.venta.total !== undefined && props.venta.total !== null) {
+    return Number(props.venta.total)
+  }
   return Math.max(subtotal.value - descuento.value, 0)
 })
 
-const montoRecibido = computed(() => Number(props.venta.montoRecibido || 0))
+const montoRecibido = computed(() => Number(
+  props.venta.montoRecibido ?? props.venta.monto_recibido ?? 0
+))
 
 const cambio = computed(() => {
   if (props.venta.cambio !== undefined) return Number(props.venta.cambio)
@@ -59,7 +68,7 @@ const cambio = computed(() => {
 })
 
 const fecha = computed(() => {
-  const valor = props.venta.fecha
+  const valor = props.venta.fecha ?? props.venta.fecha_emision ?? props.venta.fecha_hora_venta
   if (!valor) return new Date().toLocaleString('es-BO')
   const texto = String(valor)
   const fechaVenta = new Date(/^\d{4}-\d{2}-\d{2}$/.test(texto) ? `${texto}T00:00:00` : texto)
@@ -89,8 +98,8 @@ const imprimir = () => {
 
     <section class="receipt-meta">
       <p class="receipt-line">
-        <span>{{ venta.tipoComprobante || 'Nota de venta' }}</span>
-        <span v-if="venta.numSerie">N.º {{ venta.numSerie }}</span>
+        <span>{{ venta.tipoComprobante || venta.tipo_comprobante || 'Nota de venta' }}</span>
+        <span v-if="venta.numSerie || venta.num_serie">N.º {{ venta.numSerie || venta.num_serie }}</span>
       </p>
       <p class="receipt-line">
         <span>Fecha:</span>
@@ -115,16 +124,16 @@ const imprimir = () => {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, indice) in items" :key="item.id || indice">
+        <tr v-for="(item, indice) in items" :key="item.id || item.id_medicamento || indice">
           <td class="col-cant">{{ item.cantidad }}</td>
           <td>
-            <span class="item-name">{{ item.descripcion || item.nombre }}</span>
-            <span v-if="item.precioUnitario || item.precio_venta" class="item-price">
-              {{ moneda(item.precioUnitario || item.precio_venta) }} c/u
+            <span class="item-name">{{ item.descripcion || item.nombre || item.nombre_comercial }}</span>
+            <span v-if="item.precioUnitario || item.precio_unitario || item.precio_venta" class="item-price">
+              {{ moneda(item.precioUnitario || item.precio_unitario || item.precio_venta) }} c/u
             </span>
           </td>
           <td class="col-importe">
-            {{ moneda(item.subtotal ?? (Number(item.cantidad || 0) * Number(item.precioUnitario || item.precio_venta || 0))) }}
+            {{ moneda(item.subtotal ?? (Number(item.cantidad || 0) * Number(item.precioUnitario || item.precio_unitario || item.precio_venta || 0))) }}
           </td>
         </tr>
         <tr v-if="!items.length">
@@ -162,8 +171,12 @@ const imprimir = () => {
     </footer>
 
     <div v-if="mostrarAcciones" class="receipt-actions">
-      <button type="button" class="btn btn-primary rounded-pill w-100" @click="imprimir">
-        <i class="fas fa-print me-2"></i>Imprimir
+      <button
+        type="button"
+        class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        @click="imprimir"
+      >
+        <i class="fas fa-print" aria-hidden="true"></i>Imprimir
       </button>
     </div>
   </article>
@@ -280,6 +293,11 @@ const imprimir = () => {
 }
 
 @media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
   :global(body.printing-receipt *) {
     visibility: hidden;
   }
@@ -293,10 +311,29 @@ const imprimir = () => {
     position: absolute;
     top: 0;
     left: 0;
-    width: 80mm;
+    width: 72mm;
+    max-width: none;
     margin: 0;
     padding: 0;
     box-shadow: none;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .receipt-table {
+    table-layout: fixed;
+  }
+
+  .receipt-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .receipt-table th,
+  .receipt-table td {
+    overflow-wrap: anywhere;
   }
 
   .receipt-actions {

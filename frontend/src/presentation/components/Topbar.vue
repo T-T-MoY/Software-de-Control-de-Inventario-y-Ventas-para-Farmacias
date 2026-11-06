@@ -11,15 +11,22 @@ const userName = ref('Usuario')
 const role = ref('')
 const menuAbierto = ref(false)
 const menuRef = ref(null)
+const emit = defineEmits(['toggle-sidebar', 'profile-menu-toggle'])
+
+defineProps({
+  sidebarOpen: { type: Boolean, default: false }
+})
 
 const initials = computed(() => inicialesDeNombre(userName.value))
 
 const toggleMenu = () => {
   menuAbierto.value = !menuAbierto.value
+  emit('profile-menu-toggle', menuAbierto.value)
 }
 
 const cerrarMenu = () => {
   menuAbierto.value = false
+  emit('profile-menu-toggle', false)
 }
 
 const handleClickOutside = (event) => {
@@ -55,39 +62,36 @@ const salir = async () => {
   await router.replace({ name: 'login' })
 }
 
-defineEmits(['toggle-sidebar'])
 </script>
 
 <template>
-  <nav class="navbar topbar px-3 px-md-4 py-3 mb-4">
-    <div class="d-flex align-items-center justify-content-between w-100 gap-3">
-      <div class="d-flex align-items-center gap-2">
+  <nav
+    class="relative z-20 mb-5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-topbar)] px-3 py-2.5 shadow-sm backdrop-blur-xl sm:px-4 sm:py-3"
+  >
+    <div class="flex w-full items-center justify-between gap-3">
+      <div class="flex min-w-0 items-center gap-2">
         <button
           type="button"
-          class="icon-btn d-lg-none"
-          aria-label="Abrir menú"
+          class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border-color)] bg-transparent text-[var(--text-muted)] transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] lg:hidden"
+          :aria-label="sidebarOpen ? 'Cerrar menú' : 'Abrir menú'"
+          :aria-expanded="sidebarOpen"
+          aria-controls="sidebar"
           @click="$emit('toggle-sidebar')"
         >
-          <i class="fas fa-bars"></i>
+          <i class="fas" :class="sidebarOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
         </button>
-        <div>
-          <div class="topbar-eyebrow d-none d-sm-block">Panel administrativo</div>
-          <h1 class="h5 mb-0 fw-bold page-title">
-            {{ route.meta.title }}
-            <span v-if="route.meta.responsable" class="page-owner">
-              ({{ route.meta.responsable }})
-            </span>
-          </h1>
+        <div class="min-w-0">
+          <div class="topbar-eyebrow hidden sm:block">Panel administrativo</div>
         </div>
       </div>
 
-      <div class="d-flex align-items-center gap-2 gap-sm-3">
+      <div class="flex shrink-0 items-center gap-2 sm:gap-3">
         <ThemeToggle />
 
         <div ref="menuRef" class="profile-menu">
           <button
             type="button"
-            class="user-chip d-flex"
+            class="flex items-center gap-2 rounded-full bg-transparent px-1 py-1 text-[var(--text-main)] transition hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:gap-2.5 sm:px-2"
             aria-haspopup="menu"
             :aria-expanded="menuAbierto"
             aria-controls="profile-menu-dropdown"
@@ -95,13 +99,13 @@ defineEmits(['toggle-sidebar'])
             @click="toggleMenu"
           >
             <span class="avatar">{{ initials }}</span>
-            <div class="user-chip-info text-end d-none d-sm-block">
+            <div class="user-chip-info hidden text-right sm:block">
               <div class="user-chip-name">{{ userName }}</div>
               <div class="user-chip-role">{{ role || 'Sesión activa' }}</div>
             </div>
             <i
-              class="fas fa-chevron-down user-chip-caret"
-              :class="{ 'is-open': menuAbierto }"
+              class="fas fa-chevron-down ml-1 text-[0.62rem] text-[var(--text-soft)] transition-transform duration-200"
+              :class="{ 'rotate-180': menuAbierto }"
               aria-hidden="true"
             ></i>
           </button>
@@ -114,7 +118,7 @@ defineEmits(['toggle-sidebar'])
               role="menu"
               aria-label="Menú de usuario"
             >
-              <div class="profile-menu-head d-sm-none">
+              <div class="profile-menu-head sm:hidden">
                 <div class="user-chip-name">{{ userName }}</div>
                 <div class="user-chip-role">{{ role || 'Sesión activa' }}</div>
               </div>
@@ -149,48 +153,17 @@ defineEmits(['toggle-sidebar'])
 </template>
 
 <style scoped>
-.page-owner {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-accent);
-  white-space: nowrap;
-}
-
 .profile-menu {
   position: relative;
   display: inline-flex;
-}
-
-.user-chip {
-  border: 0;
-  padding-right: 0.7rem;
-  background: transparent;
-  font: inherit;
-  text-align: inherit;
-}
-
-.user-chip:hover,
-.user-chip[aria-expanded="true"] {
-  background: var(--accent-soft);
-}
-
-.user-chip-caret {
-  margin-left: 0.2rem;
-  font-size: 0.62rem;
-  color: var(--text-soft);
-  transition: transform 0.2s ease;
-}
-
-.user-chip-caret.is-open {
-  transform: rotate(180deg);
 }
 
 .profile-menu-dropdown {
   position: absolute;
   top: calc(100% + 0.55rem);
   right: 0;
-  z-index: 1060;
-  min-width: 220px;
+  z-index: 30;
+  width: min(260px, calc(100vw - 2rem));
   padding: 0.45rem;
   border: 1px solid var(--border-color);
   border-radius: 1rem;
@@ -232,7 +205,11 @@ defineEmits(['toggle-sidebar'])
 .profile-menu-item:focus-visible {
   background: var(--accent-soft);
   color: var(--primary);
-  outline: none;
+}
+
+.profile-menu-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .profile-menu-item.is-danger {
@@ -267,7 +244,6 @@ defineEmits(['toggle-sidebar'])
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .user-chip-caret,
   .menu-fade-enter-active,
   .menu-fade-leave-active {
     transition: none;

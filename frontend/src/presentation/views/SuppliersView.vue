@@ -357,18 +357,18 @@ onMounted(cargarProveedores)
 
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="loading"
           @click="cargarProveedores"
         >
-          <i class="fas fa-rotate"></i>
+          <i class="fas fa-rotate" :class="{ 'animate-spin': loading }" aria-hidden="true"></i>
           Actualizar
         </button>
 
         <button
           v-if="puedeGestionar"
           type="button"
-          class="btn-panel btn-panel-primary"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:-translate-y-0.5 hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           @click="abrirNuevo"
         >
           <i class="fas fa-plus"></i>
@@ -383,8 +383,8 @@ onMounted(cargarProveedores)
       class="notice notice-error"
       role="alert"
     >
-      <span>
-        <i class="fas fa-circle-exclamation me-2"></i>
+      <span class="flex items-start gap-2">
+        <i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
         {{ error }}
       </span>
 
@@ -430,26 +430,25 @@ onMounted(cargarProveedores)
 
       <div class="panel-toolbar">
 
-        <div class="panel-filters supplier-filters">
+        <div class="grid grid-cols-1 items-end gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(150px,1.5fr)]">
 
-          <div class="field field-search">
-            <label class="d-none d-lg-block form-label" aria-hidden="true">&nbsp;</label>
-            <i class="fas fa-search"></i>
+          <div class="field-search relative min-w-0">
+            <label class="sr-only" for="buscar-proveedores">Buscar proveedores</label>
+            <i class="fas fa-search" aria-hidden="true"></i>
             <input
               id="buscar-proveedores"
               v-model="search"
-              class="form-control panel-control"
+              class="form-input panel-control"
               type="search"
               placeholder="Buscar por nombre, RUC/NIT, teléfono o correo..."
               autocomplete="off"
             >
           </div>
 
-          <div class="field">
-            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+          <div>
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto"
               :disabled="!search"
               @click="limpiarBusqueda"
             >
@@ -470,7 +469,7 @@ onMounted(cargarProveedores)
       </div>
 
       <div v-if="loading" class="panel-state">
-        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" role="status" aria-label="Cargando"></span>
         Cargando proveedores...
       </div>
 
@@ -485,7 +484,7 @@ onMounted(cargarProveedores)
         v-else-if="proveedoresFiltrados.length === 0"
         class="panel-state"
       >
-        <i class="fas fa-truck fs-4 d-block mb-2"></i>
+        <i class="fas fa-truck mb-2 block text-2xl" aria-hidden="true"></i>
         {{
           search
             ? 'No se encontraron proveedores que coincidan con la búsqueda.'
@@ -502,11 +501,11 @@ onMounted(cargarProveedores)
             <thead>
               <tr>
                 <th class="cell-index">#</th>
-                <th style="width: 20%">Proveedor</th>
-                <th style="width: 13%">RUC / NIT</th>
-                <th style="width: 13%">Teléfono</th>
-                <th style="width: 19%">Correo electrónico</th>
-                <th style="width: 20%">Dirección</th>
+                <th class="w-[20%]">Proveedor</th>
+                <th class="w-[13%]">RUC / NIT</th>
+                <th class="w-[13%]">Teléfono</th>
+                <th class="w-[19%]">Correo electrónico</th>
+                <th class="w-[20%]">Dirección</th>
                 <th
                   v-if="puedeGestionar"
                   class="cell-actions text-center"
@@ -585,7 +584,7 @@ onMounted(cargarProveedores)
                       title="Editar proveedor"
                       @click="abrirEdicion(proveedor)"
                     >
-                      <i class="fas fa-pen me-1"></i>
+                      <i class="fas fa-pen mr-1" aria-hidden="true"></i>
                       Editar
                     </button>
                   </div>
@@ -641,7 +640,7 @@ onMounted(cargarProveedores)
                 </strong>
               </div>
 
-              <div class="min-w-0" style="grid-column: 1 / -1">
+              <div class="min-w-0 col-span-full">
                 <p>Dirección</p>
                 <strong class="supplier-mobile-value">
                   {{ proveedor.direccion || 'No registrada' }}
@@ -659,7 +658,7 @@ onMounted(cargarProveedores)
                 class="btn-row"
                 @click="abrirEdicion(proveedor)"
               >
-                <i class="fas fa-pen me-1"></i>
+                <i class="fas fa-pen mr-1" aria-hidden="true"></i>
                 Editar proveedor
               </button>
             </div>
@@ -788,7 +787,7 @@ onMounted(cargarProveedores)
             :disabled="saving"
             @click="cerrarModal"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
 
         </div>
@@ -799,9 +798,9 @@ onMounted(cargarProveedores)
           @submit.prevent="guardarProveedor"
         >
 
-          <div class="row g-3">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-            <div class="col-md-6">
+            <div>
 
               <label
                 class="form-label"
@@ -814,15 +813,16 @@ onMounted(cargarProveedores)
               <input
                 id="proveedor-nombre"
                 v-model="form.nombre_comercial"
-                class="form-control"
+                class="form-input"
                 :class="{
-                  'is-invalid':
+                  'has-error':
                     errores.nombre_comercial &&
                     touched.nombre_comercial
                 }"
                 maxlength="100"
                 autocomplete="organization"
                 placeholder="Nombre del proveedor"
+                :aria-invalid="Boolean(errores.nombre_comercial && touched.nombre_comercial)"
                 @input="alEscribir('nombre_comercial')"
                 @blur="alSalir('nombre_comercial')"
               >
@@ -838,7 +838,7 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label
                 class="form-label"
@@ -851,14 +851,15 @@ onMounted(cargarProveedores)
               <input
                 id="proveedor-ruc"
                 v-model="form.ruc_nit"
-                class="form-control"
+                class="form-input"
                 :class="{
-                  'is-invalid':
+                  'has-error':
                     errores.ruc_nit && touched.ruc_nit
                 }"
                 maxlength="20"
                 autocomplete="off"
                 placeholder="Número de identificación"
+                :aria-invalid="Boolean(errores.ruc_nit && touched.ruc_nit)"
                 @input="alEscribir('ruc_nit')"
                 @blur="alSalir('ruc_nit')"
               >
@@ -872,7 +873,7 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label
                 class="form-label"
@@ -884,14 +885,15 @@ onMounted(cargarProveedores)
               <input
                 id="proveedor-telefono"
                 v-model="form.telefono"
-                class="form-control"
+                class="form-input"
                 :class="{
-                  'is-invalid':
+                  'has-error':
                     errores.telefono && touched.telefono
                 }"
                 maxlength="20"
                 autocomplete="tel"
                 placeholder="Ej.: 22411122"
+                :aria-invalid="Boolean(errores.telefono && touched.telefono)"
                 @input="alEscribir('telefono')"
                 @blur="alSalir('telefono')"
               >
@@ -905,7 +907,7 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label
                 class="form-label"
@@ -917,9 +919,9 @@ onMounted(cargarProveedores)
               <input
                 id="proveedor-correo"
                 v-model="form.correo_electronico"
-                class="form-control"
+                class="form-input"
                 :class="{
-                  'is-invalid':
+                  'has-error':
                     errores.correo_electronico &&
                     touched.correo_electronico
                 }"
@@ -927,6 +929,7 @@ onMounted(cargarProveedores)
                 maxlength="120"
                 autocomplete="email"
                 placeholder="proveedor@correo.com"
+                :aria-invalid="Boolean(errores.correo_electronico && touched.correo_electronico)"
                 @input="alEscribir('correo_electronico')"
                 @blur="alSalir('correo_electronico')"
               >
@@ -943,7 +946,7 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <div class="col-12">
+            <div class="sm:col-span-2">
 
               <label
                 class="form-label"
@@ -955,14 +958,15 @@ onMounted(cargarProveedores)
               <input
                 id="proveedor-direccion"
                 v-model="form.direccion"
-                class="form-control"
+                class="form-input"
                 :class="{
-                  'is-invalid':
+                  'has-error':
                     errores.direccion && touched.direccion
                 }"
                 maxlength="150"
                 autocomplete="street-address"
                 placeholder="Dirección del proveedor"
+                :aria-invalid="Boolean(errores.direccion && touched.direccion)"
                 @input="alEscribir('direccion')"
                 @blur="alSalir('direccion')"
               >
@@ -991,7 +995,7 @@ onMounted(cargarProveedores)
 
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="saving"
               @click="cerrarModal"
             >
@@ -1000,13 +1004,13 @@ onMounted(cargarProveedores)
 
             <button
               type="submit"
-              class="btn-panel btn-panel-primary"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="saving"
             >
 
               <span
                 v-if="saving"
-                class="spinner-border spinner-border-sm"
+                class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
                 role="status"
               ></span>
 
@@ -1044,17 +1048,6 @@ onMounted(cargarProveedores)
 
 .supplier-modal {
   width: min(100%, 760px);
-}
-
-.supplier-filters {
-  grid-template-columns: minmax(0, 1fr);
-  align-items: end;
-}
-
-@media (min-width: 992px) {
-  .supplier-filters {
-    grid-template-columns: minmax(0, 5fr) minmax(150px, 1.5fr);
-  }
 }
 
 .supplier-table {

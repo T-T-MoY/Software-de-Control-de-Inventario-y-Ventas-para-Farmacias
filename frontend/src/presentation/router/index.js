@@ -12,7 +12,6 @@ import CustomersView from '../views/CustomersView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import ReportsView from '../views/ReportsView.vue'
 import HistoryView from '../views/HistoryView.vue'
-import { RESPONSABLES } from '../../config/distribution'
 import { estaAutenticado, esAdministrador, obtenerSesion } from '../../business/session'
 
 
@@ -43,8 +42,7 @@ const router = createRouter({
       component: MedicinesView,
       meta: {
         requiresAuth: true,
-        title: 'Catálogo de medicamentos',
-        responsable: RESPONSABLES.catalogo
+        title: 'Catálogo de medicamentos'
       }
     },
     {
@@ -54,8 +52,7 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         requiresSupplierManagement: true,
-        title: 'Gestión de proveedores',
-        responsable: RESPONSABLES.inventario
+        title: 'Gestión de proveedores'
       }
     },
     {
@@ -64,8 +61,7 @@ const router = createRouter({
       component: LotsView,
       meta: {
         requiresAuth: true,
-        title: 'Gestión de lotes',
-        responsable: RESPONSABLES.inventario
+        title: 'Gestión de lotes'
       }
     },
     {
@@ -74,8 +70,7 @@ const router = createRouter({
       component: AlertsView,
       meta: {
         requiresAuth: true,
-        title: 'Alertas de inventario',
-        responsable: RESPONSABLES.inventario
+        title: 'Alertas de inventario'
       }
     },
     {
@@ -85,8 +80,7 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         requiresSalesAccess: true,
-        title: 'Punto de venta',
-        responsable: RESPONSABLES.ventas
+        title: 'Punto de venta'
       }
     },
     {
@@ -96,8 +90,7 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         requiresSalesAccess: true,
-        title: 'Gestión de clientes',
-        responsable: RESPONSABLES.ventas
+        title: 'Gestión de clientes'
       }
     },
     {
@@ -107,21 +100,20 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         requiresAdmin: true,
-        title: 'Configuración',
-        responsable: RESPONSABLES.seguridad
+        title: 'Configuración'
       }
     },
     {
       path: '/reportes',
       name: 'reportes',
       component: ReportsView,
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Reportes', responsable: RESPONSABLES.reportes }
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Reportes' }
     },
     {
       path: '/historial',
       name: 'historial',
       component: HistoryView,
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Historial', responsable: RESPONSABLES.reportes }
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Historial' }
     },
     {
       path: '/usuarios',
@@ -130,8 +122,7 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         requiresAdmin: true,
-        title: 'Gestión de usuarios',
-        responsable: RESPONSABLES.seguridad
+        title: 'Gestión de usuarios'
       }
     },
     {

@@ -403,18 +403,18 @@ onMounted(cargarDatos)
 
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="loading"
           @click="cargarDatos"
         >
-          <i class="fas fa-rotate"></i>
+          <i class="fas fa-rotate" :class="{ 'animate-spin': loading }" aria-hidden="true"></i>
           Actualizar
         </button>
 
         <button
           v-if="puedeGestionar"
           type="button"
-          class="btn-panel btn-panel-primary"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:-translate-y-0.5 hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           @click="abrirRecepcion"
         >
           <i class="fas fa-plus"></i>
@@ -429,7 +429,7 @@ onMounted(cargarDatos)
       class="notice notice-error"
       role="alert"
     >
-      <span><i class="fas fa-circle-exclamation me-2"></i>{{ error }}</span>
+      <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ error }}</span>
       <button
         type="button"
         class="notice-close"
@@ -472,24 +472,24 @@ onMounted(cargarDatos)
 
       <div class="panel-toolbar">
 
-        <div class="panel-filters lot-filters">
+        <div class="grid grid-cols-1 items-end gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(180px,2fr)_minmax(150px,1.5fr)]">
 
-          <div class="field field-search">
-            <label class="d-none d-lg-block form-label" aria-hidden="true">&nbsp;</label>
+          <div class="field-search relative min-w-0">
+            <label class="sr-only" for="buscar-lotes">Buscar lotes</label>
             <div class="search-input-wrap">
-              <i class="fas fa-search"></i>
+              <i class="fas fa-search" aria-hidden="true"></i>
               <input
                 id="buscar-lotes"
                 v-model="search"
                 type="search"
-                class="form-control panel-control"
+                class="form-input panel-control"
                 placeholder="Buscar medicamento, proveedor o número de lote..."
                 autocomplete="off"
               >
             </div>
           </div>
 
-          <div class="field">
+          <div class="flex min-w-0 flex-col gap-1.5">
 
             <label class="form-label" for="filtro-lote-estado">
               Estado del lote
@@ -507,11 +507,10 @@ onMounted(cargarDatos)
               <option value="Baja">Dados de baja</option>
             </select>
           </div>
-          <div class="field">
-            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+          <div>
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55 lg:w-auto"
               :disabled="!search && filtroEstado === 'Todos'"
               @click="limpiarFiltros"
             >
@@ -535,7 +534,7 @@ onMounted(cargarDatos)
       </div>
 
       <div v-if="loading" class="panel-state">
-        <span class="spinner-border spinner-border-sm me-2"></span>
+        <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" role="status" aria-label="Cargando"></span>
         Cargando inventario...
       </div>
 
@@ -550,7 +549,7 @@ onMounted(cargarDatos)
         v-else-if="lotesFiltrados.length === 0"
         class="panel-state"
       >
-        <i class="fas fa-box-open fs-4 d-block mb-2"></i>
+        <i class="fas fa-box-open mb-2 block text-2xl" aria-hidden="true"></i>
         {{
           search || filtroEstado !== 'Todos'
             ? 'No se encontraron lotes que coincidan con los filtros.'
@@ -595,7 +594,7 @@ onMounted(cargarDatos)
 
                 <td class="cell-truncate">
                   <strong>{{ lote.medicamento }}</strong>
-                  <small class="d-block text-muted">
+                  <small class="mt-1 block text-xs text-[var(--text-muted)]">
                     {{ lote.codigo_barras }}
                   </small>
                 </td>
@@ -609,7 +608,7 @@ onMounted(cargarDatos)
                 <td>
                   {{ formatearFecha(lote.fecha_vencimiento) }}
 
-                  <small class="d-block text-muted">
+                  <small class="mt-1 block text-xs text-[var(--text-muted)]">
                     {{
                       Number(lote.dias_para_vencer) < 0
                         ? `Venció hace ${Math.abs(Number(lote.dias_para_vencer))} días`
@@ -650,7 +649,7 @@ onMounted(cargarDatos)
                       }}
                     </button>
 
-                    <span v-else class="text-muted">
+                    <span v-else class="text-[var(--text-muted)]">
                       —
                     </span>
                   </div>
@@ -708,7 +707,7 @@ onMounted(cargarDatos)
               <div>
                 <p>Vencimiento</p>
                 <strong>{{ formatearFecha(lote.fecha_vencimiento) }}</strong>
-                <small class="d-block text-muted">
+                <small class="mt-1 block text-xs text-[var(--text-muted)]">
                   {{
                     Number(lote.dias_para_vencer) < 0
                       ? `Venció hace ${Math.abs(Number(lote.dias_para_vencer))} días`
@@ -849,7 +848,7 @@ onMounted(cargarDatos)
             :disabled="saving"
             @click="cerrarModal"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
 
         </div>
@@ -860,9 +859,9 @@ onMounted(cargarDatos)
           @submit.prevent="guardarRecepcion"
         >
 
-          <div class="row g-3">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-            <div class="col-12">
+            <div class="sm:col-span-2">
 
               <label class="form-label" for="lote-medicamento">
                 Medicamento <span class="req">*</span>
@@ -872,7 +871,8 @@ onMounted(cargarDatos)
                 id="lote-medicamento"
                 v-model="form.id_medicamento"
                 class="form-select"
-                :class="{ 'is-invalid': errores.id_medicamento }"
+                :class="{ 'has-error': errores.id_medicamento }"
+                :aria-invalid="Boolean(errores.id_medicamento)"
                 required
               >
 
@@ -890,13 +890,13 @@ onMounted(cargarDatos)
 
               </select>
 
-              <small class="error-text">
+              <small class="error-text" role="alert">
                 {{ errores.id_medicamento }}
               </small>
 
             </div>
 
-            <div class="col-12">
+            <div class="sm:col-span-2">
 
               <label class="form-label" for="lote-proveedor">
                 Proveedor <span class="req">*</span>
@@ -906,7 +906,8 @@ onMounted(cargarDatos)
                 id="lote-proveedor"
                 v-model="form.id_proveedor"
                 class="form-select"
-                :class="{ 'is-invalid': errores.id_proveedor }"
+                :class="{ 'has-error': errores.id_proveedor }"
+                :aria-invalid="Boolean(errores.id_proveedor)"
                 required
               >
 
@@ -922,13 +923,13 @@ onMounted(cargarDatos)
 
               </select>
 
-              <small class="error-text">
+              <small class="error-text" role="alert">
                 {{ errores.id_proveedor }}
               </small>
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label class="form-label" for="numero-lote">
                 Número de lote <span class="req">*</span>
@@ -939,18 +940,19 @@ onMounted(cargarDatos)
                 v-model="form.lote_numero"
                 type="text"
                 maxlength="40"
-                class="form-control"
-                :class="{ 'is-invalid': errores.lote_numero }"
+                class="form-input"
+                :class="{ 'has-error': errores.lote_numero }"
                 placeholder="Ej.: LOTE-2026-A"
+                :aria-invalid="Boolean(errores.lote_numero)"
               >
 
-              <small class="error-text">
+              <small class="error-text" role="alert">
                 {{ errores.lote_numero }}
               </small>
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label class="form-label" for="fecha-vencimiento">
                 Fecha de vencimiento <span class="req">*</span>
@@ -961,19 +963,20 @@ onMounted(cargarDatos)
                 v-model="form.fecha_vencimiento"
                 type="date"
                 :min="fechaMinimaVencimiento"
-                class="form-control"
+                class="form-input"
                 :class="{
-                  'is-invalid': errores.fecha_vencimiento
+                  'has-error': errores.fecha_vencimiento
                 }"
+                :aria-invalid="Boolean(errores.fecha_vencimiento)"
               >
 
-              <small class="error-text">
+              <small class="error-text" role="alert">
                 {{ errores.fecha_vencimiento }}
               </small>
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label class="form-label" for="costo-lote">
                 Costo unitario (Bs) <span class="req">*</span>
@@ -985,18 +988,19 @@ onMounted(cargarDatos)
                 type="number"
                 min="0"
                 step="0.01"
-                class="form-control"
-                :class="{ 'is-invalid': errores.costo_unitario }"
+                class="form-input"
+                :class="{ 'has-error': errores.costo_unitario }"
                 placeholder="Ej.: 1.25"
+                :aria-invalid="Boolean(errores.costo_unitario)"
               >
 
-              <small class="error-text">
+              <small class="error-text" role="alert">
                 {{ errores.costo_unitario }}
               </small>
 
             </div>
 
-            <div class="col-md-6">
+            <div>
 
               <label class="form-label" for="cantidad-lote">
                 Cantidad recibida <span class="req">*</span>
@@ -1008,12 +1012,13 @@ onMounted(cargarDatos)
                 type="number"
                 min="1"
                 step="1"
-                class="form-control"
-                :class="{ 'is-invalid': errores.cantidad_stock }"
+                class="form-input"
+                :class="{ 'has-error': errores.cantidad_stock }"
                 placeholder="Ej.: 100"
+                :aria-invalid="Boolean(errores.cantidad_stock)"
               >
 
-              <small class="error-text">
+              <small class="error-text" role="alert">
                 {{ errores.cantidad_stock }}
               </small>
 
@@ -1033,7 +1038,7 @@ onMounted(cargarDatos)
 
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="saving"
               @click="cerrarModal"
             >
@@ -1042,13 +1047,13 @@ onMounted(cargarDatos)
 
             <button
               type="submit"
-              class="btn-panel btn-panel-primary"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="saving"
             >
 
               <span
                 v-if="saving"
-                class="spinner-border spinner-border-sm"
+                class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
               ></span>
 
               <i v-else class="fas fa-box"></i>
@@ -1099,7 +1104,7 @@ onMounted(cargarDatos)
             :disabled="procesandoBaja !== null"
             @click="cancelarBaja"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
 
@@ -1125,7 +1130,7 @@ onMounted(cargarDatos)
         <div class="panel-modal-actions">
           <button
             type="button"
-            class="btn-panel btn-panel-ghost"
+            class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="procesandoBaja !== null"
             @click="cancelarBaja"
           >
@@ -1133,16 +1138,16 @@ onMounted(cargarDatos)
           </button>
           <button
             type="button"
-            class="btn btn-danger rounded-pill px-4"
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--danger)] bg-[var(--danger-soft)] px-5 py-2.5 text-sm font-bold text-[var(--danger)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="procesandoBaja !== null"
             @click="confirmarBaja"
           >
             <span
               v-if="procesandoBaja !== null"
-              class="spinner-border spinner-border-sm me-2"
+              class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
               aria-hidden="true"
             ></span>
-            <i v-else class="fas fa-box-archive me-2" aria-hidden="true"></i>
+            <i v-else class="fas fa-box-archive" aria-hidden="true"></i>
             {{ procesandoBaja !== null ? 'Procesando...' : 'Confirmar baja' }}
           </button>
         </div>
@@ -1222,20 +1227,8 @@ onMounted(cargarDatos)
   text-align: right;
 }
 
-.lot-filters {
-  grid-template-columns: minmax(0, 1fr);
-  align-items: end;
-}
-
 .lots-list-panel {
   container-type: inline-size;
-}
-
-@media (min-width: 992px) {
-  .lot-filters {
-    grid-template-columns:
-      minmax(0, 5fr) minmax(180px, 2fr) minmax(150px, 1.5fr);
-  }
 }
 
 .search-input-wrap {

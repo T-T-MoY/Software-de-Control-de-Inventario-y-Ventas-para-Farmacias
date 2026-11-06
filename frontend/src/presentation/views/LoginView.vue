@@ -117,7 +117,7 @@ const handleLogin = async () => {
     </div>
 
     <div class="login-shell">
-      <aside class="login-showcase d-none d-lg-flex">
+      <aside class="login-showcase hidden flex-col lg:flex">
         <div class="showcase-brand">
           <span class="showcase-mark"><i class="fas fa-capsules"></i></span>
           <div>
@@ -156,7 +156,7 @@ const handleLogin = async () => {
       </aside>
 
       <section class="login-card">
-        <div class="login-mobile-brand d-lg-none">
+        <div class="login-mobile-brand flex lg:hidden">
           <span class="showcase-mark"><i class="fas fa-capsules"></i></span>
           <div>
             <div class="showcase-name">FARMACIA</div>
@@ -175,7 +175,7 @@ const handleLogin = async () => {
         <form @submit.prevent="handleLogin" novalidate>
           
           <!-- Correo Electrónico -->
-          <div class="mb-3">
+          <div class="mb-4">
             <label class="form-label" for="login-correo">
               Correo electrónico <span class="req">*</span>
             </label>
@@ -206,7 +206,7 @@ const handleLogin = async () => {
           </div>
 
           <!-- Contraseña -->
-          <div class="mb-3">
+          <div class="mb-4">
             <label class="form-label" for="login-password">
               Contraseña <span class="req">*</span>
             </label>
@@ -245,17 +245,21 @@ const handleLogin = async () => {
           </div>
 
           <!-- Error Global (API) -->
-          <div v-if="errorMessage" class="alert alert-danger py-2 rounded-3 mb-3" role="alert">
-            <i class="fas fa-circle-exclamation me-2"></i>{{ errorMessage }}
+          <div
+            v-if="errorMessage"
+            class="alert alert-danger mb-4 rounded-2xl px-4 py-3"
+            role="alert"
+          >
+            <i class="fas fa-circle-exclamation mr-2"></i>{{ errorMessage }}
           </div>
 
           <button
             type="submit"
-            class="btn btn-brand w-100 rounded-pill py-2 fw-bold mb-3"
+            class="btn-brand mb-4 flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 font-bold transition disabled:cursor-not-allowed disabled:opacity-60"
             :disabled="isLoading"
           >
-            <span v-if="isLoading">Cargando... <i class="fas fa-spinner fa-spin ms-2"></i></span>
-            <span v-else>Ingresar al sistema <i class="fas fa-arrow-right ms-2"></i></span>
+            <span v-if="isLoading">Cargando... <i class="fas fa-spinner fa-spin ml-2"></i></span>
+            <span v-else>Ingresar al sistema <i class="fas fa-arrow-right ml-2"></i></span>
           </button>
         </form>
 
@@ -279,6 +283,7 @@ const handleLogin = async () => {
 .login-page {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 2rem;
@@ -556,7 +561,7 @@ const handleLogin = async () => {
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 991.98px) {
+@media (max-width: 1023.98px) {
   .login-shell {
     grid-template-columns: 1fr;
     width: min(440px, 100%);

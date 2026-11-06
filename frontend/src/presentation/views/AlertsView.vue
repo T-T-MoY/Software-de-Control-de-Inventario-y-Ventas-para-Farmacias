@@ -96,11 +96,11 @@ onMounted(cargarAlertas)
       <div class="panel-heading-actions">
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] shadow-sm transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto"
           :disabled="loading"
           @click="cargarAlertas"
         >
-          <i class="fas fa-rotate"></i>
+          <i class="fas fa-rotate" :class="{ 'animate-spin': loading }" aria-hidden="true"></i>
           Actualizar alertas
         </button>
       </div>
@@ -116,9 +116,17 @@ onMounted(cargarAlertas)
     </div>
 
     <!-- CARGANDO -->
-    <div v-if="loading" class="panel panel-state">
-      <span class="spinner-border spinner-border-sm me-2"></span>
-      Consultando alertas...
+    <div
+      v-if="loading"
+      class="panel flex items-center justify-center gap-3 px-4 py-9 text-sm text-[var(--text-muted)]"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="size-5 animate-spin rounded-full border-2 border-[var(--border-strong)] border-t-[var(--primary)]"
+        aria-hidden="true"
+      ></span>
+      <span>Consultando alertas...</span>
     </div>
 
     <template v-else>
@@ -160,7 +168,7 @@ onMounted(cargarAlertas)
         <div class="panel-title-bar">
           <div>
             <h3>
-              <i class="fas fa-clock me-2"></i>
+              <i class="fas fa-clock mr-2" aria-hidden="true"></i>
               Próximos a vencer
             </h3>
             <small>
@@ -233,7 +241,7 @@ onMounted(cargarAlertas)
         <div class="panel-title-bar">
           <div>
             <h3>
-              <i class="fas fa-triangle-exclamation me-2"></i>
+              <i class="fas fa-triangle-exclamation mr-2" aria-hidden="true"></i>
               Lotes vencidos
             </h3>
             <small>
@@ -312,7 +320,7 @@ onMounted(cargarAlertas)
         <div class="panel-title-bar">
           <div>
             <h3>
-              <i class="fas fa-boxes-stacked me-2"></i>
+              <i class="fas fa-boxes-stacked mr-2" aria-hidden="true"></i>
               Necesidad de reposición
             </h3>
             <small>
@@ -358,7 +366,7 @@ onMounted(cargarAlertas)
 
                 <td>
                   <strong>{{ medicamento.nombre_comercial }}</strong>
-                  <small class="d-block text-muted">
+                  <small class="mt-1 block text-[var(--text-muted)]">
                     {{ medicamento.concentracion }}
                   </small>
                 </td>

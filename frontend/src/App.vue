@@ -12,6 +12,7 @@ import { bienvenidaActiva, estaAutenticado } from './business/session'
 const route = useRoute()
 const router = useRouter()
 const isSidebarOpen = ref(false)
+const profileMenuOpen = ref(false)
 
 const {
   totales,
@@ -36,6 +37,8 @@ const verAlertas = () => {
 watch(
   () => route.fullPath,
   () => {
+    isSidebarOpen.value = false
+    profileMenuOpen.value = false
     if (estaAutenticado()) iniciarMonitor()
     else detenerMonitor()
 
@@ -59,20 +62,29 @@ onBeforeUnmount(detenerMonitor)
 
 <template>
   <template v-if="route.name !== 'login'">
-    <div
+    <button
+      v-if="isSidebarOpen"
       id="sidebar-backdrop"
-      class="sidebar-backdrop d-lg-none"
-      :class="{ show: isSidebarOpen }"
-      @click="toggleMenu"
-    ></div>
-    <Sidebar :class="{ show: isSidebarOpen }" />
+      type="button"
+      class="fixed inset-0 z-[1030] bg-[#05102d]/65 backdrop-blur-sm lg:hidden"
+      aria-label="Cerrar menú de navegación"
+      @click="isSidebarOpen = false"
+    ></button>
+    <Sidebar :is-open="isSidebarOpen" @close="isSidebarOpen = false" />
 
-    <main id="main-content">
-      <Topbar @toggle-sidebar="toggleMenu" />
-      <div class="container-fluid px-0">
+    <main id="main-content" class="min-w-0 overflow-x-hidden px-4 py-4 transition-[margin] lg:ml-[calc(250px+3rem)] lg:px-8 lg:py-6">
+      <Topbar
+        :sidebar-open="isSidebarOpen"
+        @toggle-sidebar="toggleMenu"
+        @profile-menu-toggle="profileMenuOpen = $event"
+      />
+      <div class="w-full">
         <router-view v-slot="{ Component }">
           <transition name="page" mode="out-in">
-            <component :is="Component" />
+            <component
+              :is="Component"
+              v-bind="route.name === 'perfil' ? { profileMenuOpen } : {}"
+            />
           </transition>
         </router-view>
       </div>

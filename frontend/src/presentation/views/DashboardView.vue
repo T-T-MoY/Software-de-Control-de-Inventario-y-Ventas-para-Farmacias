@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { MODULOS } from '../../config/distribution'
+import { MODULOS, modulosVisibles } from '../../config/distribution'
 import {
   consumirBienvenida,
   finalizarBienvenida,
@@ -25,7 +25,7 @@ const greeting = computed(() => {
   return 'Buenas noches'
 })
 
-const modules = MODULOS
+const modules = computed(() => modulosVisibles(sesion.rol))
 
 onMounted(() => {
   if (!consumirBienvenida()) return
@@ -63,19 +63,17 @@ const stats = computed(() => [
     tone: 'lavender'
   },
   {
-    label: 'Módulos activos',
-    value: String((isAdmin.value ? 4 : 3) + (puedeProcesarVentas.value ? 2 : 0)),
-    hint: puedeProcesarVentas.value
-      ? 'Ventas y clientes disponibles según tu rol'
-      : 'Panel, perfil y catálogo',
+    label: 'Módulos disponibles',
+    value: String(modules.value.length),
+    hint: 'Accesos habilitados para tu rol',
     icon: 'fa-table-cells-large',
     tone: 'blue'
   },
   {
-    label: 'En desarrollo',
-    value: String(modules.length),
-    hint: 'Próximas entregas',
-    icon: 'fa-code',
+    label: 'Módulos implementados',
+    value: String(MODULOS.length),
+    hint: 'Inventario, ventas y administración',
+    icon: 'fa-circle-check',
     tone: 'lavender'
   }
 ])
@@ -112,42 +110,42 @@ const stats = computed(() => [
 
     <div class="welcome-panel mb-4">
       <div class="welcome-glow" aria-hidden="true"></div>
-      <div class="row align-items-center g-4 position-relative">
-        <div class="col-lg">
+      <div class="relative grid grid-cols-1 items-center gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div>
           <span class="eyebrow eyebrow-light">{{ greeting }}</span>
           <h2 class="welcome-title">Hola, {{ firstName }}</h2>
           <p class="welcome-text mb-0">
             Gestiona el catálogo, inventario y ventas de la farmacia desde un solo lugar.
             Las opciones disponibles dependen de los permisos de tu sesión.
           </p>
-          <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
+          <div class="mt-4 flex flex-wrap items-center gap-2">
             <router-link
               to="/medicamentos"
-              class="btn btn-cream rounded-pill px-4"
+              class="dashboard-action inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-[#fff7e3] px-4 py-2.5 text-sm font-bold text-[#05102d] shadow-sm transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <i class="fas fa-pills me-2"></i>Ver catálogo
+              <i class="fas fa-pills" aria-hidden="true"></i>Ver catálogo
             </router-link>
             <router-link
               v-if="isAdmin"
               to="/usuarios"
-              class="btn btn-cream rounded-pill px-4"
+              class="dashboard-action inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-[#fff7e3] px-4 py-2.5 text-sm font-bold text-[#05102d] shadow-sm transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <i class="fas fa-users me-2"></i>Gestionar usuarios
+              <i class="fas fa-users" aria-hidden="true"></i>Gestionar usuarios
             </router-link>
             <router-link
               v-if="puedeProcesarVentas"
               to="/ventas"
-              class="btn btn-cream rounded-pill px-4"
+              class="dashboard-action inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-[#fff7e3] px-4 py-2.5 text-sm font-bold text-[#05102d] shadow-sm transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <i class="fas fa-cash-register me-2"></i>Ir a ventas
+              <i class="fas fa-cash-register" aria-hidden="true"></i>Ir a ventas
             </router-link>
             <span class="welcome-chip">
-              <i class="fas fa-shield-halved"></i>
+              <i class="fas fa-shield-halved" aria-hidden="true"></i>
               Sesión protegida
             </span>
           </div>
         </div>
-        <div class="col-lg-auto d-none d-lg-block">
+        <div class="hidden lg:block">
           <div class="welcome-emblem" aria-hidden="true">
             <i class="fas fa-mortar-pestle"></i>
             <span>Control total</span>
@@ -156,55 +154,58 @@ const stats = computed(() => [
       </div>
     </div>
 
-    <div class="row g-3 mb-4">
-      <div v-for="stat in stats" :key="stat.label" class="col-6 col-xl-3">
-        <article class="stat-card h-100">
+    <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+      <div v-for="stat in stats" :key="stat.label">
+        <article class="stat-card h-full">
           <span class="stat-icon" :class="`is-${stat.tone}`">
-            <i class="fas" :class="stat.icon"></i>
+            <i class="fas" :class="stat.icon" aria-hidden="true"></i>
           </span>
           <div class="min-w-0">
             <div class="stat-label">{{ stat.label }}</div>
-            <div class="stat-value text-truncate" :title="stat.value">{{ stat.value }}</div>
-            <div class="stat-hint text-truncate" :title="stat.hint">{{ stat.hint }}</div>
+            <div class="stat-value truncate" :title="stat.value">{{ stat.value }}</div>
+            <div class="stat-hint truncate" :title="stat.hint">{{ stat.hint }}</div>
           </div>
         </article>
       </div>
     </div>
 
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+    <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <span class="eyebrow">Catálogo</span>
-        <h3 class="h5 fw-bold mb-1">Módulos del sistema</h3>
-        <p class="text-muted small mb-0">Espacios preparados para el desarrollo por equipos.</p>
+        <span class="eyebrow">Áreas del sistema</span>
+        <h3 class="mb-1 text-lg font-bold">Módulos del sistema</h3>
+        <p class="mb-0 text-sm text-[var(--text-muted)]">Accede directamente a las áreas implementadas y habilitadas para tu rol.</p>
       </div>
       <span class="badge-soft badge-soft-lavender">
         <span class="status-dot"></span>
-        {{ modules.length }} en desarrollo
+        {{ modules.length }} módulos disponibles
       </span>
     </div>
 
-    <div class="row g-3">
-      <div v-for="(module, index) in modules" :key="module.name" class="col-6 col-md-4 col-xl-3">
-        <article class="card module-card h-100 border-0">
-          <div class="card-body d-flex align-items-center gap-3">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+      <div v-for="(module, index) in modules" :key="module.name">
+        <router-link
+          :to="module.to"
+          class="module-card block h-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] text-inherit no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        >
+          <div class="flex h-full items-center gap-3 p-4">
             <span class="module-icon" :class="index % 2 === 0 ? 'is-blue' : 'is-lavender'">
-              <i class="fas" :class="module.icon"></i>
+              <i class="fas" :class="module.icon" aria-hidden="true"></i>
             </span>
-            <div class="min-w-0 flex-grow-1">
-              <div class="fw-semibold text-truncate" :title="module.name">{{ module.name }}</div>
-              <small class="text-muted">({{ module.responsable }}) · Próximamente</small>
+            <div class="min-w-0 flex-1">
+              <div class="truncate font-semibold" :title="module.name">{{ module.name }}</div>
+              <small class="text-[var(--text-muted)]">Abrir módulo</small>
             </div>
-            <i class="fas fa-hourglass-half module-arrow" title="En desarrollo"></i>
+            <i class="fas fa-arrow-right module-arrow" aria-hidden="true"></i>
           </div>
-        </article>
+        </router-link>
       </div>
     </div>
 
     <div class="info-strip mt-4">
-      <span class="info-icon"><i class="fas fa-database"></i></span>
-      <div>
-        <div class="fw-semibold">Base de datos preparada</div>
-        <p class="mb-0 text-muted small">
+      <span class="info-icon"><i class="fas fa-database" aria-hidden="true"></i></span>
+      <div class="min-w-0">
+        <div class="font-semibold">Base de datos preparada</div>
+        <p class="mb-0 text-sm text-[var(--text-muted)]">
           El esquema de PostgreSQL está en <code>database/</code> y sirve como referencia
           para implementar los módulos.
         </p>
@@ -214,10 +215,6 @@ const stats = computed(() => [
 </template>
 
 <style scoped>
-.min-w-0 {
-  min-width: 0;
-}
-
 .login-welcome {
   position: fixed;
   z-index: 2000;
@@ -572,10 +569,6 @@ const stats = computed(() => [
   transform: translateY(-3px);
   border-color: var(--accent) !important;
   box-shadow: var(--shadow-md);
-}
-
-.module-card .card-body {
-  padding: 1rem 1.05rem;
 }
 
 .module-icon {

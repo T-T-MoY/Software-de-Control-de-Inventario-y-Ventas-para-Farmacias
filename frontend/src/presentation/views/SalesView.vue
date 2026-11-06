@@ -387,18 +387,6 @@ const manejarAtajos = (event) => {
     return
   }
 
-  if (modalClienteAbierto.value) return
-
-  if (event.key === 'F2') {
-    event.preventDefault()
-    enfocarBusquedaProducto()
-    return
-  }
-
-  if (event.key === 'F12') {
-    event.preventDefault()
-    if (!guardando.value && !cargando.value) void confirmarVenta()
-  }
 }
 
 const agregarProducto = () => {
@@ -556,61 +544,65 @@ onBeforeUnmount(() => {
       @close="notificacion = ''"
     />
 
-    <header class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <header class="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <span class="eyebrow">Ventas · Rodrigo Marca</span>
-        <h1 class="h3 fw-bold mb-1">Punto de venta</h1>
-        <p class="text-muted mb-0">Carrito, pago en efectivo y comprobante de venta.</p>
+        <span class="eyebrow">Ventas</span>
+        <h1 class="mb-1 text-2xl font-extrabold text-[var(--text-main)] sm:text-3xl">Punto de venta</h1>
+        <p class="mb-0 text-sm text-[var(--text-muted)]">Carrito, pago en efectivo y comprobante de venta.</p>
       </div>
-      <router-link to="/clientes" class="btn btn-outline-primary rounded-pill px-4">
-        <i class="fas fa-address-book me-2"></i>Gestionar clientes
+      <router-link
+        to="/clientes"
+        class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:w-auto"
+      >
+        <i class="fas fa-address-book" aria-hidden="true"></i>Gestionar clientes
       </router-link>
     </header>
 
-    <div v-if="error" class="alert alert-danger" role="alert">{{ error }}</div>
+    <div v-if="error" class="notice notice-error mb-4" role="alert">
+      <span class="flex items-start gap-2">
+        <i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ error }}
+      </span>
+    </div>
 
-    <div class="row g-4 align-items-start">
-      <div class="col-xl-7">
-        <article class="card border-0 shadow-sm mb-4">
-          <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+    <div class="grid grid-cols-1 items-start gap-4 xl:grid-cols-12">
+      <div class="min-w-0 xl:col-span-7">
+        <article class="panel mb-4">
+          <div class="p-4 sm:p-5">
+            <div class="mb-4 flex items-start justify-between gap-3">
               <div>
-                <h2 class="h5 fw-bold mb-1">Agregar productos</h2>
-                <p class="small text-muted mb-0">El stock se descuenta por vencimiento más próximo.</p>
+                <h2 class="mb-1 text-lg font-extrabold">Agregar productos</h2>
+                <p class="mb-0 text-xs text-[var(--text-muted)] sm:text-sm">El stock se descuenta por vencimiento más próximo.</p>
               </div>
-              <span class="badge text-bg-light">{{ productos.length }} disponibles</span>
+              <span class="shrink-0 rounded-full border border-[var(--border-color)] bg-[var(--bg-body)] px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">{{ productos.length }} disponibles</span>
             </div>
-            <div v-if="!clienteValido" class="alert alert-info py-2 mb-3">
-              <i class="fas fa-lock me-2" aria-hidden="true"></i>
+            <div v-if="!clienteValido" class="notice mb-4 flex items-start gap-2 py-3 text-sm">
+              <i class="fas fa-lock mt-0.5 shrink-0" aria-hidden="true"></i>
               Selecciona o registra un cliente para habilitar la búsqueda de medicamentos.
             </div>
             <fieldset
-              class="sales-product-fields border-0 p-0 m-0"
+              class="sales-product-fields m-0 w-full min-w-0 border-0 p-0"
               :disabled="!clienteValido"
             >
-            <div class="row g-3 align-items-end">
-              <div class="col-md">
+            <div class="grid grid-cols-1 items-end gap-4 sm:grid-cols-12">
+              <div class="min-w-0 sm:col-span-12">
                 <label class="form-label" for="buscar-producto">Buscar medicamento</label>
-                <div class="input-group">
-                  <span class="input-group-text" aria-hidden="true">
+                <div class="sale-input-group flex min-w-0 items-center overflow-hidden rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--ring)]">
+                  <span class="pl-4 text-[var(--text-soft)]" aria-hidden="true">
                     <i class="fas fa-magnifying-glass"></i>
                   </span>
                   <input
                     id="buscar-producto"
                     ref="busquedaProductoRef"
                     v-model="busqueda"
-                    class="form-control"
+                    class="form-input min-w-0 flex-1 border-0 bg-transparent focus:ring-0"
                     placeholder="Nombre, DCI o código de barras"
                     autocomplete="off"
                     @input="buscarProductos"
                   >
-                  <span class="input-group-text sale-kbd-hint" title="Atajo: F2">
-                    <kbd class="sale-kbd">F2</kbd>
-                  </span>
                 </div>
               </div>
-              <div class="col-12">
-                <span class="form-label d-block">Medicamentos disponibles</span>
+              <div class="min-w-0 sm:col-span-12">
+                <span class="form-label block">Medicamentos disponibles</span>
                 <div class="sale-product-list" role="group" aria-label="Medicamentos disponibles">
                   <button
                     v-for="producto in productos"
@@ -649,59 +641,66 @@ onBeforeUnmount(() => {
                       aria-hidden="true"
                     ></i>
                   </button>
-                  <p v-if="!cargandoCatalogo && productos.length === 0" class="small text-muted mb-0 p-3">
+                  <p v-if="!cargandoCatalogo && productos.length === 0" class="m-0 p-3 text-sm text-[var(--text-muted)]">
                     No hay medicamentos con stock vigente que coincidan con la búsqueda.
                   </p>
                 </div>
               </div>
-              <div class="col-5 col-md-2">
+              <div class="min-w-0 sm:col-span-3 lg:col-span-2">
                 <label class="form-label" for="cantidad-venta">Cantidad</label>
                 <input
                   id="cantidad-venta"
                   v-model.number="cantidad"
-                  class="form-control"
+                  class="form-input"
                   type="number"
                   min="1"
                   :max="productoSeleccionado?.stock_disponible || 1"
                 >
               </div>
-              <div class="col-7 col-md-auto">
-                <button class="btn btn-primary rounded-pill w-100" @click="agregarProducto">
-                  <i class="fas fa-cart-plus me-2"></i>Agregar
+              <div class="sm:col-span-9 lg:col-span-10">
+                <button
+                  type="button"
+                  class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+                  :disabled="!productoSeleccionado"
+                  @click="agregarProducto"
+                >
+                  <i class="fas fa-cart-plus" aria-hidden="true"></i>Agregar
                 </button>
               </div>
             </div>
             </fieldset>
-            <p v-if="cargandoCatalogo" class="small text-muted mt-3 mb-0">Cargando catálogo…</p>
+            <p v-if="cargandoCatalogo" class="mb-0 mt-3 text-sm text-[var(--text-muted)]" role="status">Cargando catálogo…</p>
           </div>
         </article>
 
-        <article class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h2 class="h5 fw-bold mb-0">Carrito</h2>
-              <span class="badge rounded-pill text-bg-primary">{{ carrito.length }} productos</span>
+        <article class="panel">
+          <div class="p-4 sm:p-5">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <h2 class="mb-0 text-lg font-extrabold">Carrito</h2>
+              <span class="rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-bold text-[var(--primary)]">{{ carrito.length }} productos</span>
             </div>
-            <div v-if="!carrito.length" class="text-center text-muted py-5">
-              <i class="fas fa-basket-shopping fs-2 mb-2"></i>
+            <div v-if="!carrito.length" class="py-10 text-center text-sm text-[var(--text-muted)]">
+              <i class="fas fa-basket-shopping mb-2 block text-3xl" aria-hidden="true"></i>
               <p class="mb-0">Agrega medicamentos para iniciar la venta.</p>
             </div>
             <div v-else class="sale-cart-scroll">
-              <table class="table align-middle mb-0">
+              <table class="w-full min-w-[36rem] border-collapse text-left text-sm">
                 <thead>
-                  <tr><th>Medicamento</th><th>Precio</th><th style="width: 100px">Cantidad</th><th>Subtotal</th><th></th></tr>
+                  <tr class="text-xs uppercase tracking-wide text-[var(--text-muted)]">
+                    <th class="px-3 py-3">Medicamento</th><th class="px-3 py-3">Precio</th><th class="w-24 px-3 py-3">Cantidad</th><th class="px-3 py-3">Subtotal</th><th class="px-3 py-3"></th>
+                  </tr>
                 </thead>
                 <tbody>
                   <tr v-for="item in carrito" :key="item.id_medicamento">
-                    <td>
+                    <td class="border-t border-[var(--border-color)] px-3 py-3">
                       <strong>{{ item.nombre_comercial }}</strong>
-                      <span v-if="item.tipo_venta === 'Con receta'" class="badge text-bg-warning ms-2">Receta</span>
-                      <small v-if="item.lotes_por_vencer > 0" class="d-block text-warning">Hay lote(s) próximos a vencer</small>
+                      <span v-if="item.tipo_venta === 'Con receta'" class="ml-2 rounded-full bg-[var(--warning-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--warning)]">Receta</span>
+                      <small v-if="item.lotes_por_vencer > 0" class="mt-1 block text-[var(--warning)]">Hay lote(s) próximos a vencer</small>
                     </td>
-                    <td>Bs {{ Number(item.precio_unitario).toFixed(2) }}</td>
-                    <td>
+                    <td class="border-t border-[var(--border-color)] px-3 py-3">Bs {{ Number(item.precio_unitario).toFixed(2) }}</td>
+                    <td class="border-t border-[var(--border-color)] px-3 py-3">
                       <input
-                        class="form-control form-control-sm"
+                        class="form-input min-h-10 px-2 py-2 text-sm"
                         type="number"
                         min="1"
                         :max="item.stock_disponible"
@@ -710,10 +709,11 @@ onBeforeUnmount(() => {
                         @change="actualizarCantidad(item, $event.target.value)"
                       >
                     </td>
-                    <td>{{ dinero(Math.round(Number(item.precio_unitario) * 100) * item.cantidad) }}</td>
-                    <td>
+                    <td class="border-t border-[var(--border-color)] px-3 py-3 font-semibold">{{ dinero(Math.round(Number(item.precio_unitario) * 100) * item.cantidad) }}</td>
+                    <td class="border-t border-[var(--border-color)] px-3 py-3">
                       <button
-                        class="btn btn-sm btn-outline-danger"
+                        type="button"
+                        class="inline-flex size-9 items-center justify-center rounded-full border border-[var(--danger)] text-[var(--danger)] transition hover:bg-[var(--danger-soft)] focus-visible:outline-2 focus-visible:outline-[var(--danger)]"
                         :aria-label="`Quitar ${item.nombre_comercial}`"
                         @click="carrito = carrito.filter((producto) => producto.id_medicamento !== item.id_medicamento)"
                       >
@@ -728,38 +728,38 @@ onBeforeUnmount(() => {
         </article>
       </div>
 
-      <div class="col-xl-5">
-        <article class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">Cliente y pago</h2>
+      <div class="min-w-0 xl:col-span-5">
+        <article class="panel">
+          <div class="p-4 sm:p-5">
+            <h2 class="mb-4 text-lg font-extrabold">Cliente y pago</h2>
 
-            <div class="sale-client-current mb-3" :class="{ 'is-empty': !clienteSeleccionado }">
-              <div class="d-flex align-items-center gap-2">
+            <div class="sale-client-current mb-4" :class="{ 'is-empty': !clienteSeleccionado }">
+              <div class="flex min-w-0 items-center gap-2">
                 <span class="sale-client-icon" aria-hidden="true">
                   <i class="fas" :class="clienteSeleccionado ? 'fa-user-check' : 'fa-user-slash'"></i>
                 </span>
-                <div class="sale-client-info flex-grow-1">
+                <div class="sale-client-info min-w-0 flex-1">
                   <span class="sale-client-label">Cliente actual</span>
-                  <strong class="d-block text-truncate">
+                  <strong class="block truncate">
                     {{ clienteSeleccionado ? etiquetaCliente(clienteSeleccionado) : 'Sin cliente seleccionado' }}
                   </strong>
-                  <small v-if="clienteSeleccionado && !esConsumidorFinal(clienteSeleccionado)" class="text-muted">
+                  <small v-if="clienteSeleccionado && !esConsumidorFinal(clienteSeleccionado)" class="text-[var(--text-muted)]">
                     CI/NIT: {{ clienteSeleccionado.ci_nit }}
                   </small>
-                  <small v-else-if="clienteSeleccionado" class="text-muted">
+                  <small v-else-if="clienteSeleccionado" class="text-[var(--text-muted)]">
                     No requiere datos del cliente
                   </small>
                 </div>
                 <span
                   v-if="clienteSeleccionado && esConsumidorFinal(clienteSeleccionado)"
-                  class="badge text-bg-success"
+                  class="shrink-0 rounded-full bg-[var(--success-soft)] px-2.5 py-1 text-xs font-bold text-[var(--success)]"
                 >
                   Venta rápida
                 </span>
                 <button
                   v-else-if="clienteConsumidorFinal"
                   type="button"
-                  class="btn btn-sm btn-outline-secondary rounded-pill"
+                  class="shrink-0 rounded-full border border-[var(--border-color)] px-3 py-1.5 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)]"
                   @click="volverConsumidorFinal"
                 >
                   Consumidor final
@@ -767,17 +767,17 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <div ref="clienteAutocompleteRef" class="cliente-autocomplete mb-3">
+            <div ref="clienteAutocompleteRef" class="cliente-autocomplete mb-4">
               <label class="form-label" for="buscar-cliente-venta">Buscar cliente</label>
               <div class="cliente-search-wrap">
-                <div class="input-group">
-                  <span class="input-group-text" aria-hidden="true">
+                <div class="sale-input-group flex min-w-0 items-center overflow-hidden rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--ring)]">
+                  <span class="pl-4 text-[var(--text-soft)]" aria-hidden="true">
                     <i class="fas fa-address-book"></i>
                   </span>
                   <input
                     id="buscar-cliente-venta"
                     v-model="busquedaCliente"
-                    class="form-control"
+                    class="form-input min-w-0 flex-1 border-0 bg-transparent focus:ring-0"
                     type="text"
                     placeholder="Nombre, razón social o CI/NIT"
                     maxlength="80"
@@ -796,7 +796,7 @@ onBeforeUnmount(() => {
                   >
                   <button
                     type="button"
-                    class="btn btn-outline-primary"
+                    class="mr-1 inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border-color)] text-[var(--primary)] transition hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
                     title="Agregar nuevo cliente"
                     aria-label="Agregar nuevo cliente"
                     :disabled="cargando || guardandoCliente"
@@ -856,40 +856,40 @@ onBeforeUnmount(() => {
                   </button>
                 </div>
               </div>
-              <small class="text-muted d-block mt-1">
+              <small class="mt-1 block text-xs text-[var(--text-muted)]">
                 {{ buscarPorDocumento ? 'Filtrando por CI/NIT…' : 'Escribe letras para buscar por nombre o números para buscar por CI/NIT.' }}
               </small>
             </div>
 
-            <div v-if="requiereReceta" class="rounded-3 bg-light p-3 mb-3">
-              <h3 class="h6 fw-bold"><i class="fas fa-prescription me-2"></i>Datos de receta (RD5)</h3>
-              <div class="mb-2">
+            <div v-if="requiereReceta" class="mb-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-body)] p-4">
+              <h3 class="mb-3 text-sm font-extrabold"><i class="fas fa-prescription mr-2" aria-hidden="true"></i>Datos de receta (RD5)</h3>
+              <div class="mb-3">
                 <label class="form-label" for="paciente">Paciente</label>
-                <input id="paciente" v-model.trim="receta.paciente" class="form-control" maxlength="160" required>
+                <input id="paciente" v-model.trim="receta.paciente" class="form-input" maxlength="160" required>
               </div>
-              <div class="row g-2">
-                <div class="col">
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="min-w-0">
                   <label class="form-label" for="medico">Médico</label>
-                  <input id="medico" v-model.trim="receta.medico" class="form-control" maxlength="160" required>
+                  <input id="medico" v-model.trim="receta.medico" class="form-input" maxlength="160" required>
                 </div>
-                <div class="col">
+                <div class="min-w-0">
                   <label class="form-label" for="matricula">Matrícula</label>
-                  <input id="matricula" v-model.trim="receta.matricula" class="form-control" maxlength="40" required>
+                  <input id="matricula" v-model.trim="receta.matricula" class="form-input" maxlength="40" required>
                 </div>
               </div>
-              <small class="text-muted">Estos datos se validan para la venta y no se guardan.</small>
+              <small class="mt-2 block text-xs text-[var(--text-muted)]">Estos datos se validan para la venta y no se guardan.</small>
             </div>
 
-            <div class="row g-3 mb-3">
-              <div class="col-6">
+            <div class="mb-4 grid grid-cols-2 gap-3">
+              <div class="min-w-0">
                 <label class="form-label" for="descuento-venta">Descuento (%)</label>
-                <input id="descuento-venta" v-model.number="descuento" class="form-control" type="number" min="0" max="100" step="0.01">
+                <input id="descuento-venta" v-model.number="descuento" class="form-input" type="number" min="0" max="100" step="0.01">
               </div>
-              <div class="col-6">
+              <div class="min-w-0">
                 <label class="form-label" for="efectivo-venta">Recibido (Bs)</label>
-                <input id="efectivo-venta" v-model="efectivo" class="form-control" type="number" min="0" step="0.01" required>
+                <input id="efectivo-venta" v-model="efectivo" class="form-input" type="number" min="0" step="0.01" required>
               </div>
-              <div class="col-6">
+              <div class="min-w-0">
                 <label class="form-label" for="tipo-comprobante">Comprobante</label>
                 <select id="tipo-comprobante" v-model="tipoComprobante" class="form-select">
                   <option>Nota de venta</option>
@@ -898,20 +898,19 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <div class="border-top pt-3">
-              <p class="d-flex justify-content-between mb-2"><span>Subtotal</span><strong>{{ dinero(subtotalCentavos) }}</strong></p>
-              <p class="d-flex justify-content-between mb-2"><span>Descuento</span><strong>- {{ dinero(descuentoCentavos) }}</strong></p>
-              <p class="d-flex justify-content-between fs-5 mb-2"><span>Total</span><strong>{{ dinero(totalCentavos) }}</strong></p>
-              <p class="d-flex justify-content-between text-success mb-3"><span>Cambio</span><strong>{{ dinero(cambioCentavos) }}</strong></p>
+            <div class="border-t border-[var(--border-color)] pt-4">
+              <p class="mb-2 flex justify-between gap-3 text-sm"><span>Subtotal</span><strong>{{ dinero(subtotalCentavos) }}</strong></p>
+              <p class="mb-2 flex justify-between gap-3 text-sm"><span>Descuento</span><strong>- {{ dinero(descuentoCentavos) }}</strong></p>
+              <p class="mb-2 flex justify-between gap-3 text-lg"><span>Total</span><strong>{{ dinero(totalCentavos) }}</strong></p>
+              <p class="mb-4 flex justify-between gap-3 text-sm text-[var(--success)]"><span>Cambio</span><strong>{{ dinero(cambioCentavos) }}</strong></p>
               <button
-                class="btn btn-success rounded-pill w-100 py-2 d-flex align-items-center justify-content-center gap-2"
+                type="button"
+                class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--success)] px-5 py-3 text-sm font-extrabold text-white shadow-md transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--success)] disabled:cursor-not-allowed disabled:opacity-55"
                 :disabled="guardando || cargando || !carrito.length"
-                title="Atajo: F12"
                 @click="confirmarVenta"
               >
                 <i class="fas fa-cash-register" aria-hidden="true"></i>
                 <span>{{ guardando ? 'Registrando…' : 'Confirmar venta' }}</span>
-                <kbd class="sale-kbd sale-kbd-light">F12</kbd>
               </button>
             </div>
           </div>
@@ -950,30 +949,30 @@ onBeforeUnmount(() => {
           </header>
 
           <form class="mt-4" @submit.prevent="registrarClienteRapido">
-            <div class="row g-3">
-              <div class="col-sm-5">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-12">
+              <div class="min-w-0 sm:col-span-5">
                 <label for="cliente-rapido-ci" class="form-label">
-                  CI/NIT <span class="text-danger">*</span>
+                  CI/NIT <span class="req">*</span>
                 </label>
                 <input
                   id="cliente-rapido-ci"
                   ref="ciClienteRapidoRef"
                   v-model="formularioCliente.ci_nit"
-                  class="form-control"
+                  class="form-input"
                   maxlength="20"
                   autocomplete="off"
                   required
                 >
               </div>
-              <div class="col-sm-7">
+              <div class="min-w-0 sm:col-span-7">
                 <label for="cliente-rapido-nombre" class="form-label">
-                  Nombre / Razón social <span class="text-danger">*</span>
+                  Nombre / Razón social <span class="req">*</span>
                 </label>
                 <input
                   id="cliente-rapido-nombre"
                   ref="nombreClienteRapidoRef"
                   v-model="formularioCliente.nombre"
-                  class="form-control"
+                  class="form-input"
                   maxlength="80"
                   autocomplete="off"
                   required
@@ -983,14 +982,15 @@ onBeforeUnmount(() => {
             <footer class="panel-modal-actions mt-4">
               <button
                 type="button"
-                class="btn btn-light rounded-pill px-4"
+                class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-55"
                 :disabled="guardandoCliente"
                 @click="cerrarModalCliente"
               >
                 Cancelar
               </button>
-              <button type="submit" class="btn btn-primary rounded-pill px-4" :disabled="guardandoCliente">
-                <i class="fas fa-user-plus me-2"></i>
+              <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] disabled:cursor-not-allowed disabled:opacity-55" :disabled="guardandoCliente">
+                <span v-if="guardandoCliente" class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent" role="status" aria-label="Guardando"></span>
+                <i v-else class="fas fa-user-plus" aria-hidden="true"></i>
                 {{ guardandoCliente ? 'Guardando…' : 'Guardar y asignar' }}
               </button>
             </footer>
@@ -1030,30 +1030,15 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.sale-kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.75rem;
-  padding: 0.1rem 0.35rem;
-  border: 1px solid currentColor;
-  border-radius: 0.35rem;
-  font-family: inherit;
-  font-size: 0.66rem;
-  font-weight: 700;
-  line-height: 1.2;
-  opacity: 0.6;
+.sale-input-group .form-input {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-.sale-kbd-hint {
-  color: var(--bs-secondary-color, #6c757d);
-  background: var(--bs-body-bg, #fff);
-}
-
-.sale-kbd-light {
-  border-color: rgb(255 255 255 / 70%);
-  color: inherit;
-  opacity: 0.9;
+.sale-input-group .form-input:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .sale-cart-scroll {
@@ -1069,8 +1054,8 @@ onBeforeUnmount(() => {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--bs-body-bg, #fff);
-  box-shadow: inset 0 -1px 0 var(--bs-border-color, #dee2e6);
+  background: var(--bg-card);
+  box-shadow: inset 0 -1px 0 var(--border-color);
 }
 
 .cliente-autocomplete,
@@ -1087,9 +1072,9 @@ onBeforeUnmount(() => {
   max-height: 16rem;
   overflow-y: auto;
   padding: 0.3rem;
-  border: 1px solid var(--bs-border-color, #dee2e6);
+  border: 1px solid var(--border-color);
   border-radius: 0.8rem;
-  background: var(--bs-body-bg, #fff);
+  background: var(--bg-card);
   box-shadow: 0 0.9rem 2rem rgb(15 23 42 / 18%);
 }
 
@@ -1108,7 +1093,7 @@ onBeforeUnmount(() => {
 
 .cliente-suggestion:hover,
 .cliente-suggestion.is-active {
-  background: var(--bs-primary-bg-subtle, #e7f1ff);
+  background: var(--accent-soft);
 }
 
 .cliente-suggestion-icon {
@@ -1119,8 +1104,8 @@ onBeforeUnmount(() => {
   width: 1.9rem;
   height: 1.9rem;
   border-radius: 50%;
-  background: var(--bs-tertiary-bg, #f1f3f5);
-  color: var(--bs-primary, #0d6efd);
+  background: var(--bg-input);
+  color: var(--primary);
   font-size: 0.8rem;
 }
 
@@ -1143,30 +1128,30 @@ onBeforeUnmount(() => {
 }
 
 .cliente-suggestion-info small {
-  color: var(--bs-secondary-color, #6c757d);
+  color: var(--text-muted);
   font-size: 0.75rem;
 }
 
 .cliente-suggestion-new {
-  color: var(--bs-primary, #0d6efd);
+  color: var(--primary);
 }
 
 .cliente-suggestion-new .cliente-suggestion-icon {
-  background: var(--bs-primary-bg-subtle, #e7f1ff);
+  background: var(--accent-soft);
 }
 
 .cliente-suggestions-empty {
   margin: 0;
   padding: 0.6rem 0.65rem;
-  color: var(--bs-secondary-color, #6c757d);
+  color: var(--text-muted);
   font-size: 0.82rem;
 }
 
 .sale-client-current {
   padding: 0.7rem 0.85rem;
-  border: 1px solid var(--bs-border-color, #dee2e6);
+  border: 1px solid var(--border-color);
   border-radius: 0.85rem;
-  background: var(--bs-tertiary-bg, #f8f9fa);
+  background: var(--bg-input);
 }
 
 .sale-client-current.is-empty {
@@ -1179,7 +1164,7 @@ onBeforeUnmount(() => {
 
 .sale-client-label {
   display: block;
-  color: var(--bs-secondary-color, #6c757d);
+  color: var(--text-muted);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -1198,8 +1183,8 @@ onBeforeUnmount(() => {
   width: 2.2rem;
   height: 2.2rem;
   border-radius: 50%;
-  background: var(--bs-primary-bg-subtle, #e7f1ff);
-  color: var(--bs-primary, #0d6efd);
+  background: var(--accent-soft);
+  color: var(--primary);
 }
 
 .cliente-rapido-modal {
@@ -1230,16 +1215,16 @@ onBeforeUnmount(() => {
   gap: 0.75rem;
   min-width: 0;
   padding: 0.55rem;
-  border: 1px solid var(--bs-border-color, #dee2e6);
+  border: 1px solid var(--border-color);
   border-radius: 0.75rem;
-  background: var(--bs-body-bg, #fff);
+  background: var(--bg-card);
   color: inherit;
   text-align: left;
 }
 
 .sale-product-option:hover,
 .sale-product-option.is-selected {
-  border-color: var(--bs-primary, #0d6efd);
+  border-color: var(--primary);
 }
 
 .sale-product-option:disabled {
@@ -1296,7 +1281,7 @@ onBeforeUnmount(() => {
 }
 
 .sale-product-details small {
-  color: var(--bs-secondary-color, #6c757d);
+  color: var(--text-muted);
 }
 
 .sale-preview-backdrop {
@@ -1315,7 +1300,7 @@ onBeforeUnmount(() => {
   width: min(100%, 30rem);
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
-  padding: 1rem;
+  padding: 3.25rem 1rem 1rem;
   border-radius: 0.75rem;
   background: #fff;
   box-shadow: 0 1rem 3rem rgb(0 0 0 / 25%);
@@ -1323,8 +1308,8 @@ onBeforeUnmount(() => {
 
 .sale-preview-close {
   position: absolute;
-  top: 0.55rem;
-  right: 0.55rem;
+  top: 0.75rem;
+  right: 0.75rem;
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -1342,5 +1327,31 @@ onBeforeUnmount(() => {
 
 .sale-preview-close:hover {
   background: rgb(15 23 42 / 95%);
+}
+
+@media print {
+  .sale-preview-backdrop {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .sale-preview-dialog {
+    position: static !important;
+    width: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .sale-preview-close {
+    display: none !important;
+  }
 }
 </style>

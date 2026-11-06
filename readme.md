@@ -120,7 +120,7 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
         │   └── img/
         │       └── hero.png
         ├── config/
-        │   └── distribution.js   # módulos y responsables del equipo
+        │   └── distribution.js   # módulos disponibles por rol
         ├── data/                 # Capa 13.3
         │   ├── api.js
         │   └── endpoints/
@@ -472,7 +472,7 @@ El Administrador puede cambiarlos desde la pantalla **Configuración** (`Setting
 Todos los formularios del frontend comparten el estilo de campos definido en `frontend/src/assets/css/style.css`. Para que un campo se vea igual que el del login:
 
 - Usa `form-label` en la etiqueta y agrega `<span class="req">*</span>` si el campo es obligatorio.
-- Usa `form-input` (o `form-control` / `form-select` de Bootstrap) en el campo.
+- Usa `form-input` en el campo.
 - Usa `custom-input-group` cuando el campo lleve un icono dentro (por ejemplo, un buscador o la contraseña).
 - Marca el error con `has-error` / `is-invalid` y muestra el mensaje con `error-text`.
 

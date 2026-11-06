@@ -335,19 +335,19 @@ const totalDescuentos = computed(() => Number(props.totales.descuento_monto || 0
     <template v-if="tipo === 'ventas'">
       <div class="chart-kpis">
         <article class="chart-kpi chart-kpi-primary">
-          <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-wallet"></i></div>
           <span>Ingresos registrados</span>
           <strong>Bs {{ dinero(totalVentas) }}</strong>
           <small>Total de ventas del período</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
           <span>Operaciones de venta</span>
           <strong>{{ filas.length }}</strong>
           <small>Transacciones registradas</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-tag"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-tag"></i></div>
           <span>Descuentos aplicados</span>
           <strong>Bs {{ dinero(totalDescuentos) }}</strong>
           <small>Importe descontado</small>
@@ -376,19 +376,19 @@ const totalDescuentos = computed(() => Number(props.totales.descuento_monto || 0
     <template v-else-if="tipo === 'inventario'">
       <div class="chart-kpis">
         <article class="chart-kpi chart-kpi-primary">
-          <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-box-open"></i></div>
           <span>Unidades disponibles</span>
           <strong>{{ totalUnidades.toLocaleString('es-BO') }}</strong>
           <small>Existencias vigentes</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
           <span>Valor a costo</span>
           <strong>Bs {{ dinero(valorCosto) }}</strong>
           <small>Inversión en existencias</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
           <span>Valor potencial de venta</span>
           <strong>Bs {{ dinero(valorInventario) }}</strong>
           <small>Valorización del inventario</small>
@@ -435,19 +435,19 @@ const totalDescuentos = computed(() => Number(props.totales.descuento_monto || 0
     <template v-else-if="tipo === 'lotes-por-vencer'">
       <div class="chart-kpis">
         <article class="chart-kpi chart-kpi-warning">
-          <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
           <span>Lotes por vencer</span>
           <strong>{{ filas.length }}</strong>
           <small>Requieren seguimiento</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-box-open"></i></div>
           <span>Unidades comprometidas</span>
           <strong>{{ Number(totales.cantidad_stock || 0).toLocaleString('es-BO') }}</strong>
           <small>Existencias en esos lotes</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
           <span>Valor a costo</span>
           <strong>Bs {{ dinero(totales.valor_costo) }}</strong>
           <small>Valor de los lotes</small>
@@ -473,19 +473,19 @@ const totalDescuentos = computed(() => Number(props.totales.descuento_monto || 0
     <template v-else>
       <div class="chart-kpis">
         <article class="chart-kpi chart-kpi-danger">
-          <div class="kpi-icon"><i class="bi bi-exclamation-triangle"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
           <span>Lotes vencidos</span>
           <strong>{{ filas.length }}</strong>
           <small>Requieren control sanitario</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-box-open"></i></div>
           <span>Existencias relacionadas</span>
           <strong>{{ Number(totales.cantidad_stock || 0).toLocaleString('es-BO') }}</strong>
           <small>Unidades en los lotes</small>
         </article>
         <article class="chart-kpi">
-          <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+          <div class="kpi-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
           <span>Valor comprometido</span>
           <strong>Bs {{ dinero(totales.valor_costo) }}</strong>
           <small>Valor a costo</small>

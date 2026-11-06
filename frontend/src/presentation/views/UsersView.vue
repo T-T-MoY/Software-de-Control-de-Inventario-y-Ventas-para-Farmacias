@@ -298,6 +298,11 @@ const abrirNuevo = () => {
   modalAbierto.value = true
 }
 
+const cerrarModalUsuario = () => {
+  if (saving.value) return
+  modalAbierto.value = false
+}
+
 const abrirEdicion = (usuario) => {
   editando.value = true
   form.value = {
@@ -446,7 +451,7 @@ onMounted(cargarDatos)
 <template>
   <section class="admin-panel">
     <div v-if="errorAccion" class="notice notice-error" role="alert">
-      <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorAccion }}</span>
+      <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorAccion }}</span>
       <button
         type="button"
         class="notice-close"
@@ -467,15 +472,19 @@ onMounted(cargarDatos)
       <div class="panel-heading-actions">
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="loading"
           @click="cargarDatos"
         >
-          <i class="fas fa-rotate"></i>
+          <i class="fas fa-rotate" :class="{ 'animate-spin': loading }" aria-hidden="true"></i>
           Actualizar
         </button>
-        <button type="button" class="btn-panel btn-panel-primary" @click="abrirNuevo">
-          <i class="fas fa-user-plus"></i>
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:-translate-y-0.5 hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          @click="abrirNuevo"
+        >
+          <i class="fas fa-user-plus" aria-hidden="true"></i>
           Nuevo usuario
         </button>
       </div>
@@ -509,21 +518,21 @@ onMounted(cargarDatos)
 
       <!-- Barra de búsqueda y filtros -->
       <div class="panel-toolbar">
-        <div class="panel-filters">
-          <div class="field field-search">
-            <label class="visually-hidden" for="buscar-usuarios">Buscar usuarios</label>
+        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+          <div class="field-search flex min-w-0 flex-col gap-1.5">
+            <label class="sr-only" for="buscar-usuarios">Buscar usuarios</label>
             <i class="fas fa-search"></i>
             <input
               id="buscar-usuarios"
               v-model="search"
-              class="form-control panel-control"
+              class="form-input panel-control"
               type="search"
               placeholder="Buscar por nombre, apellidos o correo..."
               autocomplete="off"
             >
           </div>
 
-          <div class="field">
+          <div class="flex min-w-0 flex-col gap-1.5">
             <label for="filtrar-rol">Rol</label>
             <select id="filtrar-rol" v-model="filtroRol" class="form-select panel-control">
               <option value="Todos">Todos</option>
@@ -533,7 +542,7 @@ onMounted(cargarDatos)
             </select>
           </div>
 
-          <div class="field">
+          <div class="flex min-w-0 flex-col gap-1.5">
             <label for="filtrar-estado">Estado</label>
             <select id="filtrar-estado" v-model="filtroEstado" class="form-select panel-control">
               <option value="Todos">Todos</option>
@@ -543,11 +552,11 @@ onMounted(cargarDatos)
             </select>
           </div>
 
-          <div class="field">
-            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <label class="hidden lg:block" aria-hidden="true">&nbsp;</label>
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="!hayFiltrosActivos"
               @click="limpiarFiltros"
             >
@@ -569,12 +578,12 @@ onMounted(cargarDatos)
 
       <!-- Estado de carga / error / vacío -->
       <div v-if="loading" class="panel-state">
-        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" role="status" aria-label="Cargando"></span>
         Cargando usuarios...
       </div>
       <div v-else-if="error" class="panel-state is-error">{{ error }}</div>
       <div v-else-if="usuariosFiltrados.length === 0" class="panel-state">
-        <i class="fas fa-user-slash fs-4 d-block mb-2"></i>
+        <i class="fas fa-user-slash mb-2 block text-2xl" aria-hidden="true"></i>
         {{
           hayFiltrosActivos
             ? 'No se encontraron usuarios que coincidan con los filtros.'
@@ -589,11 +598,11 @@ onMounted(cargarDatos)
             <thead>
               <tr>
                 <th class="cell-index">#</th>
-                <th style="width: 24%">Usuario</th>
-                <th style="width: 26%">Correo electrónico</th>
-                <th style="width: 12%">Rol</th>
-                <th style="width: 12%">Estado</th>
-                <th class="cell-actions text-end">Acciones</th>
+                <th class="w-[24%]">Usuario</th>
+                <th class="w-[26%]">Correo electrónico</th>
+                <th class="w-[12%]">Rol</th>
+                <th class="w-[12%]">Estado</th>
+                <th class="cell-actions text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -603,9 +612,9 @@ onMounted(cargarDatos)
                 </td>
                 <td class="cell-truncate">
                   <div class="user-cell">
-                    <span class="avatar-soft">{{ iniciales(usuario) }}</span>
+                    <span class="avatar-soft" aria-hidden="true">{{ iniciales(usuario) }}</span>
                     <span
-                      class="truncate fw-semibold"
+                      class="truncate font-semibold"
                       :title="nombreCompleto(usuario)"
                     >
                       {{ nombreCompleto(usuario) }}
@@ -613,7 +622,7 @@ onMounted(cargarDatos)
                   </div>
                 </td>
                 <td class="cell-truncate">
-                  <span class="truncate text-muted" :title="usuario.correo">
+                  <span class="truncate text-[var(--text-muted)]" :title="usuario.correo">
                     {{ usuario.correo }}
                   </span>
                 </td>
@@ -631,7 +640,7 @@ onMounted(cargarDatos)
                   </span>
                 </td>
                 <td>
-                  <div class="action-stack">
+                  <div class="flex flex-wrap justify-end gap-1.5">
                     <button
                       type="button"
                       class="btn-row"
@@ -797,32 +806,49 @@ onMounted(cargarDatos)
     <ToastNotification :message="notificacion" @close="notificacion = ''" />
 
     <!-- Modal de alta / edición -->
-    <div v-if="modalAbierto" class="modal-backdrop-custom" @click.self="modalAbierto = false">
-      <section class="user-modal card border-0" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
-        <div class="modal-head">
-          <div class="d-flex align-items-center gap-3">
-            <span class="modal-icon">
-              <i class="fas" :class="editando ? 'fa-user-pen' : 'fa-user-plus'"></i>
+    <div
+      v-if="modalAbierto"
+      class="fixed inset-0 z-[1080] grid place-items-center overflow-y-auto bg-[#05102d]/65 p-3 backdrop-blur-sm sm:p-6"
+      @click.self="cerrarModalUsuario"
+    >
+      <section
+        class="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl overflow-y-auto rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-main)] shadow-2xl sm:max-h-[calc(100dvh-3rem)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="user-modal-title"
+      >
+        <div class="flex items-start justify-between gap-4 px-4 pt-5 sm:px-6 sm:pt-6">
+          <div class="flex min-w-0 items-center gap-3">
+            <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--primary)]">
+              <i class="fas" :class="editando ? 'fa-user-pen' : 'fa-user-plus'" aria-hidden="true"></i>
             </span>
-            <div>
-              <h3 id="user-modal-title" class="h5 fw-bold mb-1">
+            <div class="min-w-0">
+              <h3 id="user-modal-title" class="mb-1 text-lg font-extrabold">
                 {{ editando ? 'Editar usuario' : 'Nuevo usuario' }}
               </h3>
-              <p class="text-muted small mb-0">Los campos con * son obligatorios.</p>
+              <p class="mb-0 text-sm text-[var(--text-muted)]">Los campos con * son obligatorios.</p>
             </div>
           </div>
-          <button type="button" class="btn-close" aria-label="Cerrar" @click="modalAbierto = false"></button>
+          <button
+            type="button"
+            class="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-xl text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Cerrar"
+            :disabled="saving"
+            @click="cerrarModalUsuario"
+          >
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
         </div>
 
-        <form class="p-4 pt-3" novalidate @submit.prevent="guardarUsuario">
-          <div class="row g-3">
-            <div class="col-md-6">
+        <form class="p-4 pt-4 sm:px-6 sm:pb-6" novalidate @submit.prevent="guardarUsuario">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
               <label class="form-label" for="nombres">Nombre <span class="req">*</span></label>
               <input
                 id="nombres"
                 v-model="form.nombres"
-                class="form-control"
-                :class="{ 'is-invalid': errores.nombres && touched.nombres }"
+                class="form-input"
+                :class="{ 'has-error': errores.nombres && touched.nombres }"
                 maxlength="80"
                 autocomplete="given-name"
                 :aria-invalid="Boolean(errores.nombres && touched.nombres)"
@@ -835,15 +861,15 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="apellido-paterno">
                 Apellido paterno <span class="req">*</span>
               </label>
               <input
                 id="apellido-paterno"
                 v-model="form.apellido_paterno"
-                class="form-control"
-                :class="{ 'is-invalid': errores.apellido_paterno && touched.apellido_paterno }"
+                class="form-input"
+                :class="{ 'has-error': errores.apellido_paterno && touched.apellido_paterno }"
                 maxlength="60"
                 autocomplete="family-name"
                 :aria-invalid="Boolean(errores.apellido_paterno && touched.apellido_paterno)"
@@ -859,13 +885,13 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="apellido-materno">Apellido materno</label>
               <input
                 id="apellido-materno"
                 v-model="form.apellido_materno"
-                class="form-control"
-                :class="{ 'is-invalid': errores.apellido_materno && touched.apellido_materno }"
+                class="form-input"
+                :class="{ 'has-error': errores.apellido_materno && touched.apellido_materno }"
                 maxlength="60"
                 autocomplete="additional-name"
                 :aria-invalid="Boolean(errores.apellido_materno && touched.apellido_materno)"
@@ -881,15 +907,15 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="fecha-nacimiento">
                 Fecha de nacimiento <span class="req">*</span>
               </label>
               <input
                 id="fecha-nacimiento"
                 v-model="form.fecha_nacimiento"
-                class="form-control"
-                :class="{ 'is-invalid': errores.fecha_nacimiento && touched.fecha_nacimiento }"
+                class="form-input"
+                :class="{ 'has-error': errores.fecha_nacimiento && touched.fecha_nacimiento }"
                 type="date"
                 :min="FECHA_MINIMA"
                 :max="fechaMaxima"
@@ -907,13 +933,13 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="correo">Correo <span class="req">*</span></label>
               <input
                 id="correo"
                 v-model="form.correo"
-                class="form-control"
-                :class="{ 'is-invalid': errores.correo && touched.correo }"
+                class="form-input"
+                :class="{ 'has-error': errores.correo && touched.correo }"
                 type="email"
                 inputmode="email"
                 maxlength="120"
@@ -929,13 +955,13 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="ci-nit">CI / NIT <span class="req">*</span></label>
               <input
                 id="ci-nit"
                 v-model="form.ci"
-                class="form-control"
-                :class="{ 'is-invalid': errores.ci && touched.ci }"
+                class="form-input"
+                :class="{ 'has-error': errores.ci && touched.ci }"
                 maxlength="20"
                 autocomplete="off"
                 placeholder="Ej.: 4587123"
@@ -949,13 +975,13 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="rol">Rol <span class="req">*</span></label>
               <select
                 id="rol"
                 v-model="form.id_rol"
                 class="form-select"
-                :class="{ 'is-invalid': errores.id_rol && touched.id_rol }"
+                :class="{ 'has-error': errores.id_rol && touched.id_rol }"
                 :aria-invalid="Boolean(errores.id_rol && touched.id_rol)"
                 @change="alSalir('id_rol')"
                 @blur="alSalir('id_rol')"
@@ -971,20 +997,20 @@ onMounted(cargarDatos)
                 </template>
               </p>
             </div>
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="contrasena">
                 {{ editando ? 'Restablecer contraseña (opcional)' : 'Contraseña inicial' }}
                 <span v-if="!editando" class="req">*</span>
               </label>
               <div
-                class="custom-input-group"
-                :class="{ 'has-error': errores.contrasena && touched.contrasena }"
+                class="flex min-w-0 items-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] transition focus-within:border-[var(--accent)] focus-within:ring-2 focus-within:ring-[var(--ring)]"
+                :class="{ 'border-[var(--danger)]': errores.contrasena && touched.contrasena }"
               >
-                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <span class="pl-4 text-[var(--text-soft)]" aria-hidden="true"><i class="fas fa-lock"></i></span>
                 <input
                   id="contrasena"
                   v-model="form.contrasena"
-                  class="form-control"
+                  class="min-w-0 w-full border-0 bg-transparent px-3 py-3 text-sm text-[var(--text-main)] outline-none placeholder:text-[var(--text-soft)] focus:ring-0"
                   :type="showPassword ? 'text' : 'password'"
                   maxlength="72"
                   autocomplete="new-password"
@@ -995,17 +1021,17 @@ onMounted(cargarDatos)
                 >
                 <button
                   type="button"
-                  class="password-toggle"
+                  class="mr-1 inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-[var(--text-soft)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
                   :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                   @click="showPassword = !showPassword"
                 >
-                  <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                  <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
                 </button>
               </div>
               <p v-if="errores.contrasena && touched.contrasena" class="error-text" role="alert">
                 <i class="fas fa-circle-exclamation"></i>{{ errores.contrasena }}
               </p>
-              <div v-else class="form-text">
+              <div v-else class="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">
                 {{
                   editando
                     ? 'Déjalo vacío para conservar la contraseña actual.'
@@ -1016,15 +1042,24 @@ onMounted(cargarDatos)
           </div>
 
           <div v-if="errorFormulario" class="notice notice-error mt-3" role="alert">
-            <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorFormulario }}</span>
+            <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorFormulario }}</span>
           </div>
 
-          <div class="d-flex justify-content-end gap-2 mt-4">
-            <button type="button" class="btn btn-ghost rounded-pill px-3" @click="modalAbierto = false">
+          <div class="mt-5 flex flex-col-reverse justify-end gap-2 sm:flex-row">
+            <button
+              type="button"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+              :disabled="saving"
+              @click="cerrarModalUsuario"
+            >
               Cancelar
             </button>
-            <button type="submit" class="btn btn-brand rounded-pill px-4" :disabled="saving">
-              <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <button
+              type="submit"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+              :disabled="saving"
+            >
+              <span v-if="saving" class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent" role="status" aria-label="Guardando"></span>
               {{ saving ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -1057,21 +1092,21 @@ onMounted(cargarDatos)
             :disabled="procesandoBaja"
             @click="cerrarModalBaja"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
 
         <div v-if="errorBaja" class="notice notice-error mt-4" role="alert">
-          <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorBaja }}</span>
+          <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorBaja }}</span>
         </div>
 
         <div v-else-if="!impactoBaja" class="panel-state">
-          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" role="status" aria-label="Calculando"></span>
           Calculando registros asociados...
         </div>
 
         <template v-else-if="impactoBaja.total > 0">
-          <p class="mt-4 mb-0 small">
+          <p class="mt-4 mb-0 text-sm">
             Este usuario tiene registros asociados en el sistema:
           </p>
           <ul class="impact-list">
@@ -1084,13 +1119,13 @@ onMounted(cargarDatos)
           </ul>
           <div class="notice notice-warning mt-3">
             <span>
-              <i class="fas fa-triangle-exclamation me-2"></i>
+              <i class="fas fa-triangle-exclamation mr-2" aria-hidden="true"></i>
               La cuenta quedará marcada como <strong>eliminada</strong> y su historial se conservará.
             </span>
           </div>
         </template>
 
-        <p v-else class="mt-4 mb-0 small">
+        <p v-else class="mt-4 mb-0 text-sm">
           ¿Quieres eliminar a <strong>{{ nombreCompleto(usuarioBaja) }}</strong>?
           No tiene registros asociados en el sistema.
         </p>
@@ -1098,7 +1133,7 @@ onMounted(cargarDatos)
         <div class="panel-modal-actions">
           <button
             type="button"
-            class="btn-panel btn-panel-ghost"
+            class="inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="procesandoBaja"
             @click="cerrarModalBaja"
           >
@@ -1108,7 +1143,7 @@ onMounted(cargarDatos)
           <button
             v-if="errorBaja && !impactoBaja"
             type="button"
-            class="btn-panel btn-panel-danger"
+            class="inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-2 text-sm font-bold text-[var(--danger)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="procesandoBaja"
             @click="reintentarBaja"
           >
@@ -1118,7 +1153,7 @@ onMounted(cargarDatos)
           <template v-else>
             <button
               type="button"
-              class="btn-panel btn-panel-warning"
+              class="inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--warning)] bg-[var(--warning-soft)] px-4 py-2 text-sm font-bold text-[var(--warning)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--warning)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="procesandoBaja || !impactoBaja || !esActivo(usuarioBaja)"
               :title="!esActivo(usuarioBaja)
                 ? 'La cuenta ya está desactivada'
@@ -1129,7 +1164,7 @@ onMounted(cargarDatos)
             </button>
             <button
               type="button"
-              class="btn-panel btn-panel-danger"
+              class="inline-flex min-h-10 items-center justify-center rounded-full border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-2 text-sm font-bold text-[var(--danger)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="procesandoBaja || !impactoBaja"
               @click="ejecutarBaja('eliminar')"
             >
@@ -1141,77 +1176,3 @@ onMounted(cargarDatos)
     </div>
   </section>
 </template>
-
-<style scoped>
-.min-w-0 {
-  min-width: 0;
-}
-
-.modal-backdrop-custom {
-  position: fixed;
-  inset: 0;
-  z-index: 1080;
-  display: grid;
-  place-items: center;
-  overflow-y: auto;
-  padding: 1rem;
-  background: rgba(5, 16, 45, 0.64);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.user-modal {
-  width: min(100%, 780px);
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  background: var(--bg-card);
-  color: var(--text-main);
-  border-radius: 1.3rem;
-  box-shadow: var(--shadow-lg);
-}
-
-.modal-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.5rem 1.5rem 0;
-}
-
-.modal-icon {
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.9rem;
-  background: var(--accent-soft);
-  color: var(--primary);
-  flex: 0 0 auto;
-}
-
-.password-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  color: var(--text-soft);
-  border-radius: 0.6rem;
-  transition: color 0.18s ease, background-color 0.18s ease;
-  flex: 0 0 auto;
-}
-
-.password-toggle:hover {
-  color: var(--primary);
-  background: var(--accent-soft);
-}
-
-@media (max-width: 575.98px) {
-  .modal-head {
-    padding: 1.25rem 1.25rem 0;
-  }
-}
-</style>

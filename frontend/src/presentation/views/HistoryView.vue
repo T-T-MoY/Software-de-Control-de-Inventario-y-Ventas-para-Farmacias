@@ -82,17 +82,19 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="error" class="notice notice-error" role="alert">{{ error }}</div>
+    <div v-if="error" class="notice notice-error" role="alert">
+      <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ error }}</span>
+    </div>
 
-    <div class="panel panel-toolbar">
-      <div class="panel-filters">
-        <label class="d-flex align-items-center gap-2">
+    <div class="panel mb-4 p-4 sm:p-5">
+      <div class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto_auto]">
+        <label class="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
           Desde
-          <input v-model="filtros.fechaInicio" type="date" class="form-control panel-control" />
+          <input v-model="filtros.fechaInicio" type="date" class="form-input panel-control" />
         </label>
-        <label class="d-flex align-items-center gap-2">
+        <label class="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
           Hasta
-          <input v-model="filtros.fechaFin" type="date" class="form-control panel-control" />
+          <input v-model="filtros.fechaFin" type="date" class="form-input panel-control" />
         </label>
         <select v-model="filtros.tipo" class="form-select panel-control" aria-label="Tipo de operación">
           <option v-for="t in TIPOS" :key="t.valor" :value="t.valor">{{ t.nombre }}</option>
@@ -103,18 +105,28 @@ onMounted(async () => {
             {{ u.usuario }}
           </option>
         </select>
-        <button type="button" class="btn-panel btn-panel-primary" :disabled="loading" @click="buscar">
-          <i class="fas fa-magnifying-glass"></i>
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+          :disabled="loading"
+          @click="buscar"
+        >
+          <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
           Buscar
         </button>
-        <button type="button" class="btn-panel btn-panel-ghost" :disabled="loading" @click="limpiar">
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+          :disabled="loading"
+          @click="limpiar"
+        >
           Limpiar
         </button>
       </div>
     </div>
 
-    <div v-if="loading && !historial" class="panel panel-state">
-      <span class="spinner-border spinner-border-sm me-2"></span>
+    <div v-if="loading && !historial" class="panel-state" role="status">
+      <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" aria-hidden="true"></span>
       Consultando historial...
     </div>
 
@@ -143,15 +155,16 @@ onMounted(async () => {
         No hay operaciones para los filtros seleccionados.
       </div>
 
-      <div v-else class="panel panel-table-wrap">
-        <table class="table panel-table">
+      <div v-else class="panel overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="panel-table min-w-[58rem]">
           <thead>
             <tr>
               <th>Fecha y hora</th>
               <th>Operación</th>
               <th>Detalle</th>
               <th>Usuario</th>
-              <th class="text-end">Monto</th>
+              <th class="text-right">Monto</th>
             </tr>
           </thead>
           <tbody>
@@ -163,18 +176,19 @@ onMounted(async () => {
                 </span>
               </td>
               <td>{{ r.descripcion }}</td>
-              <td>{{ r.usuario }} <small class="text-muted">({{ r.rol }})</small></td>
-              <td class="text-end">{{ r.monto !== null ? formatearPrecio(r.monto) : '—' }}</td>
+              <td>{{ r.usuario }} <small class="text-[var(--text-muted)]">({{ r.rol }})</small></td>
+              <td class="text-right">{{ r.monto !== null ? formatearPrecio(r.monto) : '—' }}</td>
             </tr>
           </tbody>
         </table>
+        </div>
 
-        <div class="panel-footer d-flex justify-content-between align-items-center">
+        <div class="panel-footer flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <span class="panel-count">Página {{ historial.pagina }} de {{ historial.total_paginas }}</span>
-          <div class="d-flex gap-2">
+          <div class="flex w-full gap-2 sm:w-auto">
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-10 flex-1 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55 sm:flex-none"
               :disabled="!hayAnterior || loading"
               @click="irAPagina(pagina - 1)"
             >
@@ -182,7 +196,7 @@ onMounted(async () => {
             </button>
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-10 flex-1 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55 sm:flex-none"
               :disabled="!haySiguiente || loading"
               @click="irAPagina(pagina + 1)"
             >

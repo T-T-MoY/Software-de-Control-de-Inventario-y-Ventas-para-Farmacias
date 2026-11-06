@@ -17,6 +17,10 @@ import {
   validarContrasena
 } from '../validators/fields'
 
+defineProps({
+  profileMenuOpen: { type: Boolean, default: false }
+})
+
 const router = useRouter()
 const perfil = ref(null)
 const loading = ref(true)
@@ -51,11 +55,6 @@ const cargarPerfil = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const salir = async () => {
-  cerrarSesion()
-  await router.replace({ name: 'login' })
 }
 
 // =====================================================
@@ -132,14 +131,33 @@ onMounted(cargarPerfil)
 
 <template>
   <section class="px-1">
-    <div v-if="loading" class="text-center py-5 text-muted">
-      <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
-      Cargando perfil...
+    <div
+      v-if="loading"
+      class="flex items-center justify-center gap-3 py-12 text-sm text-[var(--text-muted)]"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="size-5 animate-spin rounded-full border-2 border-[var(--border-strong)] border-t-[var(--primary)]"
+        aria-hidden="true"
+      ></span>
+      <span>Cargando perfil...</span>
     </div>
 
-    <div v-else-if="error" class="alert alert-danger rounded-3 d-flex flex-wrap align-items-center gap-3" role="alert">
-      <span><i class="fas fa-circle-exclamation me-2"></i>{{ error }}</span>
-      <button type="button" class="btn btn-sm btn-ghost rounded-pill px-3" @click="cargarPerfil">
+    <div
+      v-else-if="error"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--danger)]/25 bg-[var(--danger-soft)] p-4 text-sm text-[var(--danger)]"
+      role="alert"
+    >
+      <span class="flex min-w-0 items-start gap-2">
+        <i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>
+        {{ error }}
+      </span>
+      <button
+        type="button"
+        class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2 text-sm font-bold text-[var(--text-main)] transition hover:bg-[var(--accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        @click="cargarPerfil"
+      >
         Reintentar
       </button>
     </div>
@@ -148,41 +166,38 @@ onMounted(cargarPerfil)
       <!-- Cabecera: identidad, rol, correo y estado -->
       <article class="profile-hero">
         <div class="profile-glow" aria-hidden="true"></div>
-        <div class="profile-hero-content">
+        <div class="profile-hero-content relative z-10 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 sm:gap-5 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
           <span class="profile-avatar">{{ iniciales }}</span>
-          <div class="profile-identity">
+          <div class="profile-identity min-w-0 flex-1">
             <span class="profile-role">
-              <i class="fas fa-shield-halved"></i>
+              <i class="fas fa-shield-halved" aria-hidden="true"></i>
               {{ perfil.nombre_rol }}
             </span>
-            <h3 class="profile-name">{{ nombreCompleto }}</h3>
-            <p class="profile-email mb-0">
-              <i class="fas fa-envelope me-2"></i>{{ perfil.correo }}
+            <h3 class="profile-name break-words">{{ nombreCompleto }}</h3>
+            <p class="profile-email mb-0 break-all">
+              <i class="fas fa-envelope mr-2" aria-hidden="true"></i>{{ perfil.correo }}
             </p>
           </div>
-          <div class="profile-hero-actions">
-            <span class="profile-status">
+          <div class="profile-hero-actions relative z-10 col-span-2 flex w-full flex-wrap items-center gap-2 sm:w-auto lg:col-span-1 lg:justify-self-end">
+            <span class="profile-status transition-opacity" :class="{ 'invisible opacity-0': profileMenuOpen }">
               <span class="status-dot"></span>
               {{ perfil.estado_cuenta }}
             </span>
-            <button type="button" class="btn btn-hero-ghost rounded-pill" @click="salir">
-              <i class="fas fa-arrow-right-from-bracket me-2"></i>Cerrar sesión
-            </button>
           </div>
         </div>
       </article>
 
       <!-- Datos personales (sin repetir rol, correo ni estado) -->
-      <div class="row g-3 mt-1">
-        <div v-for="dato in datos" :key="dato.label" class="col-md-4">
-          <article class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body d-flex align-items-center gap-3">
+      <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div v-for="dato in datos" :key="dato.label">
+          <article class="h-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 shadow-sm">
+            <div class="flex h-full items-center gap-3">
               <span class="data-icon">
-                <i class="fas" :class="dato.icon"></i>
+                <i class="fas" :class="dato.icon" aria-hidden="true"></i>
               </span>
               <div class="min-w-0">
                 <div class="data-label">{{ dato.label }}</div>
-                <div class="data-value text-truncate" :title="dato.value">{{ dato.value }}</div>
+                <div class="data-value truncate" :title="dato.value">{{ dato.value }}</div>
               </div>
             </div>
           </article>
@@ -190,24 +205,24 @@ onMounted(cargarPerfil)
       </div>
 
       <!-- Cambio de contraseña -->
-      <article class="card border-0 shadow-sm rounded-4 mt-3">
-        <div class="card-body p-4">
-          <h3 class="h6 fw-bold mb-1">Cambiar contraseña</h3>
-          <p class="text-muted small mb-3">
+      <article class="mt-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 shadow-sm sm:p-6">
+        <div>
+          <h3 class="mb-1 text-base font-bold">Cambiar contraseña</h3>
+          <p class="mb-4 text-sm text-[var(--text-muted)]">
             Mínimo 6 caracteres, con al menos una letra y un número.
           </p>
 
           <form novalidate @submit.prevent="enviarCambioContrasena">
-            <div class="row g-3">
-              <div class="col-md-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
                 <label class="form-label" for="perfil-contrasena-actual">
                   Contraseña actual <span class="req">*</span>
                 </label>
                 <input
                   id="perfil-contrasena-actual"
                   v-model="formContrasena.actual"
-                  class="form-control"
-                  :class="{ 'is-invalid': erroresContrasena.actual }"
+                  class="form-input"
+                  :class="{ 'has-error': erroresContrasena.actual }"
                   type="password"
                   autocomplete="current-password"
                   maxlength="72"
@@ -222,15 +237,15 @@ onMounted(cargarPerfil)
                 </p>
               </div>
 
-              <div class="col-md-4">
+              <div>
                 <label class="form-label" for="perfil-contrasena-nueva">
                   Nueva contraseña <span class="req">*</span>
                 </label>
                 <input
                   id="perfil-contrasena-nueva"
                   v-model="formContrasena.nueva"
-                  class="form-control"
-                  :class="{ 'is-invalid': erroresContrasena.nueva }"
+                  class="form-input"
+                  :class="{ 'has-error': erroresContrasena.nueva }"
                   type="password"
                   autocomplete="new-password"
                   maxlength="72"
@@ -246,15 +261,15 @@ onMounted(cargarPerfil)
                 </p>
               </div>
 
-              <div class="col-md-4">
+              <div>
                 <label class="form-label" for="perfil-contrasena-confirmacion">
                   Confirmar nueva contraseña <span class="req">*</span>
                 </label>
                 <input
                   id="perfil-contrasena-confirmacion"
                   v-model="formContrasena.confirmacion"
-                  class="form-control"
-                  :class="{ 'is-invalid': erroresContrasena.confirmacion }"
+                  class="form-input"
+                  :class="{ 'has-error': erroresContrasena.confirmacion }"
                   type="password"
                   autocomplete="new-password"
                   maxlength="72"
@@ -270,20 +285,33 @@ onMounted(cargarPerfil)
               </div>
             </div>
 
-            <div v-if="errorContrasena" class="alert alert-danger py-2 rounded-3 small mt-3 mb-0" role="alert">
-              <i class="fas fa-circle-exclamation me-2"></i>{{ errorContrasena }}
+            <div
+              v-if="errorContrasena"
+              class="mt-4 rounded-xl border border-[var(--danger)]/25 bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger)]"
+              role="alert"
+            >
+              <i class="fas fa-circle-exclamation mr-2" aria-hidden="true"></i>{{ errorContrasena }}
             </div>
-            <div v-if="mensajeContrasena" class="alert alert-success py-2 rounded-3 small mt-3 mb-0" role="status">
-              <i class="fas fa-circle-check me-2"></i>{{ mensajeContrasena }}
+            <div
+              v-if="mensajeContrasena"
+              class="mt-4 rounded-xl border border-[var(--success)]/25 bg-[var(--success-soft)] px-4 py-3 text-sm text-[var(--success)]"
+              role="status"
+            >
+              <i class="fas fa-circle-check mr-2" aria-hidden="true"></i>{{ mensajeContrasena }}
             </div>
 
-            <div class="d-flex justify-content-end mt-4">
+            <div class="mt-4 flex justify-stretch sm:justify-end">
               <button
                 type="submit"
-                class="btn btn-brand rounded-pill px-4 password-submit"
+                class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:-translate-y-0.5 hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 :disabled="guardandoContrasena"
               >
-                <span v-if="guardandoContrasena" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <span
+                  v-if="guardandoContrasena"
+                  class="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  role="status"
+                  aria-label="Guardando"
+                ></span>
                 {{ guardandoContrasena ? 'Guardando...' : 'Actualizar contraseña' }}
               </button>
             </div>
@@ -302,7 +330,7 @@ onMounted(cargarPerfil)
 .profile-hero {
   position: relative;
   overflow: hidden;
-  padding: 2rem;
+  padding: 1.25rem;
   border-radius: 1.5rem;
   color: #fff7e3;
   background: linear-gradient(145deg, #05102d 0%, #0e2450 55%, #2a468b 100%);
@@ -318,6 +346,7 @@ onMounted(cargarPerfil)
   height: 240px;
   border-radius: 50%;
   border: 1px solid rgba(184, 174, 227, 0.2);
+  pointer-events: none;
 }
 
 .profile-glow {
@@ -333,10 +362,6 @@ onMounted(cargarPerfil)
 
 .profile-hero-content {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.15rem;
 }
 
 .profile-identity {
@@ -344,10 +369,8 @@ onMounted(cargarPerfil)
 }
 
 .profile-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem;
+  align-self: center;
+  min-width: 0;
 }
 
 .profile-avatar {
@@ -409,24 +432,6 @@ onMounted(cargarPerfil)
   flex: 0 0 auto;
 }
 
-.btn-hero-ghost {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.4rem 1rem;
-  border: 1px solid rgba(255, 247, 227, 0.3);
-  background: rgba(255, 247, 227, 0.08);
-  color: #fff7e3;
-  font-size: 0.75rem;
-  font-weight: 700;
-  transition: background-color 0.18s ease, border-color 0.18s ease;
-}
-
-.btn-hero-ghost:hover {
-  background: rgba(255, 247, 227, 0.16);
-  border-color: rgba(255, 247, 227, 0.5);
-  color: #fff7e3;
-}
-
 .status-dot {
   width: 7px;
   height: 7px;
@@ -462,37 +467,17 @@ onMounted(cargarPerfil)
   color: var(--text-main);
 }
 
-.password-submit {
-  width: 100%;
-}
-
-@media (min-width: 576px) {
-  .profile-hero-content {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .profile-hero-actions {
-    margin-left: auto;
-    justify-content: flex-end;
-  }
-}
-
-@media (min-width: 768px) {
-  .password-submit {
-    width: auto;
-  }
-}
-
 @media (max-width: 575.98px) {
-  .profile-hero {
-    padding: 1.5rem;
-  }
-
   .profile-avatar {
     width: 68px;
     height: 68px;
     font-size: 1.15rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .profile-hero {
+    padding: 1.75rem;
   }
 }
 </style>

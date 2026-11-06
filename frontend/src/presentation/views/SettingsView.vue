@@ -159,39 +159,40 @@ onMounted(cargar)
       <div class="panel-heading-actions">
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="cargando || guardando"
           @click="cargar"
         >
-          <i class="fas fa-rotate-left"></i>
+          <i class="fas fa-rotate-left" aria-hidden="true"></i>
           Descartar cambios
         </button>
 
         <button
           type="button"
-          class="btn-panel btn-panel-primary"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="cargando || guardando"
           @click="guardar"
         >
-          <i class="fas" :class="guardando ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+          <span v-if="guardando" class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent" role="status" aria-label="Guardando"></span>
+          <i v-else class="fas fa-floppy-disk" aria-hidden="true"></i>
           {{ guardando ? 'Guardando…' : 'Guardar cambios' }}
         </button>
       </div>
     </div>
 
     <div v-if="error" class="notice notice-error" role="alert">
-      <span><i class="fas fa-circle-exclamation me-2"></i>{{ error }}</span>
+      <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ error }}</span>
     </div>
 
-    <div v-if="cargando" class="panel panel-state">
-      <span class="spinner-border spinner-border-sm me-2"></span>
+    <div v-if="cargando" class="panel-state" role="status">
+      <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" aria-hidden="true"></span>
       Cargando configuración…
     </div>
 
     <template v-else>
-      <div class="settings-notice">
-        <i class="fas fa-circle-info" aria-hidden="true"></i>
-        <p>
+      <div class="mb-4 flex items-start gap-3 rounded-2xl border border-[var(--accent)]/25 bg-[var(--accent-soft)] p-4 text-sm leading-relaxed text-[var(--text-accent)] sm:p-5">
+        <i class="fas fa-circle-info mt-0.5 shrink-0" aria-hidden="true"></i>
+        <p class="m-0">
           Los cambios se aplican de inmediato. El margen afecta a las alertas de
           vencimiento; los días de reposición y el stock de seguridad se usan
           como valores iniciales en medicamentos nuevos; y los datos de la
@@ -199,17 +200,17 @@ onMounted(cargar)
         </p>
       </div>
 
-      <div class="settings-grid">
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <!-- DATOS DE LA FARMACIA -->
         <article class="panel">
           <div class="panel-title-bar">
-            <h3><i class="fas fa-store me-2"></i>Datos de la farmacia</h3>
+            <h3><i class="fas fa-store mr-2" aria-hidden="true"></i>Datos de la farmacia</h3>
             <small>Aparecen en el encabezado del comprobante.</small>
           </div>
 
-          <div class="settings-body">
-            <div class="row g-3">
-              <div class="col-12">
+          <div class="p-4 sm:p-6">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="md:col-span-2">
                 <label for="config-nombre" class="form-label">
                   Nombre <span class="req">*</span>
                 </label>
@@ -226,7 +227,7 @@ onMounted(cargar)
                 </p>
               </div>
 
-              <div class="col-md-6">
+              <div>
                 <label for="config-nit" class="form-label">NIT</label>
                 <input
                   id="config-nit"
@@ -241,7 +242,7 @@ onMounted(cargar)
                 </p>
               </div>
 
-              <div class="col-md-6">
+              <div>
                 <label for="config-telefono" class="form-label">Teléfono</label>
                 <input
                   id="config-telefono"
@@ -256,7 +257,7 @@ onMounted(cargar)
                 </p>
               </div>
 
-              <div class="col-12">
+              <div class="md:col-span-2">
                 <label for="config-direccion" class="form-label">Dirección</label>
                 <input
                   id="config-direccion"
@@ -277,13 +278,13 @@ onMounted(cargar)
         <!-- PARÁMETROS DE INVENTARIO Y ALERTAS -->
         <article class="panel">
           <div class="panel-title-bar">
-            <h3><i class="fas fa-sliders me-2"></i>Inventario y alertas</h3>
+            <h3><i class="fas fa-sliders mr-2" aria-hidden="true"></i>Inventario y alertas</h3>
             <small>Valores por defecto para el catálogo y los avisos.</small>
           </div>
 
-          <div class="settings-body">
-            <div class="row g-3">
-              <div class="col-md-6">
+          <div class="p-4 sm:p-6">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
                 <label for="config-margen" class="form-label">
                   Margen de alerta (días) <span class="req">*</span>
                 </label>
@@ -303,7 +304,7 @@ onMounted(cargar)
                 <p v-else class="field-hint">Días de anticipación del aviso de vencimiento.</p>
               </div>
 
-              <div class="col-md-6">
+              <div>
                 <label for="config-ventana" class="form-label">
                   Ventana de demanda (días) <span class="req">*</span>
                 </label>
@@ -323,7 +324,7 @@ onMounted(cargar)
                 <p v-else class="field-hint">Periodo para calcular la demanda diaria promedio.</p>
               </div>
 
-              <div class="col-md-6">
+              <div>
                 <label for="config-stock" class="form-label">
                   Stock de seguridad <span class="req">*</span>
                 </label>
@@ -343,7 +344,7 @@ onMounted(cargar)
                 <p v-else class="field-hint">Valor inicial para medicamentos nuevos.</p>
               </div>
 
-              <div class="col-md-6">
+              <div>
                 <label for="config-reposicion" class="form-label">
                   Días de reposición <span class="req">*</span>
                 </label>
@@ -377,37 +378,6 @@ onMounted(cargar)
 </template>
 
 <style scoped>
-.settings-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.9rem 1.1rem;
-  border: 1px solid rgba(61, 106, 193, 0.22);
-  border-radius: 1rem;
-  background: var(--accent-soft);
-  color: var(--text-accent);
-}
-
-.settings-notice i {
-  margin-top: 0.15rem;
-}
-
-.settings-notice p {
-  margin: 0;
-  font-size: 0.84rem;
-  line-height: 1.5;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-}
-
-.settings-body {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-
 .field-hint {
   margin: 0.35rem 0 0;
   color: var(--text-soft);
@@ -415,9 +385,4 @@ onMounted(cargar)
   line-height: 1.4;
 }
 
-@media (min-width: 992px) {
-  .settings-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 </style>

@@ -130,32 +130,36 @@ onMounted(generar)
       <div class="panel-heading-actions">
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="loading || exportando !== ''"
           @click="exportar('excel')"
         >
-          <span v-if="exportando === 'excel'" class="spinner-border spinner-border-sm me-1"></span>
-          <i v-else class="fas fa-file-excel"></i>
+          <span v-if="exportando === 'excel'" class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent" role="status" aria-label="Exportando Excel"></span>
+          <i v-else class="fas fa-file-excel" aria-hidden="true"></i>
           Exportar Excel
         </button>
         <button
           type="button"
-          class="btn-panel btn-panel-primary"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="loading || exportando !== ''"
           @click="exportar('pdf')"
         >
-          <span v-if="exportando === 'pdf'" class="spinner-border spinner-border-sm me-1"></span>
-          <i v-else class="fas fa-file-pdf"></i>
+          <span v-if="exportando === 'pdf'" class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent" role="status" aria-label="Exportando PDF"></span>
+          <i v-else class="fas fa-file-pdf" aria-hidden="true"></i>
           Exportar PDF
         </button>
       </div>
     </div>
 
-    <div v-if="error" class="notice notice-error" role="alert">{{ error }}</div>
-    <div v-if="aviso" class="notice notice-success" role="status">{{ aviso }}</div>
+    <div v-if="error" class="notice notice-error" role="alert">
+      <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ error }}</span>
+    </div>
+    <div v-if="aviso" class="notice notice-success" role="status">
+      <span class="flex items-start gap-2"><i class="fas fa-circle-check mt-0.5 shrink-0" aria-hidden="true"></i>{{ aviso }}</span>
+    </div>
 
-    <div class="panel panel-toolbar">
-      <div class="panel-filters">
+    <div class="panel mb-4 p-4 sm:p-5">
+      <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
         <select
           class="form-select panel-control"
           :value="tipo"
@@ -166,29 +170,34 @@ onMounted(generar)
         </select>
 
         <template v-if="tipoActual.conRango">
-          <label class="d-flex align-items-center gap-2">
+          <label class="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
             Desde
-            <input v-model="fechaInicio" type="date" class="form-control panel-control" />
+            <input v-model="fechaInicio" type="date" class="form-input panel-control" />
           </label>
-          <label class="d-flex align-items-center gap-2">
+          <label class="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
             Hasta
-            <input v-model="fechaFin" type="date" class="form-control panel-control" />
+            <input v-model="fechaFin" type="date" class="form-input panel-control" />
           </label>
         </template>
-        <span v-else class="text-muted">Existencias vigentes al dÃ­a de hoy.</span>
+        <span v-else class="text-sm text-[var(--text-muted)]">Existencias vigentes al día de hoy.</span>
 
-        <button type="button" class="btn-panel btn-panel-primary" :disabled="loading" @click="generar">
-          <i class="fas fa-magnifying-glass"></i>
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+          :disabled="loading"
+          @click="generar"
+        >
+          <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
           Generar
         </button>
       </div>
-      <small v-if="tipo !== 'ventas' && tipoActual.conRango" class="text-muted">
+      <small v-if="tipo !== 'ventas' && tipoActual.conRango" class="mt-3 block text-xs text-[var(--text-muted)]">
         Fechas opcionales: sin ellas se usa el margen de alerta o todos los vencidos.
       </small>
     </div>
 
-    <div v-if="loading" class="panel panel-state">
-      <span class="spinner-border spinner-border-sm me-2"></span>
+    <div v-if="loading" class="panel-state" role="status">
+      <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" aria-hidden="true"></span>
       Generando reporte...
     </div>
 
@@ -212,14 +221,15 @@ onMounted(generar)
         Sin registros para los filtros seleccionados.
       </div>
 
-      <div v-else class="panel panel-table-wrap">
-        <table class="table panel-table">
+      <div v-else class="panel overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="panel-table min-w-[40rem]">
           <thead>
             <tr>
               <th
                 v-for="c in reporte.columnas"
                 :key="c.clave"
-                :class="{ 'text-end': esNumerica(c) }"
+                :class="{ 'text-right': esNumerica(c) }"
               >
                 {{ c.titulo }}
               </th>
@@ -230,7 +240,7 @@ onMounted(generar)
               <td
                 v-for="c in reporte.columnas"
                 :key="c.clave"
-                :class="{ 'text-end': esNumerica(c) }"
+                :class="{ 'text-right': esNumerica(c) }"
               >
                 {{ celda(c, fila[c.clave]) }}
               </td>
@@ -241,7 +251,7 @@ onMounted(generar)
               <th
                 v-for="(c, i) in reporte.columnas"
                 :key="c.clave"
-                :class="{ 'text-end': esNumerica(c) }"
+                :class="{ 'text-right': esNumerica(c) }"
               >
                 <template v-if="i === 0">TOTAL</template>
                 <template v-else-if="reporte.totales[c.clave] !== undefined">
@@ -251,8 +261,8 @@ onMounted(generar)
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
     </template>
   </section>
 </template>
-

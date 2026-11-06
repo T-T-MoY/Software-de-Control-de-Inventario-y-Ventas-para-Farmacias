@@ -544,7 +544,7 @@ onMounted(cargarDatos)
 <template>
   <section class="admin-panel">
     <div v-if="errorAccion" class="notice notice-error" role="alert">
-      <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorAccion }}</span>
+      <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorAccion }}</span>
       <button
         type="button"
         class="notice-close"
@@ -565,17 +565,17 @@ onMounted(cargarDatos)
       <div class="panel-heading-actions">
         <button
           type="button"
-          class="btn-panel btn-panel-ghost"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
           :disabled="loading"
           @click="cargarDatos"
         >
-          <i class="fas fa-rotate"></i>
+          <i class="fas fa-rotate" :class="{ 'animate-spin': loading }" aria-hidden="true"></i>
           Actualizar
         </button>
         <button
           v-if="puedeGestionar"
           type="button"
-          class="btn-panel btn-panel-primary"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:-translate-y-0.5 hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           @click="abrirNuevo"
         >
           <i class="fas fa-plus"></i>
@@ -612,21 +612,21 @@ onMounted(cargarDatos)
 
       <!-- Barra de búsqueda y filtros -->
       <div class="panel-toolbar">
-        <div class="panel-filters">
-          <div class="field field-search">
-            <label class="visually-hidden" for="buscar-medicamentos">Buscar medicamentos</label>
+        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+          <div class="field-search flex min-w-0 flex-col gap-1.5">
+            <label class="sr-only" for="buscar-medicamentos">Buscar medicamentos</label>
             <i class="fas fa-search"></i>
             <input
               id="buscar-medicamentos"
               v-model="search"
-              class="form-control panel-control"
+              class="form-input panel-control"
               type="search"
               placeholder="Buscar por nombre, DCI, categoría o código de barras..."
               autocomplete="off"
             >
           </div>
 
-          <div class="field">
+          <div class="flex min-w-0 flex-col gap-1.5">
             <label for="filtrar-categoria">Categoría</label>
             <select
               id="filtrar-categoria"
@@ -644,7 +644,7 @@ onMounted(cargarDatos)
             </select>
           </div>
 
-          <div class="field">
+          <div class="flex min-w-0 flex-col gap-1.5">
             <label for="filtrar-estado-medicamento">Estado</label>
             <select
               id="filtrar-estado-medicamento"
@@ -658,11 +658,11 @@ onMounted(cargarDatos)
             </select>
           </div>
 
-          <div class="field">
-            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <label class="hidden lg:block" aria-hidden="true">&nbsp;</label>
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="!hayFiltrosActivos"
               @click="limpiarFiltros"
             >
@@ -684,12 +684,12 @@ onMounted(cargarDatos)
 
       <!-- Estado de carga / error / vacío -->
       <div v-if="loading" class="panel-state">
-        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        <span class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" role="status" aria-label="Cargando"></span>
         Cargando catálogo...
       </div>
       <div v-else-if="error" class="panel-state is-error">{{ error }}</div>
       <div v-else-if="medicamentosFiltrados.length === 0" class="panel-state">
-        <i class="fas fa-pills fs-4 d-block mb-2"></i>
+        <i class="fas fa-pills mb-2 block text-2xl" aria-hidden="true"></i>
         {{
           hayFiltrosActivos
             ? 'No se encontraron medicamentos que coincidan con los filtros.'
@@ -720,8 +720,8 @@ onMounted(cargarDatos)
             
             <div class="medicine-card-body">
               <div class="medicine-info">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                  <h4 class="medicine-title truncate" :title="medicamento.nombre_comercial">
+                <div class="mb-2 flex items-start justify-between gap-2">
+                  <h4 class="medicine-title min-w-0 flex-1 truncate" :title="medicamento.nombre_comercial">
                     {{ medicamento.nombre_comercial }}
                   </h4>
                   <span
@@ -794,7 +794,7 @@ onMounted(cargarDatos)
                   <span>Eliminar</span>
                 </button>
               </template>
-              <span v-else class="text-muted small w-100 text-center">Modo de solo lectura</span>
+              <span v-else class="w-full text-center text-sm text-[var(--text-muted)]">Modo de solo lectura</span>
             </div>
           </article>
         </div>
@@ -892,22 +892,22 @@ onMounted(cargarDatos)
             :disabled="saving"
             @click="cerrarModal"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
 
         <form class="mt-4" novalidate @submit.prevent="guardarMedicamento">
-          <div class="row g-3">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <!-- (Campos de formulario intactos) -->
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="codigo-barras">
                 Código de barras <span class="req">*</span>
               </label>
               <input
                 id="codigo-barras"
                 v-model="form.codigo_barras"
-                class="form-control"
-                :class="{ 'is-invalid': errores.codigo_barras && touched.codigo_barras }"
+                class="form-input"
+                :class="{ 'has-error': errores.codigo_barras && touched.codigo_barras }"
                 maxlength="20"
                 autocomplete="off"
                 placeholder="Ej.: 7770000000011"
@@ -922,15 +922,15 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="nombre-comercial">
                 Nombre comercial <span class="req">*</span>
               </label>
               <input
                 id="nombre-comercial"
                 v-model="form.nombre_comercial"
-                class="form-control"
-                :class="{ 'is-invalid': errores.nombre_comercial && touched.nombre_comercial }"
+                class="form-input"
+                :class="{ 'has-error': errores.nombre_comercial && touched.nombre_comercial }"
                 maxlength="100"
                 autocomplete="off"
                 placeholder="Ej.: Dolofin"
@@ -945,15 +945,15 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="dci">
                 Principio activo (DCI) <span class="req">*</span>
               </label>
               <input
                 id="dci"
                 v-model="form.dci"
-                class="form-control"
-                :class="{ 'is-invalid': errores.dci && touched.dci }"
+                class="form-input"
+                :class="{ 'has-error': errores.dci && touched.dci }"
                 maxlength="100"
                 autocomplete="off"
                 placeholder="Ej.: Paracetamol"
@@ -968,15 +968,15 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-6">
+            <div>
               <label class="form-label" for="concentracion">
                 Concentración <span class="req">*</span>
               </label>
               <input
                 id="concentracion"
                 v-model="form.concentracion"
-                class="form-control"
-                :class="{ 'is-invalid': errores.concentracion && touched.concentracion }"
+                class="form-input"
+                :class="{ 'has-error': errores.concentracion && touched.concentracion }"
                 maxlength="40"
                 autocomplete="off"
                 placeholder="Ej.: 500 mg"
@@ -991,7 +991,7 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-4">
+            <div>
               <label class="form-label" for="forma-farmaceutica">
                 Forma farmacéutica <span class="req">*</span>
               </label>
@@ -999,7 +999,7 @@ onMounted(cargarDatos)
                 id="forma-farmaceutica"
                 v-model="form.forma_farmaceutica"
                 class="form-select"
-                :class="{ 'is-invalid': errores.forma_farmaceutica && touched.forma_farmaceutica }"
+                :class="{ 'has-error': errores.forma_farmaceutica && touched.forma_farmaceutica }"
                 :aria-invalid="Boolean(errores.forma_farmaceutica && touched.forma_farmaceutica)"
                 @change="alSalir('forma_farmaceutica')"
                 @blur="alSalir('forma_farmaceutica')"
@@ -1016,7 +1016,7 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-4">
+            <div>
               <label class="form-label" for="categoria">
                 Categoría <span class="req">*</span>
               </label>
@@ -1024,7 +1024,7 @@ onMounted(cargarDatos)
                 id="categoria"
                 v-model="form.id_categoria"
                 class="form-select"
-                :class="{ 'is-invalid': errores.id_categoria && touched.id_categoria }"
+                :class="{ 'has-error': errores.id_categoria && touched.id_categoria }"
                 :aria-invalid="Boolean(errores.id_categoria && touched.id_categoria)"
                 @change="alSalir('id_categoria')"
                 @blur="alSalir('id_categoria')"
@@ -1045,7 +1045,7 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-4">
+            <div>
               <label class="form-label" for="tipo-venta">
                 Tipo de venta <span class="req">*</span>
               </label>
@@ -1053,7 +1053,7 @@ onMounted(cargarDatos)
                 id="tipo-venta"
                 v-model="form.tipo_venta"
                 class="form-select"
-                :class="{ 'is-invalid': errores.tipo_venta && touched.tipo_venta }"
+                :class="{ 'has-error': errores.tipo_venta && touched.tipo_venta }"
                 :aria-invalid="Boolean(errores.tipo_venta && touched.tipo_venta)"
                 @change="alSalir('tipo_venta')"
                 @blur="alSalir('tipo_venta')"
@@ -1069,15 +1069,15 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-4">
+            <div>
               <label class="form-label" for="precio-unitario">
                 Precio (Bs) <span class="req">*</span>
               </label>
               <input
                 id="precio-unitario"
                 v-model="form.precio_unitario"
-                class="form-control"
-                :class="{ 'is-invalid': errores.precio_unitario && touched.precio_unitario }"
+                class="form-input"
+                :class="{ 'has-error': errores.precio_unitario && touched.precio_unitario }"
                 inputmode="decimal"
                 autocomplete="off"
                 placeholder="0.00"
@@ -1092,13 +1092,13 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-4">
+            <div>
               <label class="form-label" for="stock-seguridad">Stock de seguridad</label>
               <input
                 id="stock-seguridad"
                 v-model="form.stock_seguridad"
-                class="form-control"
-                :class="{ 'is-invalid': errores.stock_seguridad && touched.stock_seguridad }"
+                class="form-input"
+                :class="{ 'has-error': errores.stock_seguridad && touched.stock_seguridad }"
                 inputmode="numeric"
                 autocomplete="off"
                 placeholder="0"
@@ -1113,13 +1113,13 @@ onMounted(cargarDatos)
               </p>
             </div>
 
-            <div class="col-md-4">
+            <div>
               <label class="form-label" for="dias-reposicion">Días de reposición</label>
               <input
                 id="dias-reposicion"
                 v-model="form.dias_reposicion"
-                class="form-control"
-                :class="{ 'is-invalid': errores.dias_reposicion && touched.dias_reposicion }"
+                class="form-input"
+                :class="{ 'has-error': errores.dias_reposicion && touched.dias_reposicion }"
                 inputmode="numeric"
                 autocomplete="off"
                 placeholder="0"
@@ -1135,7 +1135,7 @@ onMounted(cargarDatos)
             </div>
           </div>
 
-          <div class="medicine-photo-editor mt-3">
+          <div class="medicine-photo-editor mt-3 flex flex-col items-start gap-4 p-4 sm:flex-row sm:items-center">
             <div class="medicine-photo-preview">
               <img v-if="fotoVisible" :src="fotoVisible" alt="Vista previa de la foto">
               <!-- Cero íconos en todo el componente, sustituido por texto -->
@@ -1143,18 +1143,18 @@ onMounted(cargarDatos)
             </div>
             <div class="medicine-photo-actions">
               <label class="form-label" for="foto-medicamento">
-                Foto del medicamento <span class="text-muted">(opcional)</span>
+                Foto del medicamento <span class="text-[var(--text-muted)]">(opcional)</span>
               </label>
               <input
                 id="foto-medicamento"
                 ref="inputFoto"
-                class="form-control"
+                class="form-input"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 :disabled="saving"
                 @change="seleccionarFoto"
               >
-              <small class="text-muted">JPEG, PNG o WebP; máximo 5 MB.</small>
+              <small class="text-sm text-[var(--text-muted)]">JPEG, PNG o WebP; máximo 5 MB.</small>
               <button
                 v-if="fotoPendiente || (fotoOriginal && !fotoEliminada)"
                 type="button"
@@ -1169,20 +1169,24 @@ onMounted(cargarDatos)
           </div>
 
           <div v-if="errorFormulario" class="notice notice-error mt-3" role="alert">
-            <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorFormulario }}</span>
+            <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorFormulario }}</span>
           </div>
 
-          <div class="d-flex justify-content-end gap-2 mt-4">
+          <div class="mt-4 flex flex-col-reverse justify-end gap-2 sm:flex-row">
             <button
               type="button"
-              class="btn-panel btn-panel-ghost"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
               :disabled="saving"
               @click="cerrarModal"
             >
               Cancelar
             </button>
-            <button type="submit" class="btn-panel btn-panel-primary" :disabled="saving">
-              <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            <button
+              type="submit"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
+              :disabled="saving"
+            >
+              <span v-if="saving" class="inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent align-[-0.2em]" role="status" aria-label="Guardando"></span>
               {{ saving ? 'Guardando...' : 'Guardar' }}
             </button>
           </div>
@@ -1217,11 +1221,11 @@ onMounted(cargarDatos)
             :disabled="Boolean(procesandoEstado)"
             @click="cerrarCambioEstado"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
 
-        <p class="mt-4 mb-0 small">
+        <p class="mb-0 mt-4 text-sm leading-relaxed text-[var(--text-muted)]">
           <template v-if="esActivo(medicamentoEstado)">
             El medicamento quedará <strong>inactivo</strong> y dejará de ofrecerse en el
             catálogo, pero se conservará para el historial.
@@ -1232,13 +1236,13 @@ onMounted(cargarDatos)
         </p>
 
         <div v-if="errorEstado" class="notice notice-error mt-3" role="alert">
-          <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorEstado }}</span>
+          <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorEstado }}</span>
         </div>
 
-        <div class="panel-modal-actions">
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
-            class="btn-panel btn-panel-ghost"
+            class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="Boolean(procesandoEstado)"
             @click="cerrarCambioEstado"
           >
@@ -1246,8 +1250,10 @@ onMounted(cargarDatos)
           </button>
           <button
             type="button"
-            class="btn-panel"
-            :class="esActivo(medicamentoEstado) ? 'btn-panel-danger' : 'btn-panel-primary'"
+            class="inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-bold text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-55"
+            :class="esActivo(medicamentoEstado)
+              ? 'bg-[#a83b53] hover:bg-[#8f3046] focus-visible:outline-[#a83b53]'
+              : 'bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-[var(--accent)]'"
             :disabled="Boolean(procesandoEstado)"
             @click="confirmarCambioEstado"
           >
@@ -1282,23 +1288,23 @@ onMounted(cargarDatos)
             :disabled="procesandoBaja"
             @click="cerrarBaja"
           >
-            ×
+            <i class="fas fa-xmark" aria-hidden="true"></i>
           </button>
         </div>
 
-        <p class="mt-4 mb-0 small">
+        <p class="mb-0 mt-4 text-sm leading-relaxed text-[var(--text-muted)]">
           ¿Quieres eliminar este medicamento? Se marcará como
           <strong>eliminado</strong>; sus lotes, ventas e historial se conservarán.
         </p>
 
         <div v-if="errorBaja" class="notice notice-error mt-3" role="alert">
-          <span><i class="fas fa-circle-exclamation me-2"></i>{{ errorBaja }}</span>
+          <span class="flex items-start gap-2"><i class="fas fa-circle-exclamation mt-0.5 shrink-0" aria-hidden="true"></i>{{ errorBaja }}</span>
         </div>
 
-        <div class="panel-modal-actions">
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
-            class="btn-panel btn-panel-ghost"
+            class="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-5 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="procesandoBaja"
             @click="cerrarBaja"
           >
@@ -1306,7 +1312,7 @@ onMounted(cargarDatos)
           </button>
           <button
             type="button"
-            class="btn-panel btn-panel-danger"
+            class="inline-flex min-h-11 items-center justify-center rounded-full bg-[#a83b53] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#8f3046] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a83b53] disabled:cursor-not-allowed disabled:opacity-55"
             :disabled="procesandoBaja"
             @click="confirmarBaja"
           >
@@ -1568,10 +1574,6 @@ onMounted(cargarDatos)
 
 /* === EDICIÓN FOTO MODAL === */
 .medicine-photo-editor {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1.25rem;
   border: 1px solid var(--border-color);
   border-radius: 0.8rem;
   background: var(--bg-card);
@@ -1607,9 +1609,6 @@ onMounted(cargarDatos)
 @media (max-width: 575.98px) {
   .panel-modal.is-wide {
     width: 100%;
-  }
-  .medicine-photo-editor {
-    align-items: flex-start;
   }
   .medicine-photo-preview {
     width: 90px;

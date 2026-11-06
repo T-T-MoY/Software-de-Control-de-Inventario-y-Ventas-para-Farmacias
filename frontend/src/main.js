@@ -10,3 +10,4 @@ const app = createApp(App)
 
 app.use(router) 
 app.mount('#app')
+import 'bootstrap-icons/font/bootstrap-icons.css'

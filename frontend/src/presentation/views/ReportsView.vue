@@ -1,7 +1,8 @@
-<script setup>
+﻿<script setup>
 import { computed, onMounted, ref } from 'vue'
 import { obtenerReporte, descargarReporte } from '../../data/endpoints/reports'
 import { formatearFecha } from '../../business/format'
+import ReportCharts from '../components/ReportCharts.vue'
 
 const TIPOS = [
   { clave: 'ventas', nombre: 'Ventas', icono: 'fa-cash-register', conRango: true },
@@ -31,7 +32,7 @@ const filtros = () => (tipoActual.value.conRango
   : {})
 
 const mensajeError = (err) => (err.status === 401
-  ? 'Tu sesión expiró. Inicia sesión nuevamente.'
+  ? 'Tu sesiÃ³n expirÃ³. Inicia sesiÃ³n nuevamente.'
   : err.message || 'No se pudo generar el reporte.')
 
 const validarFechas = () => {
@@ -104,7 +105,7 @@ const numero = (valor, decimales) => Number(valor).toLocaleString('es-BO', {
 })
 
 const celda = (columna, valor) => {
-  if (valor === null || valor === undefined || valor === '') return '—'
+  if (valor === null || valor === undefined || valor === '') return 'â€”'
   if (columna.tipo === 'moneda' || columna.tipo === 'decimal') return numero(valor, 2)
   if (columna.tipo === 'entero') return numero(valor, 0)
   if (columna.tipo === 'fecha') return formatearFecha(valor)
@@ -174,7 +175,7 @@ onMounted(generar)
             <input v-model="fechaFin" type="date" class="form-control panel-control" />
           </label>
         </template>
-        <span v-else class="text-muted">Existencias vigentes al día de hoy.</span>
+        <span v-else class="text-muted">Existencias vigentes al dÃ­a de hoy.</span>
 
         <button type="button" class="btn-panel btn-panel-primary" :disabled="loading" @click="generar">
           <i class="fas fa-magnifying-glass"></i>
@@ -204,6 +205,8 @@ onMounted(generar)
           <small>Total del reporte</small>
         </div>
       </div>
+
+      <ReportCharts v-if="reporte.filas.length > 0" :tipo="reporte.tipo" :filas="reporte.filas" :totales="reporte.totales" />
 
       <div v-if="reporte.filas.length === 0" class="panel panel-state">
         Sin registros para los filtros seleccionados.
@@ -252,3 +255,4 @@ onMounted(generar)
     </template>
   </section>
 </template>
+

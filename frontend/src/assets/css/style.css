@@ -1,5 +1,5 @@
-/* ============================================================
-   FARMACIA · SISTEMA DE DISEÑO
+﻿/* ============================================================
+   FARMACIA Â· SISTEMA DE DISEÃ‘O
    Paleta oficial:
    - Deep Navy Blue .... #05102D
    - Soft Cream White .. #FFF7E3
@@ -53,7 +53,7 @@
        La lavanda sigue disponible para fondos, bordes e iconos. */
     --text-accent: var(--blue-500);
 
-    /* Semánticos (derivados de la paleta) */
+    /* SemÃ¡nticos (derivados de la paleta) */
     --danger: #b4455f;
     --danger-soft: rgba(180, 69, 95, 0.12);
     --success: #1f7a55;
@@ -222,7 +222,7 @@ input, textarea, select, [contenteditable="true"] {
     caret-color: var(--accent) !important;
 }
 
-/* Evita selección accidental en controles */
+/* Evita selecciÃ³n accidental en controles */
 .profile-menu,
 .profile-menu *,
 .sidebar-brand,
@@ -848,7 +848,7 @@ a,
 
 /* ==========================================
    7. FORMULARIOS
-   Estilo único para todo el sistema: mismos
+   Estilo Ãºnico para todo el sistema: mismos
    radios, medidas y estados que el login.
    ========================================== */
 .form-label {
@@ -943,7 +943,7 @@ a,
 
 /* Mensaje de error: el espacio queda reservado siempre para que el campo
    no se desplace cuando aparece el aviso. El margen inferior negativo
-   recupera parte de ese espacio y mantiene la separación compacta. */
+   recupera parte de ese espacio y mantiene la separaciÃ³n compacta. */
 .error-text {
     display: flex;
     align-items: flex-start;
@@ -1109,7 +1109,7 @@ a,
 }
 
 /* ==========================================
-   9. BOTÓN DE TEMA
+   9. BOTÃ“N DE TEMA
    ========================================== */
 /* Estilos encapsulados en presentation/components/ThemeToggle.vue */
 
@@ -1149,7 +1149,7 @@ h1, h2, h3, h4, h5, h6,
 
 /* Autocompletado del navegador.
    Se cubre el fondo con una sombra interior para que siga el tema.
-   Sin transición larga: ese truco dejaba los inputs autocompletados
+   Sin transiciÃ³n larga: ese truco dejaba los inputs autocompletados
    con el color anterior al cambiar entre claro y oscuro. */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -1161,7 +1161,7 @@ input:-webkit-autofill:focus {
 }
 
 /* Los grupos de entrada unificados anulan la sombra general,
-   por eso se restablece aquí para los campos autocompletados. */
+   por eso se restablece aquÃ­ para los campos autocompletados. */
 .custom-input-group .form-control:-webkit-autofill,
 .custom-input-group .form-control:-webkit-autofill:hover,
 .custom-input-group .form-control:-webkit-autofill:focus {
@@ -1205,7 +1205,7 @@ input:-webkit-autofill:focus {
 }
 
 /* ==========================================
-   11. PANEL DE ADMINISTRACIÓN
+   11. PANEL DE ADMINISTRACIÃ“N
    Estructura de panel, controles, badges,
    tabla/cards y notificaciones reutilizables.
    ========================================== */
@@ -1332,7 +1332,7 @@ input:-webkit-autofill:focus {
     color: var(--text-accent);
 }
 
-/* --- Tarjetas de estadísticas --- */
+/* --- Tarjetas de estadÃ­sticas --- */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1408,16 +1408,39 @@ input:-webkit-autofill:focus {
 .panel-filters {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
+    gap: 1rem;
     align-items: end;
 }
 
-@media (min-width: 992px) {
+.panel-filters > label {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.45rem !important;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.panel-filters .panel-control {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+}
+
+@media (min-width: 768px) {
     .panel-filters {
-        grid-template-columns:
-            minmax(0, 5fr) minmax(0, 2.2fr) minmax(0, 2.2fr) minmax(0, 2.2fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+@media (min-width: 1200px) {
+    .panel-filters {
+        grid-template-columns: 1.3fr 1fr 1fr auto;
+    }
+}
+
 
 /* --- Campos del panel --- */
 .field {
@@ -1656,7 +1679,7 @@ select.panel-control {
     cursor: not-allowed;
 }
 
-/* --- Cards (móvil) --- */
+/* --- Cards (mÃ³vil) --- */
 .mobile-list {
     display: none;
 }
@@ -1759,7 +1782,7 @@ select.panel-control {
     }
 }
 
-/* --- Pie y paginación --- */
+/* --- Pie y paginaciÃ³n --- */
 .panel-footer {
     display: flex;
     flex-wrap: wrap;
@@ -1936,7 +1959,7 @@ select.panel-control {
     transform: translateY(8px);
 }
 
-/* --- Estado vacío / carga --- */
+/* --- Estado vacÃ­o / carga --- */
 .panel-state {
     padding: 2.25rem 1.5rem;
     text-align: center;
@@ -2123,5 +2146,419 @@ select.panel-control {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+    }
+}
+
+
+/* ===== DASHBOARD ESTADISTICO DE REPORTES ===== */
+.report-charts {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+}
+
+.charts-heading,
+.chart-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.charts-heading h3 {
+    margin: .25rem 0;
+    color: var(--text-main);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.charts-heading p,
+.chart-card-heading p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: .82rem;
+}
+
+.charts-eyebrow {
+    color: var(--primary);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+.charts-live {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    color: var(--text-muted);
+    font-size: .75rem;
+}
+
+.charts-live span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 15%, transparent);
+}
+
+.chart-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.chart-kpi,
+.chart-card {
+    min-width: 0;
+    padding: 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1.1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.chart-kpi {
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.chart-kpi:hover,
+.chart-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.chart-kpi::after {
+    content: '';
+    position: absolute;
+    right: -22px;
+    bottom: -35px;
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.kpi-icon {
+    display: grid;
+    place-items: center;
+    width: 39px;
+    height: 39px;
+    margin-bottom: 1rem;
+    border-radius: .8rem;
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.chart-kpi > span {
+    display: block;
+    color: var(--text-muted);
+    font-size: .78rem;
+    font-weight: 600;
+}
+
+.chart-kpi > strong {
+    display: block;
+    margin: .4rem 0;
+    color: var(--text-main);
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.chart-kpi > small {
+    color: var(--text-muted);
+    font-size: .72rem;
+}
+
+.chart-kpi-warning .kpi-icon {
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 13%, transparent);
+}
+
+.chart-kpi-danger .kpi-icon {
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.chart-card-heading {
+    margin-bottom: 1.5rem;
+}
+
+.chart-card-heading h4 {
+    margin: 0 0 .3rem;
+    color: var(--text-main);
+    font-size: .98rem;
+    font-weight: 800;
+}
+
+.chart-card-heading h4 i {
+    margin-right: .45rem;
+    color: var(--primary);
+}
+
+.chart-period {
+    padding: .4rem .7rem;
+    border-radius: 2rem;
+    color: var(--text-muted);
+    background: var(--bg-input);
+    font-size: .7rem;
+    font-weight: 600;
+}
+
+.bar-chart {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: .8rem;
+    height: 230px;
+    padding-top: .5rem;
+}
+
+.bar-column {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .55rem;
+}
+
+.bar-column > strong {
+    color: var(--text-muted);
+    font-size: .68rem;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.bar-column > span {
+    color: var(--text-muted);
+    font-size: .72rem;
+}
+
+.bar-track {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    max-width: 54px;
+    height: 155px;
+    overflow: hidden;
+    border-radius: .65rem .65rem .3rem .3rem;
+    background: var(--bg-input);
+}
+
+.bar-fill {
+    width: 100%;
+    min-height: 3px;
+    border-radius: .6rem .6rem .2rem .2rem;
+    animation: chart-grow .7s ease both;
+}
+
+.bar-sales {
+    background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #7c3aed));
+}
+
+.charts-two-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.horizontal-chart,
+.urgency-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+}
+
+.horizontal-item {
+    min-width: 0;
+}
+
+.horizontal-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .45rem;
+    color: var(--text-main);
+    font-size: .77rem;
+}
+
+.horizontal-label span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.horizontal-label strong {
+    flex-shrink: 0;
+    font-weight: 800;
+}
+
+.horizontal-track {
+    height: 9px;
+    overflow: hidden;
+    border-radius: 2rem;
+    background: var(--bg-input);
+}
+
+.horizontal-fill {
+    height: 100%;
+    min-width: 2px;
+    border-radius: inherit;
+    animation: chart-grow .7s ease both;
+}
+
+.bar-stock {
+    background: linear-gradient(90deg, var(--primary), #38bdf8);
+}
+
+.bar-value {
+    background: linear-gradient(90deg, #8b5cf6, #c084fc);
+}
+
+.bar-danger {
+    background: var(--danger);
+}
+
+.bar-warning {
+    background: var(--warning);
+}
+
+.bar-success {
+    background: var(--success);
+}
+
+.status-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    padding: .5rem;
+}
+
+.status-donut {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 175px;
+    height: 175px;
+    border-radius: 50%;
+    animation: chart-appear .7s ease both;
+}
+
+.status-donut-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    background: var(--bg-card);
+}
+
+.status-donut-center strong {
+    color: var(--text-main);
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.status-donut-center span {
+    color: var(--text-muted);
+    font-size: .75rem;
+}
+
+.status-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    min-width: 180px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+}
+
+.legend-dot {
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.dot-danger {
+    background: var(--danger);
+}
+
+.dot-success {
+    background: var(--success);
+}
+
+.legend-item div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.legend-item div strong {
+    color: var(--text-main);
+    font-size: 1rem;
+}
+
+.legend-item div span,
+.legend-item small {
+    color: var(--text-muted);
+    font-size: .72rem;
+}
+
+.legend-item small {
+    font-weight: 800;
+}
+
+.chart-empty {
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    text-align: center;
+    font-size: .85rem;
+}
+
+@keyframes chart-grow {
+    from { transform: scaleY(.05); transform-origin: bottom; }
+    to { transform: scaleY(1); transform-origin: bottom; }
+}
+
+@keyframes chart-appear {
+    from { opacity: 0; transform: scale(.85); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 767.98px) {
+    .chart-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .charts-two-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .status-chart {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .bar-chart {
+        gap: .3rem;
+    }
+
+    .bar-column > strong {
+        font-size: .58rem;
     }
 }

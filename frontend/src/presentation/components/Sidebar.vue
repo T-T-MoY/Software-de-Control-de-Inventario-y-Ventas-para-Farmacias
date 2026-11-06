@@ -74,7 +74,8 @@ const modules = MODULOS
       <ul class="nav flex-column gap-1">
         <template v-for="module in modules" :key="module.name">
           <li
-            v-if="!['Ventas', 'Clientes'].includes(module.name) || puedeProcesarVentas"
+            v-if="(!['Ventas', 'Clientes'].includes(module.name) || puedeProcesarVentas)
+              && (!['Reportes', 'Historial'].includes(module.name) || isAdmin)"
             class="nav-item"
           >
           <router-link
@@ -143,6 +144,30 @@ const modules = MODULOS
               <small class="module-owner">
                 ({{ module.responsable }})
               </small>
+            </span>
+          </router-link>
+
+          <router-link
+            v-else-if="module.name === 'Reportes'"
+            to="/reportes"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">({{ module.responsable }})</small>
+            </span>
+          </router-link>
+
+          <router-link
+            v-else-if="module.name === 'Historial'"
+            to="/historial"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">({{ module.responsable }})</small>
             </span>
           </router-link>
 

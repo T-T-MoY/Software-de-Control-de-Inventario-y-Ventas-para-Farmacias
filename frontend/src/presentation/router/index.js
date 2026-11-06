@@ -9,6 +9,8 @@ import LotsView from '../views/LotsView.vue'
 import AlertsView from '../views/AlertsView.vue'
 import SalesView from '../views/SalesView.vue'
 import CustomersView from '../views/CustomersView.vue'
+import ReportsView from '../views/ReportsView.vue'
+import HistoryView from '../views/HistoryView.vue'
 import { RESPONSABLES } from '../../config/distribution'
 import { estaAutenticado, esAdministrador, obtenerSesion } from '../../business/session'
 
@@ -95,6 +97,28 @@ const router = createRouter({
         requiresSalesAccess: true,
         title: 'Gestión de clientes',
         responsable: RESPONSABLES.ventas
+      }
+    },
+    {
+      path: '/reportes',
+      name: 'reportes',
+      component: ReportsView,
+      meta: {
+        requiresAuth: true,
+        requiresAdmin: true,
+        title: 'Reportes',
+        responsable: RESPONSABLES.reportes
+      }
+    },
+    {
+      path: '/historial',
+      name: 'historial',
+      component: HistoryView,
+      meta: {
+        requiresAuth: true,
+        requiresAdmin: true,
+        title: 'Historial de operaciones',
+        responsable: RESPONSABLES.reportes
       }
     },
     {

@@ -24,6 +24,9 @@ module.exports = {
     stockSeguridad: numeroEnteroNoNegativo(stockSeguridad, 0),
     diasReposicion: numeroEnteroPositivo(diasReposicion, 5),
     ventanaDemandaDias: numeroEnteroPositivo(ventanaDemandaDias, 30),
+    // Zona horaria de la farmacia: define a qué día pertenece cada venta en
+    // los reportes y el historial (RF6). Por defecto, hora de Bolivia.
+    zonaHoraria: process.env.ZONA_HORARIA || 'America/La_Paz',
     // Datos que se imprimen en el encabezado del comprobante de venta.
     farmacia: {
         nombre: process.env.FARMACIA_NOMBRE,

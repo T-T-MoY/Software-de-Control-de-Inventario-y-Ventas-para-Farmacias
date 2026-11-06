@@ -1,3 +1,5 @@
+import { ref } from 'vue'
+
 /**
  * Sesión del cliente (capa de negocio del frontend).
  *
@@ -17,15 +19,27 @@ const CLAVES = {
 }
 
 const CLAVE_BIENVENIDA = 'mostrarBienvenida'
+const bienvenidaActiva = ref(
+  typeof sessionStorage !== 'undefined' &&
+  sessionStorage.getItem(CLAVE_BIENVENIDA) === 'true'
+)
+
+export { bienvenidaActiva }
 
 export function registrarBienvenida() {
   sessionStorage.setItem(CLAVE_BIENVENIDA, 'true')
+  bienvenidaActiva.value = true
 }
 
 export function consumirBienvenida() {
   const mostrar = sessionStorage.getItem(CLAVE_BIENVENIDA) === 'true'
   sessionStorage.removeItem(CLAVE_BIENVENIDA)
   return mostrar
+}
+
+export function finalizarBienvenida() {
+  sessionStorage.removeItem(CLAVE_BIENVENIDA)
+  bienvenidaActiva.value = false
 }
 
 export function guardarSesion(token, usuario) {
@@ -77,4 +91,5 @@ export function puedeGestionarCatalogo() {
 /** Borra solo los datos de sesión; el tema visual se conserva. */
 export function cerrarSesion() {
   Object.values(CLAVES).forEach((clave) => localStorage.removeItem(clave))
+  finalizarBienvenida()
 }

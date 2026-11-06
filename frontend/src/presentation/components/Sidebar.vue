@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { MODULOS, RESPONSABLES } from '../../config/distribution'
+import { modulosVisibles, RESPONSABLES } from '../../config/distribution'
 import { esAdministrador, obtenerSesion } from '../../business/session'
 import { useAlertMonitor } from '../composables/useAlertMonitor'
 
@@ -10,16 +10,8 @@ const { totales } = useAlertMonitor()
 const totalAlertas = computed(() => totales.value.total)
 const hayLotesVencidos = computed(() => totales.value.vencidos > 0)
 
-const puedeGestionarProveedores = computed(() =>
-  ['Administrador', 'Encargado de inventario']
-    .includes(obtenerSesion().rol)
-)
-
-const puedeProcesarVentas = computed(() =>
-  ['Administrador', 'Ventas'].includes(obtenerSesion().rol)
-)
-
-const modules = MODULOS
+// El sidebar muestra solo los módulos del rol de la sesión.
+const modules = computed(() => modulosVisibles(obtenerSesion().rol))
 </script>
 
 <template>
@@ -58,12 +50,6 @@ const modules = MODULOS
             </span>
           </router-link>
         </li>
-        <li class="nav-item">
-          <router-link to="/perfil" class="nav-link d-flex align-items-center">
-            <i class="fas fa-circle-user me-3"></i>
-            <span>Mi perfil</span>
-          </router-link>
-        </li>
         <li v-if="isAdmin" class="nav-item">
           <router-link to="/usuarios" class="nav-link d-flex align-items-center">
             <i class="fas fa-users me-3"></i>
@@ -78,121 +64,48 @@ const modules = MODULOS
       <div class="sidebar-section-label">MÓDULOS DEL SISTEMA</div>
       <ul class="nav flex-column gap-1">
         <template v-for="module in modules" :key="module.name">
-          <li
-            v-if="(!['Ventas', 'Clientes'].includes(module.name) || puedeProcesarVentas)
-              && (module.name !== 'Configuración' || isAdmin)"
-            class="nav-item"
-          >
-          <router-link
-            v-if="module.name === 'Lotes'"
-            to="/lotes"
-            class="nav-link d-flex align-items-center"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
+          <li class="nav-item">
+            <router-link
+              v-if="module.to"
+              :to="module.to"
+              class="nav-link d-flex align-items-center"
+            >
+              <i class="fas me-3" :class="module.icon"></i>
 
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">
-                ({{ module.responsable }})
-              </small>
-            </span>
-          </router-link>
+              <span class="flex-grow-1">
+                {{ module.name }}
+                <small class="module-owner">
+                  ({{ module.responsable }})
+                </small>
+              </span>
 
-          <router-link
-            v-else-if="module.name === 'Proveedores' && puedeGestionarProveedores"
-            to="/proveedores"
-            class="nav-link d-flex align-items-center"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
-
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">
-                ({{ module.responsable }})
-              </small>
-            </span>
-          </router-link>
-
-          <router-link
-            v-else-if="module.name === 'Ventas'"
-            to="/ventas"
-            class="nav-link d-flex align-items-center"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">({{ module.responsable }})</small>
-            </span>
-          </router-link>
-
-          <router-link
-            v-else-if="module.name === 'Clientes'"
-            to="/clientes"
-            class="nav-link d-flex align-items-center"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">({{ module.responsable }})</small>
-            </span>
-          </router-link>
-
-          <router-link
-            v-else-if="module.name === 'Alertas'"
-            to="/alertas"
-            class="nav-link d-flex align-items-center"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
-
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">
-                ({{ module.responsable }})
-              </small>
-            </span>
+              <span
+                v-if="module.name === 'Alertas' && totalAlertas > 0"
+                class="alert-badge"
+                :class="{ 'is-danger': hayLotesVencidos }"
+                :title="`${totalAlertas} alertas de inventario`"
+                :aria-label="`${totalAlertas} alertas de inventario`"
+              >
+                {{ totalAlertas > 99 ? '99+' : totalAlertas }}
+              </span>
+            </router-link>
 
             <span
-              v-if="totalAlertas > 0"
-              class="alert-badge"
-              :class="{ 'is-danger': hayLotesVencidos }"
-              :title="`${totalAlertas} alertas de inventario`"
-              :aria-label="`${totalAlertas} alertas de inventario`"
+              v-else
+              class="nav-link d-flex align-items-center module-pending"
+              :title="`${module.name}: en desarrollo (${module.responsable})`"
             >
-              {{ totalAlertas > 99 ? '99+' : totalAlertas }}
+              <i class="fas me-3" :class="module.icon"></i>
+
+              <span class="flex-grow-1">
+                {{ module.name }}
+                <small class="module-owner">
+                  ({{ module.responsable }})
+                </small>
+              </span>
+
+              <span class="pending-dot"></span>
             </span>
-          </router-link>
-
-          <router-link
-            v-else-if="module.name === 'Configuración'"
-            to="/configuracion"
-            class="nav-link d-flex align-items-center"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
-
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">
-                ({{ module.responsable }})
-              </small>
-            </span>
-          </router-link>
-
-          <span
-            v-else
-            class="nav-link d-flex align-items-center module-pending"
-            :title="`${module.name}: en desarrollo (${module.responsable})`"
-          >
-            <i class="fas me-3" :class="module.icon"></i>
-
-            <span class="flex-grow-1">
-              {{ module.name }}
-              <small class="module-owner">
-                ({{ module.responsable }})
-              </small>
-            </span>
-
-            <span class="pending-dot"></span>
-          </span>
           </li>
         </template>
       </ul>

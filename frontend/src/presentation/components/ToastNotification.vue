@@ -35,7 +35,7 @@ watch(() => props.message, (mensaje) => {
   if (mensaje) {
     temporizador = setTimeout(() => emit('close'), props.duration)
   }
-})
+}, { immediate: true })
 
 onBeforeUnmount(limpiarTemporizador)
 </script>

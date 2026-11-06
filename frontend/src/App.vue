@@ -7,7 +7,7 @@ import ToastNotification from './presentation/components/ToastNotification.vue'
 import AlertCriticalModal from './presentation/components/AlertCriticalModal.vue'
 import { applyTheme, getStoredTheme } from './presentation/theme'
 import { useAlertMonitor } from './presentation/composables/useAlertMonitor'
-import { estaAutenticado } from './business/session'
+import { bienvenidaActiva, estaAutenticado } from './business/session'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,6 +84,7 @@ onBeforeUnmount(detenerMonitor)
   </template>
 
   <ToastNotification
+    v-if="!bienvenidaActiva"
     :message="aviso"
     tone="warning"
     position="top-right"
@@ -91,7 +92,7 @@ onBeforeUnmount(detenerMonitor)
   />
 
   <AlertCriticalModal
-    v-if="modalAbierto"
+    v-if="modalAbierto && !bienvenidaActiva"
     :total-vencidos="totales.vencidos"
     @cerrar="cerrarModal"
     @ver="verAlertas"

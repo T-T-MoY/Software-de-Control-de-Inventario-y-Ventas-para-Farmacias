@@ -1,4 +1,3 @@
-
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import ToastNotification from '../components/ToastNotification.vue'
@@ -17,10 +16,6 @@ import {
   validarFormularioProveedor
 } from '../validators/supplier'
 
-// =====================================================
-// ESTADO
-// =====================================================
-
 const proveedores = ref([])
 const loading = ref(true)
 const saving = ref(false)
@@ -32,15 +27,10 @@ const notificacion = ref('')
 const modalAbierto = ref(false)
 const editando = ref(false)
 
-// Administrador y encargado de inventario.
 const puedeGestionar = computed(() => [
   'Administrador',
   'Encargado de inventario'
 ].includes(obtenerSesion().rol))
-
-// =====================================================
-// BÚSQUEDA Y PAGINACIÓN
-// =====================================================
 
 const search = ref('')
 const porPagina = 10
@@ -135,10 +125,6 @@ watch(totalPaginas, (total) => {
   }
 })
 
-// =====================================================
-// ESTADÍSTICAS
-// =====================================================
-
 const totalProveedores = computed(() => proveedores.value.length)
 
 const proveedoresConTelefono = computed(() =>
@@ -152,10 +138,6 @@ const proveedoresConCorreo = computed(() =>
 const proveedoresSinCorreo = computed(() =>
   proveedores.value.filter((p) => !p.correo_electronico).length
 )
-
-// =====================================================
-// FORMULARIO
-// =====================================================
 
 const formularioInicial = () => ({
   id_proveedor: null,
@@ -209,10 +191,6 @@ const validarFormulario = () => {
   return !Object.values(errores.value).some(Boolean)
 }
 
-// =====================================================
-// MENSAJES
-// =====================================================
-
 const notificar = (mensaje) => {
   notificacion.value = mensaje
 }
@@ -233,10 +211,6 @@ const mensajeErrorAccion = (err) => {
   return err.message || 'No se pudo completar la operación.'
 }
 
-// =====================================================
-// CARGAR PROVEEDORES
-// =====================================================
-
 const cargarProveedores = async () => {
   loading.value = true
   error.value = ''
@@ -253,10 +227,6 @@ const cargarProveedores = async () => {
     loading.value = false
   }
 }
-
-// =====================================================
-// ABRIR Y CERRAR MODAL
-// =====================================================
 
 const abrirNuevo = () => {
   editando.value = false
@@ -295,10 +265,6 @@ const cerrarModal = () => {
 
   restablecerValidacion()
 }
-
-// =====================================================
-// REGISTRAR Y ACTUALIZAR PROVEEDORES
-// =====================================================
 
 const guardarProveedor = async () => {
   errorFormulario.value = ''
@@ -352,10 +318,6 @@ const guardarProveedor = async () => {
   }
 }
 
-// =====================================================
-// UTILIDADES
-// =====================================================
-
 const inicialesProveedor = (proveedor) => {
   return String(proveedor.nombre_comercial || '')
     .split(/\s+/)
@@ -381,7 +343,6 @@ onMounted(cargarProveedores)
 <template>
   <section class="admin-panel">
 
-    <!-- CABECERA -->
     <div class="panel-heading">
       <div>
         <span class="eyebrow">Inventario</span>
@@ -417,7 +378,6 @@ onMounted(cargarProveedores)
       </div>
     </div>
 
-    <!-- ERROR GENERAL -->
     <div
       v-if="error"
       class="notice notice-error"
@@ -438,7 +398,6 @@ onMounted(cargarProveedores)
       </button>
     </div>
 
-    <!-- ESTADÍSTICAS -->
     <div class="stats-grid">
 
       <div class="stat-card">
@@ -463,29 +422,19 @@ onMounted(cargarProveedores)
 
     </div>
 
-    <!-- PANEL PRINCIPAL -->
     <div class="panel supplier-list-panel">
 
       <div class="panel-title-bar">
         <h3>Proveedores registrados</h3>
       </div>
 
-      <!-- BUSCADOR -->
       <div class="panel-toolbar">
 
         <div class="panel-filters supplier-filters">
 
           <div class="field field-search">
-
-            <label
-              class="visually-hidden"
-              for="buscar-proveedores"
-            >
-              Buscar proveedores
-            </label>
-
+            <label class="d-none d-lg-block form-label" aria-hidden="true">&nbsp;</label>
             <i class="fas fa-search"></i>
-
             <input
               id="buscar-proveedores"
               v-model="search"
@@ -494,15 +443,10 @@ onMounted(cargarProveedores)
               placeholder="Buscar por nombre, RUC/NIT, teléfono o correo..."
               autocomplete="off"
             >
-
           </div>
 
           <div class="field">
-
-            <label class="d-none d-lg-block">
-              &nbsp;
-            </label>
-
+            <label class="d-none d-lg-block" aria-hidden="true">&nbsp;</label>
             <button
               type="button"
               class="btn-panel btn-panel-ghost"
@@ -511,7 +455,6 @@ onMounted(cargarProveedores)
             >
               Limpiar búsqueda
             </button>
-
           </div>
 
         </div>
@@ -526,16 +469,9 @@ onMounted(cargarProveedores)
 
       </div>
 
-      <!-- CARGA / ERROR / VACÍO -->
       <div v-if="loading" class="panel-state">
-
-        <span
-          class="spinner-border spinner-border-sm me-2"
-          role="status"
-        ></span>
-
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
         Cargando proveedores...
-
       </div>
 
       <div
@@ -549,20 +485,16 @@ onMounted(cargarProveedores)
         v-else-if="proveedoresFiltrados.length === 0"
         class="panel-state"
       >
-
         <i class="fas fa-truck fs-4 d-block mb-2"></i>
-
         {{
           search
             ? 'No se encontraron proveedores que coincidan con la búsqueda.'
             : 'No hay proveedores registrados.'
         }}
-
       </div>
 
       <template v-else>
 
-        <!-- TABLA PARA ESCRITORIO -->
         <div class="panel-table-wrap">
 
           <table class="panel-table supplier-table">
@@ -577,7 +509,7 @@ onMounted(cargarProveedores)
                 <th style="width: 20%">Dirección</th>
                 <th
                   v-if="puedeGestionar"
-                  class="cell-actions text-end"
+                  class="cell-actions text-center"
                 >
                   Acciones
                 </th>
@@ -598,18 +530,15 @@ onMounted(cargarProveedores)
                 <td class="cell-truncate">
 
                   <div class="user-cell">
-
                     <span class="avatar-soft">
                       {{ inicialesProveedor(proveedor) }}
                     </span>
-
                     <strong
                       class="truncate"
                       :title="proveedor.nombre_comercial"
                     >
                       {{ proveedor.nombre_comercial }}
                     </strong>
-
                   </div>
 
                 </td>
@@ -647,10 +576,9 @@ onMounted(cargarProveedores)
                   </span>
                 </td>
 
-                <td v-if="puedeGestionar">
+                <td v-if="puedeGestionar" class="text-center">
 
                   <div class="action-stack">
-
                     <button
                       type="button"
                       class="btn-row"
@@ -660,7 +588,6 @@ onMounted(cargarProveedores)
                       <i class="fas fa-pen me-1"></i>
                       Editar
                     </button>
-
                   </div>
 
                 </td>
@@ -673,7 +600,6 @@ onMounted(cargarProveedores)
 
         </div>
 
-        <!-- LISTADO PARA MÓVILES -->
         <div class="mobile-list">
 
           <article
@@ -683,27 +609,20 @@ onMounted(cargarProveedores)
           >
 
             <div class="mobile-card-head">
-
               <span class="mobile-index">
                 {{ numerarRegistro(indice) }}
               </span>
-
               <span class="avatar-soft">
                 {{ inicialesProveedor(proveedor) }}
               </span>
-
               <div class="mobile-card-title">
-
                 <h4>
                   {{ proveedor.nombre_comercial }}
                 </h4>
-
                 <p>
                   RUC/NIT: {{ proveedor.ruc_nit }}
                 </p>
-
               </div>
-
             </div>
 
             <div class="mobile-meta">
@@ -735,7 +654,6 @@ onMounted(cargarProveedores)
               v-if="puedeGestionar"
               class="mobile-actions"
             >
-
               <button
                 type="button"
                 class="btn-row"
@@ -744,14 +662,12 @@ onMounted(cargarProveedores)
                 <i class="fas fa-pen me-1"></i>
                 Editar proveedor
               </button>
-
             </div>
 
           </article>
 
         </div>
 
-        <!-- PAGINACIÓN -->
         <div
           v-if="totalPaginas > 1"
           class="panel-footer"
@@ -831,13 +747,11 @@ onMounted(cargarProveedores)
 
     </div>
 
-    <!-- NOTIFICACIÓN -->
     <ToastNotification
       :message="notificacion"
       @close="notificacion = ''"
     />
 
-    <!-- MODAL REGISTRAR / EDITAR -->
     <div
       v-if="modalAbierto"
       class="panel-modal-backdrop"
@@ -855,7 +769,6 @@ onMounted(cargarProveedores)
         <div class="panel-modal-head">
 
           <div>
-
             <h3 id="proveedor-modal-title">
               {{
                 editando
@@ -863,11 +776,9 @@ onMounted(cargarProveedores)
                   : 'Registrar nuevo proveedor'
               }}
             </h3>
-
             <p>
               Los campos marcados con * son obligatorios.
             </p>
-
           </div>
 
           <button
@@ -890,7 +801,6 @@ onMounted(cargarProveedores)
 
           <div class="row g-3">
 
-            <!-- NOMBRE COMERCIAL -->
             <div class="col-md-6">
 
               <label
@@ -928,7 +838,6 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <!-- RUC / NIT -->
             <div class="col-md-6">
 
               <label
@@ -963,7 +872,6 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <!-- TELÉFONO -->
             <div class="col-md-6">
 
               <label
@@ -997,7 +905,6 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <!-- CORREO -->
             <div class="col-md-6">
 
               <label
@@ -1036,7 +943,6 @@ onMounted(cargarProveedores)
 
             </div>
 
-            <!-- DIRECCIÓN -->
             <div class="col-12">
 
               <label
@@ -1072,7 +978,6 @@ onMounted(cargarProveedores)
 
           </div>
 
-          <!-- ERROR DEL FORMULARIO -->
           <div
             v-if="errorFormulario"
             class="notice notice-error mt-3"
@@ -1082,7 +987,6 @@ onMounted(cargarProveedores)
             {{ errorFormulario }}
           </div>
 
-          <!-- BOTONES -->
           <div class="panel-modal-actions">
 
             <button
@@ -1144,6 +1048,7 @@ onMounted(cargarProveedores)
 
 .supplier-filters {
   grid-template-columns: minmax(0, 1fr);
+  align-items: end;
 }
 
 @media (min-width: 992px) {
@@ -1157,6 +1062,11 @@ onMounted(cargarProveedores)
   table-layout: auto;
 }
 
+.supplier-table thead th,
+.supplier-table tbody td {
+  vertical-align: middle;
+}
+
 .supplier-table thead th {
   padding: 0.55rem 0.4rem;
   font-size: 0.62rem;
@@ -1168,8 +1078,24 @@ onMounted(cargarProveedores)
   font-size: 0.76rem;
 }
 
+.supplier-table thead th.cell-index,
+.supplier-table tbody td.cell-index {
+  text-align: center;
+  width: 50px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .supplier-table .cell-actions {
   width: 76px;
+}
+
+.action-stack {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
 }
 
 .supplier-mobile-value {

@@ -1,4 +1,3 @@
-
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 
@@ -18,16 +17,8 @@ import {
   esAdministrador
 } from '../../business/session'
 
-// =====================================================
-// PERMISOS
-// =====================================================
-
 const puedeGestionar = computed(() => puedeGestionarCatalogo())
 const puedeDarBaja = computed(() => esAdministrador())
-
-// =====================================================
-// ESTADOS
-// =====================================================
 
 const lotes = ref([])
 const medicamentos = ref([])
@@ -42,10 +33,6 @@ const notificacion = ref('')
 const tonoNotificacion = ref('success')
 
 const modalAbierto = ref(false)
-
-// =====================================================
-// BÚSQUEDA Y FILTROS
-// =====================================================
 
 const search = ref('')
 const filtroEstado = ref('Todos')
@@ -146,10 +133,6 @@ const limpiarFiltros = () => {
   filtroEstado.value = 'Todos'
 }
 
-// =====================================================
-// ESTADÍSTICAS
-// =====================================================
-
 const totalLotes = computed(() => lotes.value.length)
 
 const lotesVigentes = computed(() =>
@@ -163,10 +146,6 @@ const lotesPorVencer = computed(() =>
 const lotesVencidos = computed(() =>
   lotes.value.filter((l) => l.estado_lote === 'Vencido').length
 )
-
-// =====================================================
-// FORMULARIO
-// =====================================================
 
 const formularioInicial = () => ({
   id_medicamento: '',
@@ -248,10 +227,6 @@ const validarFormulario = () => {
   return Object.keys(nuevosErrores).length === 0
 }
 
-// =====================================================
-// CARGAR INFORMACIÓN
-// =====================================================
-
 const cargarDatos = async () => {
   loading.value = true
   error.value = ''
@@ -265,8 +240,6 @@ const cargarDatos = async () => {
     lotes.value = listaLotes
     medicamentos.value = listaMedicamentos
 
-    // Ventas puede consultar lotes, pero no proveedores.
-    // Solo cargamos proveedores para quienes pueden recepcionar.
     if (puedeGestionar.value) {
       proveedores.value = await listarProveedores()
     }
@@ -276,10 +249,6 @@ const cargarDatos = async () => {
     loading.value = false
   }
 }
-
-// =====================================================
-// MENSAJES
-// =====================================================
 
 const notificar = (mensaje, tono = 'success') => {
   notificacion.value = mensaje
@@ -302,10 +271,6 @@ const mensajeError = (err) => {
   return err.message || 'No se pudo completar la operación.'
 }
 
-// =====================================================
-// ABRIR Y CERRAR MODAL
-// =====================================================
-
 const abrirRecepcion = () => {
   restablecerFormulario()
   modalAbierto.value = true
@@ -317,10 +282,6 @@ const cerrarModal = () => {
   modalAbierto.value = false
   restablecerFormulario()
 }
-
-// =====================================================
-// REGISTRAR RECEPCIÓN
-// =====================================================
 
 const guardarRecepcion = async () => {
   errorFormulario.value = ''
@@ -359,10 +320,6 @@ const guardarRecepcion = async () => {
   }
 }
 
-// =====================================================
-// DAR DE BAJA UN LOTE VENCIDO
-// =====================================================
-
 const procesandoBaja = ref(null)
 
 const ejecutarBaja = async (lote) => {
@@ -390,10 +347,6 @@ const ejecutarBaja = async (lote) => {
     procesandoBaja.value = null
   }
 }
-
-// =====================================================
-// FORMATO
-// =====================================================
 
 const formatearFecha = (valor) => {
   if (!valor) return 'No disponible'
@@ -428,7 +381,6 @@ onMounted(cargarDatos)
 <template>
   <section class="admin-panel">
 
-    <!-- CABECERA -->
     <div class="panel-heading">
       <div>
         <span class="eyebrow">Inventario</span>
@@ -464,7 +416,6 @@ onMounted(cargarDatos)
       </div>
     </div>
 
-    <!-- ERROR -->
     <div
       v-if="error"
       class="notice notice-error"
@@ -481,7 +432,6 @@ onMounted(cargarDatos)
       </button>
     </div>
 
-    <!-- ESTADÍSTICAS -->
     <div class="stats-grid">
 
       <div class="stat-card">
@@ -506,7 +456,6 @@ onMounted(cargarDatos)
 
     </div>
 
-    <!-- TABLA -->
     <div class="panel lots-list-panel">
 
       <div class="panel-title-bar">
@@ -518,25 +467,18 @@ onMounted(cargarDatos)
         <div class="panel-filters lot-filters">
 
           <div class="field field-search">
-
-            <label
-              for="buscar-lotes"
-              class="visually-hidden"
-            >
-              Buscar lotes
-            </label>
-
-            <i class="fas fa-search"></i>
-
-            <input
-              id="buscar-lotes"
-              v-model="search"
-              type="search"
-              class="form-control panel-control"
-              placeholder="Buscar medicamento, proveedor o número de lote..."
-              autocomplete="off"
-            >
-
+            <label class="d-none d-lg-block form-label" aria-hidden="true">&nbsp;</label>
+            <div class="search-input-wrap">
+              <i class="fas fa-search"></i>
+              <input
+                id="buscar-lotes"
+                v-model="search"
+                type="search"
+                class="form-control panel-control"
+                placeholder="Buscar medicamento, proveedor o número de lote..."
+                autocomplete="off"
+              >
+            </div>
           </div>
 
           <div class="field">
@@ -623,8 +565,8 @@ onMounted(cargarDatos)
                 <th>Vencimiento</th>
                 <th>Cantidad</th>
                 <th>Costo unitario</th>
-                <th>Estado</th>
-                <th v-if="puedeDarBaja" class="cell-actions text-end">Acciones</th>
+                <th class="text-center">Estado</th>
+                <th v-if="puedeDarBaja" class="text-center">Acciones</th>
               </tr>
             </thead>
 
@@ -635,7 +577,7 @@ onMounted(cargarDatos)
                 :key="lote.id_lote"
               >
 
-                <td>
+                <td class="cell-index">
                   {{ (paginaActual - 1) * porPagina + indice + 1 }}
                 </td>
 
@@ -674,7 +616,7 @@ onMounted(cargarDatos)
 
                 <td>{{ formatearPrecio(lote.costo_unitario) }}</td>
 
-                <td>
+                <td class="text-center">
                   <span
                     class="lot-status"
                     :class="claseEstado(lote.estado_lote)"
@@ -683,7 +625,7 @@ onMounted(cargarDatos)
                   </span>
                 </td>
 
-                <td v-if="puedeDarBaja">
+                <td v-if="puedeDarBaja" class="text-center">
 
                   <div class="action-stack">
                     <button
@@ -700,7 +642,7 @@ onMounted(cargarDatos)
                       }}
                     </button>
 
-                    <span v-else class="text-muted text-center">
+                    <span v-else class="text-muted">
                       —
                     </span>
                   </div>
@@ -790,7 +732,6 @@ onMounted(cargarDatos)
           </article>
         </div>
 
-        <!-- PAGINACIÓN -->
         <div
           v-if="totalPaginas > 1"
           class="panel-footer"
@@ -862,14 +803,12 @@ onMounted(cargarDatos)
 
     </div>
 
-    <!-- NOTIFICACIONES -->
     <ToastNotification
       :message="notificacion"
       :tone="tonoNotificacion"
       @close="notificacion = ''"
     />
 
-    <!-- MODAL DE RECEPCIÓN -->
     <div
       v-if="modalAbierto"
       class="panel-modal-backdrop"
@@ -915,7 +854,6 @@ onMounted(cargarDatos)
 
           <div class="row g-3">
 
-            <!-- MEDICAMENTO -->
             <div class="col-12">
 
               <label class="form-label" for="lote-medicamento">
@@ -950,7 +888,6 @@ onMounted(cargarDatos)
 
             </div>
 
-            <!-- PROVEEDOR -->
             <div class="col-12">
 
               <label class="form-label" for="lote-proveedor">
@@ -983,7 +920,6 @@ onMounted(cargarDatos)
 
             </div>
 
-            <!-- NÚMERO DE LOTE -->
             <div class="col-md-6">
 
               <label class="form-label" for="numero-lote">
@@ -1006,7 +942,6 @@ onMounted(cargarDatos)
 
             </div>
 
-            <!-- VENCIMIENTO -->
             <div class="col-md-6">
 
               <label class="form-label" for="fecha-vencimiento">
@@ -1030,7 +965,6 @@ onMounted(cargarDatos)
 
             </div>
 
-            <!-- COSTO -->
             <div class="col-md-6">
 
               <label class="form-label" for="costo-lote">
@@ -1054,7 +988,6 @@ onMounted(cargarDatos)
 
             </div>
 
-            <!-- CANTIDAD -->
             <div class="col-md-6">
 
               <label class="form-label" for="cantidad-lote">
@@ -1134,6 +1067,7 @@ onMounted(cargarDatos)
 <style scoped>
 .lot-filters {
   grid-template-columns: minmax(0, 1fr);
+  align-items: end;
 }
 
 .lots-list-panel {
@@ -1147,9 +1081,31 @@ onMounted(cargarDatos)
   }
 }
 
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrap i {
+  position: absolute;
+  left: 1rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.search-input-wrap input {
+  padding-left: 2.5rem;
+}
+
 .lot-table {
   min-width: 0;
   table-layout: auto;
+}
+
+.lot-table thead th,
+.lot-table tbody td {
+  vertical-align: middle;
 }
 
 .lot-table thead th {
@@ -1163,9 +1119,12 @@ onMounted(cargarDatos)
   font-size: 0.76rem;
 }
 
-.lot-table thead th:first-child,
-.lot-table tbody td:first-child {
-  padding-left: 0.75rem;
+.lot-table thead th.cell-index,
+.lot-table tbody td.cell-index {
+  text-align: center;
+  width: 50px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .lot-table thead th:nth-child(2) {
@@ -1205,6 +1164,14 @@ onMounted(cargarDatos)
 .lot-table .lot-status {
   padding: 0.28rem 0.45rem;
   font-size: 0.65rem;
+}
+
+.action-stack {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
 }
 
 @container (max-width: 1250px) {

@@ -1,11 +1,16 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { MODULOS } from '../../config/distribution'
-import { consumirBienvenida, obtenerSesion } from '../../business/session'
+import {
+  consumirBienvenida,
+  finalizarBienvenida,
+  obtenerSesion
+} from '../../business/session'
 
 const sesion = obtenerSesion()
 const showWelcome = ref(false)
 let welcomeTimeout
+let welcomeIsActive = false
 
 const firstName = computed(() => sesion.nombrePila || 'Usuario')
 const fullName = computed(() => sesion.nombre || firstName.value)
@@ -25,14 +30,21 @@ const modules = MODULOS
 onMounted(() => {
   if (!consumirBienvenida()) return
 
+  welcomeIsActive = true
   showWelcome.value = true
   welcomeTimeout = window.setTimeout(() => {
     showWelcome.value = false
   }, 2800)
 })
 
+const handleWelcomeAfterLeave = () => {
+  welcomeIsActive = false
+  finalizarBienvenida()
+}
+
 onBeforeUnmount(() => {
   window.clearTimeout(welcomeTimeout)
+  if (welcomeIsActive) finalizarBienvenida()
 })
 
 const stats = computed(() => [
@@ -71,8 +83,13 @@ const stats = computed(() => [
 
 <template>
   <section class="px-1">
-    <Transition name="login-welcome">
-      <div v-if="showWelcome" class="login-welcome" role="status" aria-live="polite">
+    <Transition name="login-welcome" @after-leave="handleWelcomeAfterLeave">
+      <div
+        v-if="showWelcome"
+        class="login-welcome"
+        role="status"
+        aria-live="polite"
+      >
         <div class="welcome-particles" aria-hidden="true">
           <span v-for="particle in 8" :key="particle"></span>
         </div>

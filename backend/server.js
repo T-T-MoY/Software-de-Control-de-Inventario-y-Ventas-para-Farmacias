@@ -14,6 +14,7 @@ const lotesRutas = require('./presentation/routes/lots.routes');
 const alertasRutas = require('./presentation/routes/alerts.routes');
 const ventasRutas = require('./presentation/routes/sales.routes');
 const clientesRutas = require('./presentation/routes/customers.routes');
+const parametrosServicio = require('./business/services/parameters.service');
 const { noEncontrado, manejarErrores } = require('./presentation/middleware/errors');
 
 const app = express();
@@ -51,6 +52,23 @@ app.use(noEncontrado);
 app.use(manejarErrores);
 
 const port = Number(process.env.PORT || 3000);
-app.listen(port, () => {
-    console.log(`API de farmacia disponible en el puerto ${port}`);
-});
+
+const iniciar = async () => {
+    // Los parámetros guardados desde Configuración sobrescriben los de .env.
+    // Si la tabla aún no existe, se conservan los valores del entorno.
+    try {
+        await parametrosServicio.cargar();
+    } catch (error) {
+        console.warn(
+            'No se pudieron cargar los parámetros desde la base de datos;',
+            'se usarán los valores de .env:',
+            error.message
+        );
+    }
+
+    app.listen(port, () => {
+        console.log(`API de farmacia disponible en el puerto ${port}`);
+    });
+};
+
+iniciar();

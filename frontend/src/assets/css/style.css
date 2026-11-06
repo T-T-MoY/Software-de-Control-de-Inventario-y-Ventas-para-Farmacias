@@ -1888,6 +1888,12 @@ select.panel-control {
     pointer-events: none;
 }
 
+/* Avisos globales: debajo de la barra superior para no tapar el menú. */
+.toast-stack.is-top-right {
+    top: 5.5rem;
+    bottom: auto;
+}
+
 .toast-item {
     display: flex;
     align-items: flex-start;

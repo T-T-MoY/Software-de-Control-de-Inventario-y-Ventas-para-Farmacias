@@ -1,20 +1,60 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Sidebar from './presentation/components/Sidebar.vue'
 import Topbar from './presentation/components/Topbar.vue'
+import ToastNotification from './presentation/components/ToastNotification.vue'
+import AlertCriticalModal from './presentation/components/AlertCriticalModal.vue'
 import { applyTheme, getStoredTheme } from './presentation/theme'
+import { useAlertMonitor } from './presentation/composables/useAlertMonitor'
+import { estaAutenticado } from './business/session'
 
 const route = useRoute()
+const router = useRouter()
 const isSidebarOpen = ref(false)
+
+const {
+  totales,
+  aviso,
+  modalAbierto,
+  iniciarMonitor,
+  detenerMonitor,
+  cerrarModal,
+  limpiarAviso
+} = useAlertMonitor()
 
 const toggleMenu = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
+const verAlertas = () => {
+  cerrarModal()
+  router.push({ name: 'alertas' })
+}
+
+// El monitor arranca al entrar con sesión y se detiene al salir.
+watch(
+  () => route.fullPath,
+  () => {
+    if (estaAutenticado()) iniciarMonitor()
+    else detenerMonitor()
+
+    if (route.name === 'alertas' && modalAbierto.value) cerrarModal()
+  },
+  { immediate: true }
+)
+
+// Si el aviso llega cuando el usuario ya está viendo las alertas,
+// no tiene sentido interrumpirlo con el modal.
+watch(modalAbierto, (abierto) => {
+  if (abierto && route.name === 'alertas') cerrarModal()
+})
+
 onMounted(() => {
   applyTheme(getStoredTheme())
 })
+
+onBeforeUnmount(detenerMonitor)
 </script>
 
 <template>
@@ -42,4 +82,18 @@ onMounted(() => {
   <template v-else>
     <router-view />
   </template>
+
+  <ToastNotification
+    :message="aviso"
+    tone="warning"
+    position="top-right"
+    @close="limpiarAviso"
+  />
+
+  <AlertCriticalModal
+    v-if="modalAbierto"
+    :total-vencidos="totales.vencidos"
+    @cerrar="cerrarModal"
+    @ver="verAlertas"
+  />
 </template>

@@ -145,16 +145,16 @@ VALUES
 -- CLIENTES
 -- ---------------------------------------------------------------------
 INSERT INTO cliente
-    (nombres, apellido_paterno, apellido_materno, ci_nit, telefono, domicilio)
+    (nombres, apellido_paterno, apellido_materno, ci_nit)
 VALUES
-('Juan Carlos', 'Mamani', 'Flores',  '4521897', '71234567', 'Calle Murillo #456, La Paz'),
-('María Elena', 'Quispe', 'Condori', '5876543', '76543210', 'Av. Buenos Aires #1234, La Paz'),
-('Pedro Luis',  'Apaza',  'Ticona',  '3987120', '70123456', 'Zona Villa Fátima, La Paz');
+('Juan Carlos', 'Mamani', 'Flores',  '4521897'),
+('María Elena', 'Quispe', 'Condori', '5876543'),
+('Pedro Luis',  'Apaza',  'Ticona',  '3987120');
 
 INSERT INTO cliente
-    (nombres, apellido_paterno, ci_nit, telefono, domicilio)
+    (nombres, apellido_paterno, ci_nit)
 VALUES
-('Cliente general', NULL, '00000', NULL, 'Consumidor final');
+('Cliente general', NULL, '00000');
 
 -- ---------------------------------------------------------------------
 -- VENTAS (sin descuento) y DISPENSA (líneas de cada venta)

@@ -68,26 +68,18 @@ const validarDatosCliente = (body) => {
     const paterno = String(body.apellido_paterno ?? '').trim();
     const materno = String(body.apellido_materno ?? '').trim();
     const ciNit = String(body.ci_nit ?? '').trim();
-    const telefono = String(body.telefono ?? '').trim();
-    const domicilio = String(body.domicilio ?? '').trim();
 
     if (!nombres || nombres.length > 80 || !REGEX_NOMBRE.test(nombres)) {
         return 'Ingresa los nombres del cliente (máximo 80 caracteres).';
     }
-    if (!paterno || paterno.length > 60 || !REGEX_NOMBRE.test(paterno)) {
-        return 'Ingresa el apellido paterno (máximo 60 caracteres).';
+    if (paterno.length > 60 || (paterno && !REGEX_NOMBRE.test(paterno))) {
+        return 'El apellido paterno contiene caracteres no válidos o supera 60 caracteres.';
     }
     if (materno.length > 60 || (materno && !REGEX_NOMBRE.test(materno))) {
         return 'El apellido materno contiene caracteres no válidos o supera 60 caracteres.';
     }
     if (!REGEX_CI.test(ciNit)) {
         return 'El CI/NIT debe tener entre 5 y 20 caracteres: solo números, letras y guion.';
-    }
-    if (telefono.length > 20 || (telefono && !/^[0-9+()\s-]{7,20}$/.test(telefono))) {
-        return 'Ingresa un teléfono válido de hasta 20 caracteres.';
-    }
-    if (domicilio.length > 150) {
-        return 'El domicilio no puede superar 150 caracteres.';
     }
     return null;
 };

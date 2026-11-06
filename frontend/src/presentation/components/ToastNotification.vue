@@ -8,7 +8,9 @@ import { computed, onBeforeUnmount, watch } from 'vue'
 const props = defineProps({
   message: { type: String, default: '' },
   tone: { type: String, default: 'success' },
-  duration: { type: Number, default: 4500 }
+  duration: { type: Number, default: 4500 },
+  // 'bottom-right' (avisos de la vista) o 'top-right' (avisos globales).
+  position: { type: String, default: 'bottom-right' }
 })
 
 const emit = defineEmits(['close'])
@@ -39,7 +41,7 @@ onBeforeUnmount(limpiarTemporizador)
 </script>
 
 <template>
-  <div class="toast-stack" aria-live="polite">
+  <div class="toast-stack" :class="`is-${position}`" aria-live="polite">
     <Transition name="toast">
       <div v-if="message" class="toast-item" :class="`is-${tone}`" role="status">
         <i class="fas" :class="icono"></i>

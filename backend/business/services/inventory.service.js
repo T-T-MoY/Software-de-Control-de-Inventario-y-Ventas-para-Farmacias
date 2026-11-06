@@ -14,9 +14,7 @@ const {
     evaluarReorden,
 } = require('../rules/inventory.rules');
 
-const {
-    margenAlertaDias,
-} = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 
 /**
  * Consultar lotes próximos a vencer.
@@ -86,6 +84,42 @@ const listarMedicamentosPorReponer = async () => {
 };
 
 /**
+ * Obtener solo los contadores de alertas.
+ *
+ * Pensado para el badge del menú lateral, que consulta
+ * cada minuto: evita devolver las listas completas.
+ */
+const obtenerContadoresAlertas = async () => {
+    const [
+        totalLotesPorVencer,
+        totalLotesVencidos,
+        medicamentosPorReponer,
+    ] = await Promise.all([
+        alertasRepositorio.contarLotesPorVencer(),
+        alertasRepositorio.contarLotesVencidos(),
+        listarMedicamentosPorReponer(),
+    ]);
+
+    const totalMedicamentosPorReponer = medicamentosPorReponer.length;
+
+    return {
+        margen_alerta_dias: parametros.margenAlertaDias,
+
+        resumen: {
+            total_lotes_por_vencer: totalLotesPorVencer,
+            total_lotes_vencidos: totalLotesVencidos,
+            total_medicamentos_por_reponer:
+                totalMedicamentosPorReponer,
+        },
+
+        total:
+            totalLotesPorVencer
+            + totalLotesVencidos
+            + totalMedicamentosPorReponer,
+    };
+};
+
+/**
  * Obtener resumen general de alertas.
  */
 const obtenerResumenAlertas = async () => {
@@ -100,7 +134,7 @@ const obtenerResumenAlertas = async () => {
     ]);
 
     return {
-        margen_alerta_dias: margenAlertaDias,
+        margen_alerta_dias: parametros.margenAlertaDias,
 
         resumen: {
             total_lotes_por_vencer: lotesPorVencer.length,
@@ -119,5 +153,6 @@ module.exports = {
     listarLotesPorVencer,
     listarLotesVencidos,
     listarMedicamentosPorReponer,
+    obtenerContadoresAlertas,
     obtenerResumenAlertas,
 };

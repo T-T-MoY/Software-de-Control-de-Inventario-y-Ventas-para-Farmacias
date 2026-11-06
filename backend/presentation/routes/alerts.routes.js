@@ -39,6 +39,12 @@ router.get(
     alertasControlador.obtenerResumen
 );
 
+// Solo contadores (badge del menú).
+router.get(
+    '/contadores',
+    alertasControlador.obtenerContadores
+);
+
 // Lotes próximos a vencer.
 router.get(
     '/vencimientos/proximos',

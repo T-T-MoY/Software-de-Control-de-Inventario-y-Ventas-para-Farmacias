@@ -2,7 +2,7 @@
  * Controlador HTTP de ventas.
  */
 const ventasServicio = require('../../business/services/sales.service');
-const { farmacia } = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 const { validarDatosVenta } = require('../validators/sales.validator');
 
 const obtenerCatalogo = async (req, res, next) => {
@@ -29,7 +29,7 @@ const crearVenta = async (req, res, next) => {
         return res.status(201).json({
             message: 'Venta registrada correctamente.',
             venta,
-            farmacia,
+            farmacia: { ...parametros.farmacia },
         });
     } catch (error) {
         return next(error);

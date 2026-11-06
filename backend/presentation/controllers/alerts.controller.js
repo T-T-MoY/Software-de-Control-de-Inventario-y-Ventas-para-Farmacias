@@ -26,6 +26,23 @@ const obtenerResumen = async (req, res, next) => {
 };
 
 /**
+ * GET /api/alertas/contadores
+ *
+ * Devuelve solo los totales de alertas. Se usa para el badge
+ * del menú, que consulta el resumen periódicamente.
+ */
+const obtenerContadores = async (req, res, next) => {
+    try {
+        const contadores =
+            await inventarioServicio.obtenerContadoresAlertas();
+
+        return res.json(contadores);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+/**
  * GET /api/alertas/vencimientos/proximos
  *
  * Devuelve los lotes próximos a vencer.
@@ -82,6 +99,7 @@ const obtenerMedicamentosPorReponer = async (req, res, next) => {
 
 module.exports = {
     obtenerResumen,
+    obtenerContadores,
     obtenerLotesPorVencer,
     obtenerLotesVencidos,
     obtenerMedicamentosPorReponer,

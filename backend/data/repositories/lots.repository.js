@@ -7,7 +7,7 @@
  */
 
 const db = require('../connection');
-const { margenAlertaDias } = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 
 const CAMPOS_LOTE = `
     l.id_lote,
@@ -63,7 +63,7 @@ const listar = async (buscar = '') => {
             l.fecha_vencimiento ASC,
             m.nombre_comercial ASC`,
         [
-            margenAlertaDias,
+            parametros.margenAlertaDias,
             termino,
             `%${termino}%`
         ]
@@ -80,7 +80,7 @@ const buscarPorId = async (idLote) => {
         `SELECT ${CAMPOS_LOTE}
          ${TABLAS_LOTE}
          WHERE l.id_lote = $2`,
-        [margenAlertaDias, idLote]
+        [parametros.margenAlertaDias, idLote]
     );
 
     return rows[0] || null;

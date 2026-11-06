@@ -24,9 +24,7 @@ const formularioInicial = () => ({
   nombres: '',
   apellido_paterno: '',
   apellido_materno: '',
-  ci_nit: '',
-  telefono: '',
-  domicilio: ''
+  ci_nit: ''
 })
 
 const clientesFiltrados = computed(() => {
@@ -36,8 +34,7 @@ const clientesFiltrados = computed(() => {
     cliente.nombres,
     cliente.apellido_paterno,
     cliente.apellido_materno,
-    cliente.ci_nit,
-    cliente.telefono
+    cliente.ci_nit
   ].some((valor) => String(valor || '').toLocaleLowerCase().includes(termino)))
 })
 
@@ -73,9 +70,7 @@ const abrirEdicion = (cliente) => {
     nombres: cliente.nombres || '',
     apellido_paterno: cliente.apellido_paterno || '',
     apellido_materno: cliente.apellido_materno || '',
-    ci_nit: cliente.ci_nit || '',
-    telefono: cliente.telefono || '',
-    domicilio: cliente.domicilio || ''
+    ci_nit: cliente.ci_nit || ''
   }
   modalAbierto.value = true
 }
@@ -83,7 +78,11 @@ const abrirEdicion = (cliente) => {
 const validar = () => {
   const errorNombres = validarNombre(form.value.nombres, { etiqueta: 'Los nombres', max: 80 })
   if (errorNombres) return errorNombres
-  const errorPaterno = validarNombre(form.value.apellido_paterno, { etiqueta: 'El apellido paterno', max: 60 })
+  const errorPaterno = validarNombre(form.value.apellido_paterno, {
+    etiqueta: 'El apellido paterno',
+    requerido: false,
+    max: 60
+  })
   if (errorPaterno) return errorPaterno
   const errorMaterno = validarNombre(form.value.apellido_materno, {
     etiqueta: 'El apellido materno',
@@ -93,10 +92,6 @@ const validar = () => {
   if (errorMaterno) return errorMaterno
   const errorCi = validarCi(form.value.ci_nit)
   if (errorCi) return errorCi
-  if (form.value.telefono && !/^[0-9+()\s-]{7,20}$/.test(form.value.telefono.trim())) {
-    return 'Ingresa un teléfono válido.'
-  }
-  if (form.value.domicilio.length > 150) return 'El domicilio no puede superar 150 caracteres.'
   return ''
 }
 
@@ -166,7 +161,7 @@ onMounted(cargarClientes)
         <div class="row align-items-end g-3 mb-3">
           <div class="col-md-7">
             <label for="buscar-cliente" class="form-label">Buscar cliente</label>
-            <input id="buscar-cliente" v-model="busqueda" class="form-control" placeholder="Nombre, CI/NIT o teléfono">
+            <input id="buscar-cliente" v-model="busqueda" class="form-control" placeholder="Nombre o CI/NIT">
           </div>
           <div class="col-md text-md-end text-muted small">
             {{ clientesFiltrados.length }} cliente(s)
@@ -181,14 +176,12 @@ onMounted(cargarClientes)
         <div v-else class="table-responsive">
           <table class="table align-middle">
             <thead>
-              <tr><th>Nombre completo</th><th>CI/NIT</th><th>Teléfono</th><th>Domicilio</th><th class="text-end">Acciones</th></tr>
+              <tr><th>Nombre completo</th><th>CI/NIT</th><th class="text-end">Acciones</th></tr>
             </thead>
             <tbody>
               <tr v-for="cliente in clientesFiltrados" :key="cliente.id_cliente">
                 <td class="fw-semibold">{{ nombreCliente(cliente) }}</td>
                 <td>{{ cliente.ci_nit }}</td>
-                <td>{{ cliente.telefono || '—' }}</td>
-                <td>{{ cliente.domicilio || '—' }}</td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-outline-primary" @click="abrirEdicion(cliente)">
                     <i class="fas fa-pen me-1"></i>Editar
@@ -219,8 +212,8 @@ onMounted(cargarClientes)
               <input id="cliente-nombres" v-model="form.nombres" class="form-control" maxlength="80" required>
             </div>
             <div class="col-md-6">
-              <label for="cliente-apellido-paterno" class="form-label">Apellido paterno <span class="text-danger">*</span></label>
-              <input id="cliente-apellido-paterno" v-model="form.apellido_paterno" class="form-control" maxlength="60" required>
+              <label for="cliente-apellido-paterno" class="form-label">Apellido paterno</label>
+              <input id="cliente-apellido-paterno" v-model="form.apellido_paterno" class="form-control" maxlength="60">
             </div>
             <div class="col-md-6">
               <label for="cliente-apellido-materno" class="form-label">Apellido materno</label>
@@ -229,14 +222,6 @@ onMounted(cargarClientes)
             <div class="col-md-6">
               <label for="cliente-ci-nit" class="form-label">CI/NIT <span class="text-danger">*</span></label>
               <input id="cliente-ci-nit" v-model="form.ci_nit" class="form-control" maxlength="20" required>
-            </div>
-            <div class="col-md-6">
-              <label for="cliente-telefono" class="form-label">Teléfono</label>
-              <input id="cliente-telefono" v-model="form.telefono" class="form-control" maxlength="20">
-            </div>
-            <div class="col-12">
-              <label for="cliente-domicilio" class="form-label">Domicilio</label>
-              <input id="cliente-domicilio" v-model="form.domicilio" class="form-control" maxlength="150">
             </div>
           </div>
           <footer class="panel-modal-actions mt-4">

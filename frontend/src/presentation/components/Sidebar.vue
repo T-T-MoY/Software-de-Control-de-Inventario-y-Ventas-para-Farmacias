@@ -2,8 +2,13 @@
 import { computed } from 'vue'
 import { MODULOS, RESPONSABLES } from '../../config/distribution'
 import { esAdministrador, obtenerSesion } from '../../business/session'
+import { useAlertMonitor } from '../composables/useAlertMonitor'
 
 const isAdmin = computed(() => esAdministrador())
+
+const { totales } = useAlertMonitor()
+const totalAlertas = computed(() => totales.value.total)
+const hayLotesVencidos = computed(() => totales.value.vencidos > 0)
 
 const puedeGestionarProveedores = computed(() =>
   ['Administrador', 'Encargado de inventario']
@@ -74,7 +79,8 @@ const modules = MODULOS
       <ul class="nav flex-column gap-1">
         <template v-for="module in modules" :key="module.name">
           <li
-            v-if="!['Ventas', 'Clientes'].includes(module.name) || puedeProcesarVentas"
+            v-if="(!['Ventas', 'Clientes'].includes(module.name) || puedeProcesarVentas)
+              && (module.name !== 'Configuración' || isAdmin)"
             class="nav-item"
           >
           <router-link
@@ -134,6 +140,31 @@ const modules = MODULOS
           <router-link
             v-else-if="module.name === 'Alertas'"
             to="/alertas"
+            class="nav-link d-flex align-items-center"
+          >
+            <i class="fas me-3" :class="module.icon"></i>
+
+            <span class="flex-grow-1">
+              {{ module.name }}
+              <small class="module-owner">
+                ({{ module.responsable }})
+              </small>
+            </span>
+
+            <span
+              v-if="totalAlertas > 0"
+              class="alert-badge"
+              :class="{ 'is-danger': hayLotesVencidos }"
+              :title="`${totalAlertas} alertas de inventario`"
+              :aria-label="`${totalAlertas} alertas de inventario`"
+            >
+              {{ totalAlertas > 99 ? '99+' : totalAlertas }}
+            </span>
+          </router-link>
+
+          <router-link
+            v-else-if="module.name === 'Configuración'"
+            to="/configuracion"
             class="nav-link d-flex align-items-center"
           >
             <i class="fas me-3" :class="module.icon"></i>
@@ -207,6 +238,28 @@ const modules = MODULOS
   font-size: 0.7rem;
   font-weight: 600;
   color: rgba(255, 247, 227, 0.5);
+}
+
+.alert-badge {
+  flex: 0 0 auto;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 0.4rem;
+  padding: 0 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #d97706;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 0 0 2px rgba(255, 247, 227, 0.14);
+}
+
+.alert-badge.is-danger {
+  background: #dc2626;
 }
 
 .pending-dot {

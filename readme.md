@@ -395,6 +395,7 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 | `GET` | `/api/perfil` | Datos y permisos del usuario con sesión activa (cualquier rol) |
 | `PATCH` | `/api/perfil/contrasena` | Cambia la contraseña del usuario con sesión activa |
 | `GET` | `/api/parametros` | Margen de alerta, stock de seguridad por defecto y datos de la farmacia |
+| `PUT` | `/api/parametros` | Actualiza los parámetros generales (solo Administrador) |
 | `GET` | `/api/usuarios` | Lista de usuarios activos e inactivos |
 | `GET` | `/api/usuarios/roles` | Lista de roles |
 | `GET` | `/api/usuarios/:id/impacto` | Cuenta ventas y movimientos de historial asociados al usuario |
@@ -463,6 +464,8 @@ Los parámetros que antes vivían en una tabla se leen ahora desde `.env` en un 
 | `FARMACIA_TELEFONO` | Teléfono de la farmacia para el comprobante |
 
 El módulo de alertas debe comparar con `fecha_vencimiento <= CURRENT_DATE + margen`, y el de ventas debe incluir `margenAlertaDias` y `farmacia` en la respuesta del comprobante. El inventario consume `stockSeguridad` y `diasReposicion` como valores iniciales al registrar un medicamento. `GET /api/parametros` expone estos valores a cualquier rol con `consultar_catalogo`.
+
+El Administrador puede cambiarlos desde la pantalla **Configuración** (`SettingsView`). Los valores guardados se persisten en la tabla `configuracion` y se aplican en memoria sin reiniciar el servidor; las claves que nunca se guardaron siguen tomándose de `.env`. En bases ya creadas hay que aplicar `database/04_configuracion.sql`.
 
 ### Formularios: estilo y validación
 

@@ -5,7 +5,7 @@
 const medicamentosRepositorio = require('../../data/repositories/medicines.repository');
 const categoriasRepositorio = require('../../data/repositories/categories.repository');
 const { normalizarDatosMedicamento } = require('../rules/medicines.rules');
-const { diasReposicion, stockSeguridad } = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 const {
     errorConflicto,
     errorValidacion,
@@ -41,10 +41,10 @@ const crear = async (datos) => {
     // El stock de seguridad inicial sale de la configuración del sistema;
     // cada medicamento puede sobrescribirlo después.
     if (medicamento.stock_seguridad === undefined) {
-        medicamento.stock_seguridad = stockSeguridad;
+        medicamento.stock_seguridad = parametros.stockSeguridad;
     }
     if (medicamento.dias_reposicion === undefined) {
-        medicamento.dias_reposicion = diasReposicion;
+        medicamento.dias_reposicion = parametros.diasReposicion;
     }
 
     try {

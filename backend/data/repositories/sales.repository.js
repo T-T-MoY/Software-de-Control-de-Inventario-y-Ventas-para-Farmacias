@@ -2,7 +2,7 @@
  * Consultas y transacciones del módulo de ventas.
  */
 const db = require('../connection');
-const { margenAlertaDias } = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 
 const listarCatalogo = async (buscar = '') => {
     const termino = String(buscar || '').trim();
@@ -42,7 +42,7 @@ const listarCatalogo = async (buscar = '') => {
                 OR m.concentracion ILIKE $3
            )
          ORDER BY m.nombre_comercial`,
-        [margenAlertaDias, termino, `%${termino}%`]
+        [parametros.margenAlertaDias, termino, `%${termino}%`]
     );
     return rows;
 };
@@ -124,7 +124,7 @@ const crear = async (datos, idUsuario) => db.conTransaccion(async (cliente) => {
                AND cantidad_stock > 0
              ORDER BY fecha_vencimiento, id_lote
              FOR UPDATE`,
-            [item.id_medicamento, margenAlertaDias]
+            [item.id_medicamento, parametros.margenAlertaDias]
         );
 
         for (const lote of lotesResult.rows) {

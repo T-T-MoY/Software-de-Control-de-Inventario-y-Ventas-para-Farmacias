@@ -89,8 +89,6 @@ erDiagram
         varchar apellido_paterno
         varchar apellido_materno
         varchar ci_nit UK
-        varchar telefono
-        varchar domicilio
     }
 
     VENTA {
@@ -231,8 +229,6 @@ classDiagram
         +string apellido_paterno
         +string apellido_materno
         +string ci_nit
-        +string telefono
-        +string domicilio
     }
 
     class Venta {
@@ -387,8 +383,6 @@ Restricción adicional: `UNIQUE (id_medicamento, lote_numero)`.
 | `apellido_paterno` | `VARCHAR(60)` | — |
 | `apellido_materno` | `VARCHAR(60)` | — |
 | `ci_nit` | `VARCHAR(20)` | NOT NULL, UNIQUE |
-| `telefono` | `VARCHAR(20)` | — |
-| `domicilio` | `VARCHAR(150)` | — |
 
 ### `venta`
 

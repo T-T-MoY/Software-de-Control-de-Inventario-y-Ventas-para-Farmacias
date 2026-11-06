@@ -11,7 +11,7 @@ import {
   validarCorreo
 } from '../validators/fields'
 import { iniciarSesion } from '../../data/endpoints/auth'
-import { guardarSesion } from '../../business/session'
+import { guardarSesion, registrarBienvenida } from '../../business/session'
 
 const router = useRouter()
 const correo = ref('')
@@ -86,6 +86,7 @@ const handleLogin = async () => {
 
     if (data.success && data.token && data.usuario) {
       guardarSesion(data.token, data.usuario)
+      registrarBienvenida()
       await router.push('/')
     } else {
       errorMessage.value = data.mensaje || 'Credenciales incorrectas.'

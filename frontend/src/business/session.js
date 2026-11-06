@@ -16,6 +16,18 @@ const CLAVES = {
   apellidoMaterno: 'apellidoMaterno'
 }
 
+const CLAVE_BIENVENIDA = 'mostrarBienvenida'
+
+export function registrarBienvenida() {
+  sessionStorage.setItem(CLAVE_BIENVENIDA, 'true')
+}
+
+export function consumirBienvenida() {
+  const mostrar = sessionStorage.getItem(CLAVE_BIENVENIDA) === 'true'
+  sessionStorage.removeItem(CLAVE_BIENVENIDA)
+  return mostrar
+}
+
 export function guardarSesion(token, usuario) {
   localStorage.setItem(CLAVES.token, token)
   localStorage.setItem(CLAVES.id, String(usuario.id_usuario))

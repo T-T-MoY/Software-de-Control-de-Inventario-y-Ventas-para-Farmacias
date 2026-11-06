@@ -8,7 +8,7 @@ const {
     validarDatosMedicamento,
     validarCambioEstado,
 } = require('../validators/medicine.validator');
-const { diasReposicion } = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 
 const esIdValido = (id) => /^\d+$/.test(String(id)) && Number(id) > 0;
 
@@ -46,7 +46,7 @@ const obtenerCategorias = async (req, res, next) => {
 const crearMedicamento = async (req, res, next) => {
     const datosValidados = {
         ...req.body,
-        dias_reposicion: req.body.dias_reposicion ?? diasReposicion,
+        dias_reposicion: req.body.dias_reposicion ?? parametros.diasReposicion,
     };
     const errorValidacion = validarDatosMedicamento(datosValidados);
     if (errorValidacion) {

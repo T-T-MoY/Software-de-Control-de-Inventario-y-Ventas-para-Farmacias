@@ -10,11 +10,7 @@
 
 const db = require('../connection');
 
-const {
-    margenAlertaDias,
-    ventanaDemandaDias,
-    diasReposicion,
-} = require('../../config/parameters');
+const parametros = require('../../config/parameters');
 
 /**
  * Consultar lotes próximos a vencer.
@@ -47,10 +43,31 @@ const listarLotesPorVencer = async () => {
            AND l.fecha_vencimiento <=
                CURRENT_DATE + $1::integer
          ORDER BY l.fecha_vencimiento ASC`,
-        [margenAlertaDias]
+        [parametros.margenAlertaDias]
     );
 
     return rows;
+};
+
+/**
+ * Contar lotes próximos a vencer sin traer las filas completas.
+ *
+ * Se usa para el badge del menú, que consulta el resumen
+ * cada minuto y solo necesita el número.
+ */
+const contarLotesPorVencer = async () => {
+    const { rows } = await db.query(
+        `SELECT COUNT(*)::integer AS total
+         FROM lote l
+         WHERE l.fecha_baja IS NULL
+           AND l.cantidad_stock > 0
+           AND l.fecha_vencimiento >= CURRENT_DATE
+           AND l.fecha_vencimiento <=
+               CURRENT_DATE + $1::integer`,
+        [parametros.margenAlertaDias]
+    );
+
+    return rows[0].total;
 };
 
 /**
@@ -148,14 +165,32 @@ const listarDatosReorden = async () => {
             ON d.id_medicamento = m.id_medicamento
          WHERE m.estado_medicamento = 'Activo'
          ORDER BY m.nombre_comercial`,
-        [ventanaDemandaDias, diasReposicion]
+        [parametros.ventanaDemandaDias, parametros.diasReposicion]
     );
 
     return rows;
 };
 
+/**
+ * Contar lotes vencidos con existencias pendientes de baja.
+ */
+const contarLotesVencidos = async () => {
+    const { rows } = await db.query(
+        `SELECT COUNT(*)::integer AS total
+         FROM lote l
+         WHERE l.fecha_baja IS NULL
+           AND l.cantidad_stock > 0
+           AND l.fecha_vencimiento < CURRENT_DATE`,
+        []
+    );
+
+    return rows[0].total;
+};
+
 module.exports = {
     listarLotesPorVencer,
+    contarLotesPorVencer,
     listarLotesVencidos,
+    contarLotesVencidos,
     listarDatosReorden,
 };

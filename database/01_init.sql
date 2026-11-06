@@ -98,9 +98,7 @@ CREATE TABLE cliente (
     nombres             VARCHAR(80)   NOT NULL,
     apellido_paterno    VARCHAR(60),
     apellido_materno    VARCHAR(60),
-    ci_nit              VARCHAR(20)   NOT NULL UNIQUE,
-    telefono            VARCHAR(20),
-    domicilio           VARCHAR(150)
+    ci_nit              VARCHAR(20)   NOT NULL UNIQUE
 );
 
 CREATE TABLE venta (
@@ -147,4 +145,15 @@ CREATE TABLE historial_operacion (
                     CHECK (tipo_operacion IN ('VENTA', 'RECEPCION', 'BAJA')),
     id_registro     INT          NOT NULL,
     fecha_hora      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ---------------------------------------------------------------------
+-- CONFIGURACIÓN: parámetros generales editables desde la aplicación.
+-- Las claves ausentes se resuelven con los valores de .env, de modo que
+-- esta tabla solo guarda lo que el Administrador cambió explícitamente.
+-- ---------------------------------------------------------------------
+CREATE TABLE configuracion (
+    clave        VARCHAR(60)  PRIMARY KEY,
+    valor        TEXT,
+    actualizado  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

@@ -2,6 +2,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { obtenerResumenAlertas } from '../../data/endpoints/alerts'
+import { useAlertMonitor } from '../composables/useAlertMonitor'
 
 const loading = ref(true)
 const error = ref('')
@@ -16,6 +17,8 @@ const datos = ref({
   lotes_vencidos: [],
   medicamentos_por_reponer: []
 })
+
+const { sincronizarConResumen } = useAlertMonitor()
 
 const totalAlertas = computed(() =>
   datos.value.resumen.total_lotes_por_vencer
@@ -41,6 +44,7 @@ const cargarAlertas = async () => {
 
   try {
     datos.value = await obtenerResumenAlertas()
+    sincronizarConResumen(datos.value)
   } catch (err) {
     error.value = mensajeError(err)
   } finally {

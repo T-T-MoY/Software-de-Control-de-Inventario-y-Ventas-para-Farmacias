@@ -10,11 +10,9 @@ const normalizarDatos = (datos) => {
     }
     return {
         nombres: String(datos.nombres ?? '').trim(),
-        apellido_paterno: String(datos.apellido_paterno ?? '').trim(),
+        apellido_paterno: String(datos.apellido_paterno ?? '').trim() || null,
         apellido_materno: String(datos.apellido_materno ?? '').trim() || null,
         ci_nit: String(datos.ci_nit ?? '').trim(),
-        telefono: String(datos.telefono ?? '').trim() || null,
-        domicilio: String(datos.domicilio ?? '').trim() || null,
     };
 };
 

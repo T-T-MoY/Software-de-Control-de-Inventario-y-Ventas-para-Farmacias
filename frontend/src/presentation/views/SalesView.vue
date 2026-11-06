@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ToastNotification from '../components/ToastNotification.vue'
 import SaleReceipt from '../components/SaleReceipt.vue'
 import { apiAssetUrl } from '../../data/api'
@@ -16,6 +16,7 @@ const productos = ref([])
 const clientes = ref([])
 const farmacia = ref({})
 const cargando = ref(true)
+const cargandoCatalogo = ref(false)
 const guardando = ref(false)
 const error = ref('')
 const notificacion = ref('')
@@ -31,16 +32,22 @@ const efectivo = ref('')
 const tipoComprobante = ref('Nota de venta')
 const receta = ref({ paciente: '', medico: '', matricula: '' })
 const ventaCompletada = ref(null)
-const identificacionCliente = ref('')
-const formularioCliente = ref({
-  nombres: '',
-  apellido_paterno: '',
-  apellido_materno: '',
-  ci_nit: '',
-  telefono: '',
-  domicilio: ''
-})
+
+// Búsqueda unificada de clientes y alta rápida.
+const busquedaCliente = ref('')
+const mostrarSugerencias = ref(false)
+const indiceSugerencia = ref(-1)
+const modalClienteAbierto = ref(false)
 const guardandoCliente = ref(false)
+const formularioCliente = ref({ nombre: '', ci_nit: '' })
+
+const busquedaProductoRef = ref(null)
+const nombreClienteRapidoRef = ref(null)
+const ciClienteRapidoRef = ref(null)
+const clienteAutocompleteRef = ref(null)
+
+let temporizadorBusqueda
+let solicitudCatalogo = 0
 
 const requiereReceta = computed(() =>
   carrito.value.some((item) => item.tipo_venta === 'Con receta')
@@ -63,28 +70,64 @@ const cambioCentavos = computed(() =>
 )
 const dinero = (centavos) => `Bs ${(Number(centavos) / 100).toFixed(2)}`
 const nombreCliente = (cliente) => [
-  cliente.nombres,
-  cliente.apellido_paterno,
-  cliente.apellido_materno
-].filter(Boolean).join(' ')
+  cliente?.nombres,
+  cliente?.apellido_paterno,
+  cliente?.apellido_materno
+].filter(Boolean).join(' ').trim()
 
-const clientePorIdentificacion = computed(() => {
-  const identificacion = identificacionCliente.value.trim().toLocaleUpperCase()
-  if (!identificacion) return null
-  return clientes.value.find((cliente) => (
-    String(cliente.ci_nit || '').trim().toLocaleUpperCase() === identificacion
-    && cliente.ci_nit !== '00000'
-  )) || null
-})
-const clienteValido = computed(() => clientes.value.some((cliente) => (
-  String(cliente.id_cliente) === clienteId.value && cliente.ci_nit !== '00000'
-)))
-const mostrarFormularioCliente = computed(() => (
-  Boolean(identificacionCliente.value.trim())
-  && validarCi(identificacionCliente.value) === ''
-  && identificacionCliente.value.trim() !== '00000'
-  && !clientePorIdentificacion.value
+const notificar = (mensaje, tono = 'success') => {
+  notificacion.value = mensaje
+  tonoNotificacion.value = tono
+}
+
+const esConsumidorFinal = (cliente) => String(cliente?.ci_nit || '').trim() === '00000'
+
+const etiquetaCliente = (cliente) => {
+  if (!cliente) return ''
+  if (esConsumidorFinal(cliente)) return 'Consumidor Final'
+  return nombreCliente(cliente) || cliente.ci_nit
+}
+
+const clienteConsumidorFinal = computed(() => (
+  clientes.value.find((cliente) => esConsumidorFinal(cliente)) || null
 ))
+
+const clienteSeleccionado = computed(() => (
+  clientes.value.find((cliente) => String(cliente.id_cliente) === clienteId.value) || null
+))
+
+const clienteValido = computed(() => Boolean(clienteSeleccionado.value))
+
+const terminoCliente = computed(() => busquedaCliente.value.trim().toLocaleLowerCase())
+const buscarPorDocumento = computed(() => /^[0-9-]+$/.test(terminoCliente.value))
+
+const clientesFiltrados = computed(() => {
+  const termino = terminoCliente.value
+  if (!termino) {
+    return clientes.value
+      .filter((cliente) => !esConsumidorFinal(cliente))
+      .slice(0, 8)
+  }
+
+  const porDocumento = /^[0-9-]+$/.test(termino)
+  return clientes.value
+    .filter((cliente) => {
+      const documento = String(cliente.ci_nit || '').toLocaleLowerCase()
+      if (esConsumidorFinal(cliente)) {
+        return documento.includes(termino) || 'consumidor final'.includes(termino)
+      }
+      if (porDocumento) return documento.includes(termino)
+      return nombreCliente(cliente).toLocaleLowerCase().includes(termino)
+    })
+    .sort((a, b) => {
+      const textoA = porDocumento ? String(a.ci_nit || '') : nombreCliente(a)
+      const textoB = porDocumento ? String(b.ci_nit || '') : nombreCliente(b)
+      const empiezaA = textoA.toLocaleLowerCase().startsWith(termino) ? 0 : 1
+      const empiezaB = textoB.toLocaleLowerCase().startsWith(termino) ? 0 : 1
+      return empiezaA - empiezaB || textoA.localeCompare(textoB)
+    })
+    .slice(0, 8)
+})
 
 const cargarDatos = async () => {
   cargando.value = true
@@ -96,9 +139,19 @@ const cargarDatos = async () => {
     ])
     clientes.value = listaClientes
     farmacia.value = parametros.farmacia || {}
+
     if (clienteId.value && !listaClientes.some(
-      (cliente) => String(cliente.id_cliente) === clienteId.value && cliente.ci_nit !== '00000'
-    )) clienteId.value = ''
+      (cliente) => String(cliente.id_cliente) === clienteId.value
+    )) {
+      clienteId.value = ''
+    }
+
+    // Venta rápida: si existe el cliente genérico se asigna desde el inicio.
+    if (!clienteId.value) {
+      const consumidorFinal = listaClientes.find((cliente) => esConsumidorFinal(cliente))
+      if (consumidorFinal) clienteId.value = String(consumidorFinal.id_cliente)
+    }
+
     if (productoId.value && !productos.value.some(
       (item) => String(item.id_medicamento) === productoId.value
     )) {
@@ -117,10 +170,13 @@ const cargarCatalogo = async () => {
     productoId.value = ''
     return
   }
-  cargando.value = true
+
+  const solicitud = ++solicitudCatalogo
+  cargandoCatalogo.value = true
   error.value = ''
   try {
     const catalogo = await listarCatalogoVenta({ buscar: busqueda.value.trim() })
+    if (solicitud !== solicitudCatalogo) return
     productos.value = catalogo.filter(
       (item) => Number(item.stock_disponible) > 0
     )
@@ -130,142 +186,218 @@ const cargarCatalogo = async () => {
       productoId.value = ''
     }
   } catch (err) {
+    if (solicitud !== solicitudCatalogo) return
     error.value = err.message || 'No se pudo cargar el catálogo de medicamentos.'
   } finally {
-    cargando.value = false
+    if (solicitud === solicitudCatalogo) cargandoCatalogo.value = false
   }
 }
 
 const recargarDatos = async () => {
+  const clienteAnterior = clienteId.value
   await cargarDatos()
-  if (clienteValido.value) await cargarCatalogo()
+  if (clienteId.value === clienteAnterior && clienteValido.value) {
+    await cargarCatalogo()
+  }
 }
 
-watch(identificacionCliente, (identificacion) => {
-  const cliente = clientePorIdentificacion.value
-  if (cliente) {
-    if (clienteId.value !== String(cliente.id_cliente)) {
-      clienteId.value = String(cliente.id_cliente)
-      notificacion.value = 'Cliente registrado anteriormente'
-      tonoNotificacion.value = 'success'
-    }
-    formularioCliente.value = { ...formularioCliente.value, ci_nit: cliente.ci_nit }
-    return
-  }
-
-  if (clienteId.value) clienteId.value = ''
-  formularioCliente.value = {
-    nombres: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    ci_nit: identificacion.trim(),
-    telefono: '',
-    domicilio: ''
-  }
-})
-
-watch(clienteId, (nuevo, anterior) => {
-  if (nuevo !== anterior && anterior && carrito.value.length) {
-    carrito.value = []
-    efectivo.value = ''
-    descuento.value = 0
-    receta.value = { paciente: '', medico: '', matricula: '' }
-    notificacion.value = 'Se vació el carrito porque cambió el cliente.'
-    tonoNotificacion.value = 'warning'
-  }
+// El carrito no se vacía al cambiar de cliente: se vuelve a enlazar con el
+// cliente actual al confirmar la venta y se conservan productos e importes.
+watch(clienteId, () => {
   productoId.value = ''
   void cargarCatalogo()
 })
 
-let temporizadorBusqueda
 const buscarProductos = () => {
   clearTimeout(temporizadorBusqueda)
   if (clienteValido.value) temporizadorBusqueda = setTimeout(cargarCatalogo, 250)
 }
 
-const seleccionarCliente = () => {
-  const cliente = clientes.value.find(
-    (item) => String(item.id_cliente) === clienteId.value
-  )
-  identificacionCliente.value = cliente?.ci_nit || ''
+const aplicarCliente = (cliente) => {
   if (!cliente) return
-  formularioCliente.value = {
-    nombres: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    ci_nit: cliente.ci_nit,
-    telefono: '',
-    domicilio: ''
+  const id = String(cliente.id_cliente)
+  if (id === clienteId.value) return
+  clienteId.value = id
+}
+
+const seleccionarCliente = (cliente) => {
+  const conservaCarrito = carrito.value.length > 0
+    && String(cliente.id_cliente) !== clienteId.value
+  aplicarCliente(cliente)
+  busquedaCliente.value = ''
+  mostrarSugerencias.value = false
+  indiceSugerencia.value = -1
+  if (conservaCarrito) notificar('Cliente actualizado. El carrito se mantiene.')
+  nextTick(() => busquedaProductoRef.value?.focus())
+}
+
+const volverConsumidorFinal = () => {
+  if (!clienteConsumidorFinal.value) return
+  const conservaCarrito = carrito.value.length > 0
+    && String(clienteConsumidorFinal.value.id_cliente) !== clienteId.value
+  aplicarCliente(clienteConsumidorFinal.value)
+  busquedaCliente.value = ''
+  mostrarSugerencias.value = false
+  if (conservaCarrito) notificar('Cliente actualizado. El carrito se mantiene.')
+}
+
+const abrirSugerencias = () => {
+  if (modalClienteAbierto.value) return
+  mostrarSugerencias.value = true
+  indiceSugerencia.value = clientesFiltrados.value.length ? 0 : -1
+}
+
+const manejarEntradaCliente = () => {
+  mostrarSugerencias.value = true
+  indiceSugerencia.value = clientesFiltrados.value.length ? 0 : -1
+}
+
+const moverSugerencia = (delta) => {
+  const total = clientesFiltrados.value.length
+  mostrarSugerencias.value = true
+  if (!total) {
+    indiceSugerencia.value = -1
+    return
+  }
+  if (indiceSugerencia.value < 0) {
+    indiceSugerencia.value = delta > 0 ? 0 : total - 1
+    return
+  }
+  indiceSugerencia.value = (indiceSugerencia.value + delta + total) % total
+}
+
+const elegirSugerenciaActual = () => {
+  if (!mostrarSugerencias.value) {
+    abrirSugerencias()
+    return
+  }
+  const cliente = clientesFiltrados.value[
+    indiceSugerencia.value >= 0 ? indiceSugerencia.value : 0
+  ]
+  if (cliente) {
+    seleccionarCliente(cliente)
+    return
+  }
+  if (terminoCliente.value) abrirModalCliente()
+}
+
+const manejarClicFuera = (event) => {
+  if (
+    clienteAutocompleteRef.value
+    && !clienteAutocompleteRef.value.contains(event.target)
+  ) {
+    mostrarSugerencias.value = false
   }
 }
 
-const registrarCliente = async () => {
-  const formulario = formularioCliente.value
-  const clienteExistente = clientes.value.find((cliente) => (
-    String(cliente.ci_nit || '').trim().toLocaleUpperCase()
-      === formulario.ci_nit.trim().toLocaleUpperCase()
-    && cliente.ci_nit !== '00000'
-  ))
-  if (clienteExistente) {
-    identificacionCliente.value = clienteExistente.ci_nit
-    clienteId.value = String(clienteExistente.id_cliente)
-    notificacion.value = 'Cliente registrado anteriormente'
-    tonoNotificacion.value = 'success'
+const abrirModalCliente = () => {
+  const termino = busquedaCliente.value.trim()
+  const pareceDocumento = /^[0-9-]+$/.test(termino)
+  const pareceNombre = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]+$/.test(termino)
+
+  formularioCliente.value = {
+    nombre: pareceNombre ? termino : '',
+    ci_nit: pareceDocumento ? termino : ''
+  }
+  mostrarSugerencias.value = false
+  modalClienteAbierto.value = true
+
+  nextTick(() => {
+    if (formularioCliente.value.ci_nit) nombreClienteRapidoRef.value?.focus()
+    else ciClienteRapidoRef.value?.focus()
+  })
+}
+
+const cerrarModalCliente = () => {
+  if (guardandoCliente.value) return
+  modalClienteAbierto.value = false
+}
+
+const registrarClienteRapido = async () => {
+  const nombre = formularioCliente.value.nombre.trim()
+  const ciNit = formularioCliente.value.ci_nit.trim()
+  const mensaje = validarNombre(nombre, {
+    etiqueta: 'El nombre o razón social',
+    max: 80
+  }) || validarCi(ciNit)
+
+  if (mensaje) {
+    notificar(mensaje, 'error')
     return
   }
 
-  const errorNombres = validarNombre(formulario.nombres, { etiqueta: 'Los nombres', max: 80 })
-  const errorPaterno = validarNombre(formulario.apellido_paterno, {
-    etiqueta: 'El apellido paterno',
-    max: 60
-  })
-  const errorMaterno = validarNombre(formulario.apellido_materno, {
-    etiqueta: 'El apellido materno',
-    requerido: false,
-    max: 60
-  })
-  const errorCi = validarCi(formulario.ci_nit)
-  const mensaje = errorNombres || errorPaterno || errorMaterno || errorCi
-    || (formulario.telefono && !/^[0-9+()\s-]{7,20}$/.test(formulario.telefono.trim())
-      ? 'Ingresa un teléfono válido.'
-      : '')
-    || (formulario.domicilio.length > 150
-      ? 'El domicilio no puede superar 150 caracteres.'
-      : '')
-  if (mensaje) {
-    notificacion.value = mensaje
-    tonoNotificacion.value = 'error'
+  const clienteExistente = clientes.value.find((cliente) => (
+    String(cliente.ci_nit || '').trim().toLocaleUpperCase()
+      === ciNit.toLocaleUpperCase()
+  ))
+  if (clienteExistente) {
+    modalClienteAbierto.value = false
+    busquedaCliente.value = ''
+    aplicarCliente(clienteExistente)
+    notificar('Ese CI/NIT ya estaba registrado. Se asignó el cliente existente.')
+    nextTick(() => busquedaProductoRef.value?.focus())
     return
   }
 
   guardandoCliente.value = true
   try {
     const respuesta = await crearCliente({
-      ...formulario,
-      nombres: formulario.nombres.trim(),
-      apellido_paterno: formulario.apellido_paterno.trim(),
-      apellido_materno: formulario.apellido_materno.trim(),
-      ci_nit: formulario.ci_nit.trim(),
-      telefono: formulario.telefono.trim(),
-      domicilio: formulario.domicilio.trim()
+      nombres: nombre,
+      apellido_paterno: '',
+      apellido_materno: '',
+      ci_nit: ciNit
     })
     if (!respuesta?.cliente?.id_cliente) {
-      throw new Error('El cliente se registró, pero no se recibieron sus datos para seleccionarlo.')
+      throw new Error('El cliente se registró, pero no se recibieron sus datos para asignarlo.')
     }
+
     const cliente = respuesta.cliente
     clientes.value = [
       ...clientes.value.filter((item) => item.id_cliente !== cliente.id_cliente),
       cliente
     ]
-    identificacionCliente.value = cliente.ci_nit
-    clienteId.value = String(cliente.id_cliente)
-    notificacion.value = 'Cliente registrado correctamente.'
-    tonoNotificacion.value = 'success'
+    modalClienteAbierto.value = false
+    busquedaCliente.value = ''
+    aplicarCliente(cliente)
+    notificar('Cliente registrado y asignado a la venta.')
+    nextTick(() => busquedaProductoRef.value?.focus())
   } catch (err) {
-    notificacion.value = err.message || 'No se pudo registrar el cliente.'
-    tonoNotificacion.value = 'error'
+    notificar(err.message || 'No se pudo registrar el cliente.', 'error')
   } finally {
     guardandoCliente.value = false
+  }
+}
+
+const enfocarBusquedaProducto = () => {
+  busquedaProductoRef.value?.focus()
+  busquedaProductoRef.value?.select()
+}
+
+const manejarAtajos = (event) => {
+  if (event.key === 'Escape') {
+    if (modalClienteAbierto.value) {
+      event.preventDefault()
+      cerrarModalCliente()
+      return
+    }
+    if (mostrarSugerencias.value) {
+      event.preventDefault()
+      mostrarSugerencias.value = false
+    }
+    return
+  }
+
+  if (modalClienteAbierto.value) return
+
+  if (event.key === 'F2') {
+    event.preventDefault()
+    enfocarBusquedaProducto()
+    return
+  }
+
+  if (event.key === 'F12') {
+    event.preventDefault()
+    if (!guardando.value && !cargando.value) void confirmarVenta()
   }
 }
 
@@ -400,7 +532,20 @@ const cerrarComprobante = () => {
   ventaCompletada.value = null
 }
 
-onMounted(cargarDatos)
+onMounted(async () => {
+  document.addEventListener('pointerdown', manejarClicFuera)
+  window.addEventListener('keydown', manejarAtajos)
+
+  await cargarDatos()
+  await nextTick()
+  enfocarBusquedaProducto()
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(temporizadorBusqueda)
+  document.removeEventListener('pointerdown', manejarClicFuera)
+  window.removeEventListener('keydown', manejarAtajos)
+})
 </script>
 
 <template>
@@ -441,18 +586,28 @@ onMounted(cargarDatos)
             </div>
             <fieldset
               class="sales-product-fields border-0 p-0 m-0"
-              :disabled="!clienteValido || cargando"
+              :disabled="!clienteValido"
             >
             <div class="row g-3 align-items-end">
               <div class="col-md">
                 <label class="form-label" for="buscar-producto">Buscar medicamento</label>
-                <input
-                  id="buscar-producto"
-                  v-model="busqueda"
-                  class="form-control"
-                  placeholder="Nombre, DCI o código de barras"
-                  @input="buscarProductos"
-                >
+                <div class="input-group">
+                  <span class="input-group-text" aria-hidden="true">
+                    <i class="fas fa-magnifying-glass"></i>
+                  </span>
+                  <input
+                    id="buscar-producto"
+                    ref="busquedaProductoRef"
+                    v-model="busqueda"
+                    class="form-control"
+                    placeholder="Nombre, DCI o código de barras"
+                    autocomplete="off"
+                    @input="buscarProductos"
+                  >
+                  <span class="input-group-text sale-kbd-hint" title="Atajo: F2">
+                    <kbd class="sale-kbd">F2</kbd>
+                  </span>
+                </div>
               </div>
               <div class="col-12">
                 <span class="form-label d-block">Medicamentos disponibles</span>
@@ -494,7 +649,7 @@ onMounted(cargarDatos)
                       aria-hidden="true"
                     ></i>
                   </button>
-                  <p v-if="!cargando && productos.length === 0" class="small text-muted mb-0 p-3">
+                  <p v-if="!cargandoCatalogo && productos.length === 0" class="small text-muted mb-0 p-3">
                     No hay medicamentos con stock vigente que coincidan con la búsqueda.
                   </p>
                 </div>
@@ -517,7 +672,7 @@ onMounted(cargarDatos)
               </div>
             </div>
             </fieldset>
-            <p v-if="cargando" class="small text-muted mt-3 mb-0">Cargando catálogo…</p>
+            <p v-if="cargandoCatalogo" class="small text-muted mt-3 mb-0">Cargando catálogo…</p>
           </div>
         </article>
 
@@ -531,8 +686,8 @@ onMounted(cargarDatos)
               <i class="fas fa-basket-shopping fs-2 mb-2"></i>
               <p class="mb-0">Agrega medicamentos para iniciar la venta.</p>
             </div>
-            <div v-else class="table-responsive">
-              <table class="table align-middle">
+            <div v-else class="sale-cart-scroll">
+              <table class="table align-middle mb-0">
                 <thead>
                   <tr><th>Medicamento</th><th>Precio</th><th style="width: 100px">Cantidad</th><th>Subtotal</th><th></th></tr>
                 </thead>
@@ -577,113 +732,134 @@ onMounted(cargarDatos)
         <article class="card border-0 shadow-sm">
           <div class="card-body p-4">
             <h2 class="h5 fw-bold mb-3">Cliente y pago</h2>
-            <div class="mb-3">
-              <label class="form-label" for="buscar-cliente-venta">Buscar por CI/NIT</label>
-              <input
-                id="buscar-cliente-venta"
-                v-model.trim="identificacionCliente"
-                class="form-control mb-2"
-                placeholder="Ingresa el documento del cliente"
-                maxlength="20"
-                :disabled="cargando || guardandoCliente"
-                autocomplete="off"
-              >
-              <label class="form-label" for="cliente-venta">Cliente registrado</label>
-              <select
-                id="cliente-venta"
-                v-model="clienteId"
-                class="form-select"
-                required
-                :disabled="cargando || guardandoCliente"
-                @change="seleccionarCliente"
-              >
-                <option value="">Selecciona un cliente</option>
-                <option
-                  v-for="cliente in clientes.filter((item) => item.ci_nit !== '00000')"
-                  :key="cliente.id_cliente"
-                  :value="String(cliente.id_cliente)"
+
+            <div class="sale-client-current mb-3" :class="{ 'is-empty': !clienteSeleccionado }">
+              <div class="d-flex align-items-center gap-2">
+                <span class="sale-client-icon" aria-hidden="true">
+                  <i class="fas" :class="clienteSeleccionado ? 'fa-user-check' : 'fa-user-slash'"></i>
+                </span>
+                <div class="sale-client-info flex-grow-1">
+                  <span class="sale-client-label">Cliente actual</span>
+                  <strong class="d-block text-truncate">
+                    {{ clienteSeleccionado ? etiquetaCliente(clienteSeleccionado) : 'Sin cliente seleccionado' }}
+                  </strong>
+                  <small v-if="clienteSeleccionado && !esConsumidorFinal(clienteSeleccionado)" class="text-muted">
+                    CI/NIT: {{ clienteSeleccionado.ci_nit }}
+                  </small>
+                  <small v-else-if="clienteSeleccionado" class="text-muted">
+                    No requiere datos del cliente
+                  </small>
+                </div>
+                <span
+                  v-if="clienteSeleccionado && esConsumidorFinal(clienteSeleccionado)"
+                  class="badge text-bg-success"
                 >
-                  {{ nombreCliente(cliente) }} · {{ cliente.ci_nit }}
-                </option>
-              </select>
-              <small v-if="!clientes.some((cliente) => cliente.ci_nit !== '00000')" class="text-muted">
-                Registra primero un cliente en <router-link to="/clientes">Clientes</router-link>.
-              </small>
+                  Venta rápida
+                </span>
+                <button
+                  v-else-if="clienteConsumidorFinal"
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary rounded-pill"
+                  @click="volverConsumidorFinal"
+                >
+                  Consumidor final
+                </button>
+              </div>
             </div>
 
-            <form
-              v-if="mostrarFormularioCliente"
-              class="rounded-3 border bg-light p-3 mb-3"
-              @submit.prevent="registrarCliente"
-            >
-              <h3 class="h6 fw-bold">Cliente no registrado</h3>
-              <p class="small text-muted">Completa sus datos para registrarlo y continuar con la venta.</p>
-              <div class="row g-2">
-                <div class="col-12">
-                  <label class="form-label" for="venta-cliente-nombres">Nombres</label>
+            <div ref="clienteAutocompleteRef" class="cliente-autocomplete mb-3">
+              <label class="form-label" for="buscar-cliente-venta">Buscar cliente</label>
+              <div class="cliente-search-wrap">
+                <div class="input-group">
+                  <span class="input-group-text" aria-hidden="true">
+                    <i class="fas fa-address-book"></i>
+                  </span>
                   <input
-                    id="venta-cliente-nombres"
-                    v-model="formularioCliente.nombres"
+                    id="buscar-cliente-venta"
+                    v-model="busquedaCliente"
                     class="form-control"
+                    type="text"
+                    placeholder="Nombre, razón social o CI/NIT"
                     maxlength="80"
-                    required
+                    autocomplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-controls="cliente-sugerencias"
+                    :aria-expanded="mostrarSugerencias"
+                    :disabled="cargando || guardandoCliente"
+                    @focus="abrirSugerencias"
+                    @input="manejarEntradaCliente"
+                    @keydown.down.prevent="moverSugerencia(1)"
+                    @keydown.up.prevent="moverSugerencia(-1)"
+                    @keydown.enter.prevent="elegirSugerenciaActual"
+                    @keydown.esc.prevent="mostrarSugerencias = false"
                   >
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="venta-cliente-paterno">Apellido paterno</label>
-                  <input
-                    id="venta-cliente-paterno"
-                    v-model="formularioCliente.apellido_paterno"
-                    class="form-control"
-                    maxlength="60"
-                    required
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    title="Agregar nuevo cliente"
+                    aria-label="Agregar nuevo cliente"
+                    :disabled="cargando || guardandoCliente"
+                    @click="abrirModalCliente"
                   >
+                    <i class="fas fa-user-plus"></i>
+                  </button>
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="venta-cliente-materno">Apellido materno</label>
-                  <input
-                    id="venta-cliente-materno"
-                    v-model="formularioCliente.apellido_materno"
-                    class="form-control"
-                    maxlength="60"
+
+                <div
+                  v-if="mostrarSugerencias"
+                  id="cliente-sugerencias"
+                  class="cliente-suggestions"
+                  role="listbox"
+                >
+                  <button
+                    v-for="(cliente, indice) in clientesFiltrados"
+                    :key="cliente.id_cliente"
+                    type="button"
+                    class="cliente-suggestion"
+                    :class="{ 'is-active': indice === indiceSugerencia }"
+                    role="option"
+                    :aria-selected="indice === indiceSugerencia"
+                    @mouseenter="indiceSugerencia = indice"
+                    @click="seleccionarCliente(cliente)"
                   >
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="venta-cliente-ci">CI/NIT</label>
-                  <input
-                    id="venta-cliente-ci"
-                    v-model="formularioCliente.ci_nit"
-                    class="form-control"
-                    maxlength="20"
-                    required
+                    <span class="cliente-suggestion-icon" aria-hidden="true">
+                      <i class="fas" :class="esConsumidorFinal(cliente) ? 'fa-bolt' : 'fa-user'"></i>
+                    </span>
+                    <span class="cliente-suggestion-info">
+                      <strong>{{ etiquetaCliente(cliente) }}</strong>
+                      <small>{{ esConsumidorFinal(cliente) ? '00000 · Venta rápida' : cliente.ci_nit }}</small>
+                    </span>
+                    <i
+                      v-if="String(cliente.id_cliente) === clienteId"
+                      class="fas fa-circle-check text-primary"
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+
+                  <p v-if="!clientesFiltrados.length" class="cliente-suggestions-empty">
+                    {{ terminoCliente ? 'No se encontraron clientes con ese dato.' : 'No hay clientes registrados.' }}
+                  </p>
+
+                  <button
+                    type="button"
+                    class="cliente-suggestion cliente-suggestion-new"
+                    @click="abrirModalCliente"
                   >
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="venta-cliente-telefono">Teléfono</label>
-                  <input
-                    id="venta-cliente-telefono"
-                    v-model="formularioCliente.telefono"
-                    class="form-control"
-                    maxlength="20"
-                  >
-                </div>
-                <div class="col-12">
-                  <label class="form-label" for="venta-cliente-domicilio">Domicilio</label>
-                  <input
-                    id="venta-cliente-domicilio"
-                    v-model="formularioCliente.domicilio"
-                    class="form-control"
-                    maxlength="150"
-                  >
-                </div>
-                <div class="col-12 text-end">
-                  <button type="submit" class="btn btn-primary rounded-pill" :disabled="guardandoCliente">
-                    <i class="fas fa-user-plus me-2"></i>
-                    {{ guardandoCliente ? 'Registrando…' : 'Registrar y seleccionar' }}
+                    <span class="cliente-suggestion-icon" aria-hidden="true">
+                      <i class="fas fa-user-plus"></i>
+                    </span>
+                    <span class="cliente-suggestion-info">
+                      <strong>+ Agregar Nuevo Cliente</strong>
+                      <small>Solo CI/NIT y nombre o razón social</small>
+                    </span>
                   </button>
                 </div>
               </div>
-            </form>
+              <small class="text-muted d-block mt-1">
+                {{ buscarPorDocumento ? 'Filtrando por CI/NIT…' : 'Escribe letras para buscar por nombre o números para buscar por CI/NIT.' }}
+              </small>
+            </div>
 
             <div v-if="requiereReceta" class="rounded-3 bg-light p-3 mb-3">
               <h3 class="h6 fw-bold"><i class="fas fa-prescription me-2"></i>Datos de receta (RD5)</h3>
@@ -728,18 +904,100 @@ onMounted(cargarDatos)
               <p class="d-flex justify-content-between fs-5 mb-2"><span>Total</span><strong>{{ dinero(totalCentavos) }}</strong></p>
               <p class="d-flex justify-content-between text-success mb-3"><span>Cambio</span><strong>{{ dinero(cambioCentavos) }}</strong></p>
               <button
-                class="btn btn-success rounded-pill w-100 py-2"
+                class="btn btn-success rounded-pill w-100 py-2 d-flex align-items-center justify-content-center gap-2"
                 :disabled="guardando || cargando || !carrito.length"
+                title="Atajo: F12"
                 @click="confirmarVenta"
               >
-                <i class="fas fa-cash-register me-2"></i>
-                {{ guardando ? 'Registrando…' : 'Confirmar venta' }}
+                <i class="fas fa-cash-register" aria-hidden="true"></i>
+                <span>{{ guardando ? 'Registrando…' : 'Confirmar venta' }}</span>
+                <kbd class="sale-kbd sale-kbd-light">F12</kbd>
               </button>
             </div>
           </div>
         </article>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="modalClienteAbierto"
+        class="panel-modal-backdrop"
+        role="presentation"
+        @click.self="cerrarModalCliente"
+      >
+        <section
+          class="panel-modal cliente-rapido-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cliente-rapido-title"
+        >
+          <header class="panel-modal-head">
+            <div>
+              <span class="eyebrow">Venta rápida</span>
+              <h3 id="cliente-rapido-title">Nuevo cliente</h3>
+              <p>Solo CI/NIT y nombre. El carrito actual se mantiene intacto.</p>
+            </div>
+            <button
+              type="button"
+              class="panel-modal-close"
+              aria-label="Cerrar"
+              :disabled="guardandoCliente"
+              @click="cerrarModalCliente"
+            >
+              <i class="fas fa-xmark"></i>
+            </button>
+          </header>
+
+          <form class="mt-4" @submit.prevent="registrarClienteRapido">
+            <div class="row g-3">
+              <div class="col-sm-5">
+                <label for="cliente-rapido-ci" class="form-label">
+                  CI/NIT <span class="text-danger">*</span>
+                </label>
+                <input
+                  id="cliente-rapido-ci"
+                  ref="ciClienteRapidoRef"
+                  v-model="formularioCliente.ci_nit"
+                  class="form-control"
+                  maxlength="20"
+                  autocomplete="off"
+                  required
+                >
+              </div>
+              <div class="col-sm-7">
+                <label for="cliente-rapido-nombre" class="form-label">
+                  Nombre / Razón social <span class="text-danger">*</span>
+                </label>
+                <input
+                  id="cliente-rapido-nombre"
+                  ref="nombreClienteRapidoRef"
+                  v-model="formularioCliente.nombre"
+                  class="form-control"
+                  maxlength="80"
+                  autocomplete="off"
+                  required
+                >
+              </div>
+            </div>
+            <footer class="panel-modal-actions mt-4">
+              <button
+                type="button"
+                class="btn btn-light rounded-pill px-4"
+                :disabled="guardandoCliente"
+                @click="cerrarModalCliente"
+              >
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary rounded-pill px-4" :disabled="guardandoCliente">
+                <i class="fas fa-user-plus me-2"></i>
+                {{ guardandoCliente ? 'Guardando…' : 'Guardar y asignar' }}
+              </button>
+            </footer>
+          </form>
+        </section>
+      </div>
+    </Teleport>
 
     <Teleport to="body">
       <div
@@ -755,6 +1013,15 @@ onMounted(cargarDatos)
           aria-modal="true"
           aria-label="Previsualización del comprobante de venta"
         >
+          <button
+            type="button"
+            class="sale-preview-close"
+            aria-label="Cerrar comprobante"
+            title="Cerrar"
+            @click="cerrarComprobante"
+          >
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
           <SaleReceipt :farmacia="farmacia" :venta="ventaCompletada" />
         </section>
       </div>
@@ -763,6 +1030,182 @@ onMounted(cargarDatos)
 </template>
 
 <style scoped>
+.sale-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid currentColor;
+  border-radius: 0.35rem;
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.2;
+  opacity: 0.6;
+}
+
+.sale-kbd-hint {
+  color: var(--bs-secondary-color, #6c757d);
+  background: var(--bs-body-bg, #fff);
+}
+
+.sale-kbd-light {
+  border-color: rgb(255 255 255 / 70%);
+  color: inherit;
+  opacity: 0.9;
+}
+
+.sale-cart-scroll {
+  max-height: min(40vh, 360px);
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border-radius: 0.5rem;
+}
+
+.sale-cart-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bs-body-bg, #fff);
+  box-shadow: inset 0 -1px 0 var(--bs-border-color, #dee2e6);
+}
+
+.cliente-autocomplete,
+.cliente-search-wrap {
+  position: relative;
+}
+
+.cliente-suggestions {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  left: 0;
+  z-index: 30;
+  max-height: 16rem;
+  overflow-y: auto;
+  padding: 0.3rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.8rem;
+  background: var(--bs-body-bg, #fff);
+  box-shadow: 0 0.9rem 2rem rgb(15 23 42 / 18%);
+}
+
+.cliente-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.cliente-suggestion:hover,
+.cliente-suggestion.is-active {
+  background: var(--bs-primary-bg-subtle, #e7f1ff);
+}
+
+.cliente-suggestion-icon {
+  display: inline-flex;
+  flex: 0 0 1.9rem;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--bs-tertiary-bg, #f1f3f5);
+  color: var(--bs-primary, #0d6efd);
+  font-size: 0.8rem;
+}
+
+.cliente-suggestion-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cliente-suggestion-info strong,
+.cliente-suggestion-info small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cliente-suggestion-info strong {
+  font-size: 0.9rem;
+}
+
+.cliente-suggestion-info small {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.75rem;
+}
+
+.cliente-suggestion-new {
+  color: var(--bs-primary, #0d6efd);
+}
+
+.cliente-suggestion-new .cliente-suggestion-icon {
+  background: var(--bs-primary-bg-subtle, #e7f1ff);
+}
+
+.cliente-suggestions-empty {
+  margin: 0;
+  padding: 0.6rem 0.65rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.82rem;
+}
+
+.sale-client-current {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.85rem;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+.sale-client-current.is-empty {
+  border-style: dashed;
+}
+
+.sale-client-info {
+  min-width: 0;
+}
+
+.sale-client-label {
+  display: block;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sale-client-current strong {
+  font-size: 0.95rem;
+}
+
+.sale-client-icon {
+  display: inline-flex;
+  flex: 0 0 2.2rem;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--bs-primary-bg-subtle, #e7f1ff);
+  color: var(--bs-primary, #0d6efd);
+}
+
+.cliente-rapido-modal {
+  width: min(100%, 540px);
+}
+
 .sale-product-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -868,6 +1311,7 @@ onMounted(cargarDatos)
 }
 
 .sale-preview-dialog {
+  position: relative;
   width: min(100%, 30rem);
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
@@ -875,5 +1319,28 @@ onMounted(cargarDatos)
   border-radius: 0.75rem;
   background: #fff;
   box-shadow: 0 1rem 3rem rgb(0 0 0 / 25%);
+}
+
+.sale-preview-close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(15 23 42 / 78%);
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1;
+  box-shadow: 0 0.25rem 0.75rem rgb(15 23 42 / 28%);
+}
+
+.sale-preview-close:hover {
+  background: rgb(15 23 42 / 95%);
 }
 </style>

@@ -1,9 +1,11 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { MODULOS } from '../../config/distribution'
-import { obtenerSesion } from '../../business/session'
+import { consumirBienvenida, obtenerSesion } from '../../business/session'
 
 const sesion = obtenerSesion()
+const showWelcome = ref(false)
+let welcomeTimeout
 
 const firstName = computed(() => sesion.nombrePila || 'Usuario')
 const fullName = computed(() => sesion.nombre || firstName.value)
@@ -19,6 +21,19 @@ const greeting = computed(() => {
 })
 
 const modules = MODULOS
+
+onMounted(() => {
+  if (!consumirBienvenida()) return
+
+  showWelcome.value = true
+  welcomeTimeout = window.setTimeout(() => {
+    showWelcome.value = false
+  }, 2800)
+})
+
+onBeforeUnmount(() => {
+  window.clearTimeout(welcomeTimeout)
+})
 
 const stats = computed(() => [
   {
@@ -56,6 +71,28 @@ const stats = computed(() => [
 
 <template>
   <section class="px-1">
+    <Transition name="login-welcome">
+      <div v-if="showWelcome" class="login-welcome" role="status" aria-live="polite">
+        <div class="welcome-particles" aria-hidden="true">
+          <span v-for="particle in 8" :key="particle"></span>
+        </div>
+        <div class="login-welcome-content">
+          <div class="login-welcome-logo" aria-hidden="true">
+            <svg class="login-welcome-ring" viewBox="0 0 220 220">
+              <circle class="login-welcome-ring-track" cx="110" cy="110" r="96" />
+              <circle class="login-welcome-ring-energy" cx="110" cy="110" r="96" />
+            </svg>
+            <span class="login-welcome-mark">
+              <i class="fas fa-mortar-pestle"></i>
+            </span>
+          </div>
+          <span class="login-welcome-eyebrow">FARMACIA · INVENTARIO Y VENTAS</span>
+          <h1>¡Bienvenido, <span>{{ firstName }}</span>!</h1>
+          <p>Nos alegra tenerte de vuelta.</p>
+        </div>
+      </div>
+    </Transition>
+
     <div class="welcome-panel mb-4">
       <div class="welcome-glow" aria-hidden="true"></div>
       <div class="row align-items-center g-4 position-relative">
@@ -162,6 +199,189 @@ const stats = computed(() => [
 <style scoped>
 .min-w-0 {
   min-width: 0;
+}
+
+.login-welcome {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 50% 42%, var(--accent-soft), transparent 42%),
+    linear-gradient(145deg, var(--bg-body), var(--bg-card));
+  color: var(--text-main);
+}
+
+.login-welcome-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.login-welcome-logo {
+  position: relative;
+  display: grid;
+  width: clamp(11rem, 26vw, 15rem);
+  aspect-ratio: 1;
+  margin-bottom: clamp(1.75rem, 5vh, 3rem);
+  place-items: center;
+}
+
+.login-welcome-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: welcome-rotate 8s linear infinite;
+}
+
+.login-welcome-ring-track,
+.login-welcome-ring-energy {
+  fill: none;
+  stroke-width: 2;
+}
+
+.login-welcome-ring-track {
+  stroke: var(--border-strong);
+}
+
+.login-welcome-ring-energy {
+  stroke: var(--accent);
+  stroke-dasharray: 190 420;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  animation: welcome-energy 2.4s ease-in-out infinite;
+}
+
+.login-welcome-mark {
+  position: relative;
+  display: grid;
+  width: 58%;
+  height: 58%;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--primary-strong), var(--primary));
+  box-shadow: 0 0 70px var(--ring);
+  color: var(--cream);
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  animation: welcome-pulse 2s ease-in-out infinite;
+}
+
+.login-welcome-mark::after {
+  position: absolute;
+  inset: -12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  content: "";
+  animation: welcome-wave 2s ease-out infinite;
+}
+
+.login-welcome-eyebrow {
+  color: var(--text-accent);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.login-welcome h1 {
+  margin: 1rem 0 0.55rem;
+  color: var(--text-main);
+  font-size: clamp(2.3rem, 7vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.login-welcome h1 span {
+  color: var(--primary);
+}
+
+.login-welcome-content > p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.welcome-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.welcome-particles span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+  opacity: 0;
+  animation: welcome-particle 3.2s ease-in-out infinite;
+}
+
+.welcome-particles span:nth-child(1) { top: 20%; left: 18%; animation-delay: 0s; }
+.welcome-particles span:nth-child(2) { top: 32%; left: 78%; animation-delay: 0.4s; }
+.welcome-particles span:nth-child(3) { top: 72%; left: 15%; animation-delay: 0.8s; }
+.welcome-particles span:nth-child(4) { top: 80%; left: 70%; animation-delay: 1.2s; }
+.welcome-particles span:nth-child(5) { top: 14%; left: 58%; animation-delay: 1.6s; }
+.welcome-particles span:nth-child(6) { top: 58%; left: 88%; animation-delay: 2s; }
+.welcome-particles span:nth-child(7) { top: 84%; left: 42%; animation-delay: 2.4s; }
+.welcome-particles span:nth-child(8) { top: 48%; left: 8%; animation-delay: 2.8s; }
+
+.login-welcome-enter-active,
+.login-welcome-leave-active {
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.login-welcome-enter-from,
+.login-welcome-leave-to {
+  opacity: 0;
+  transform: scale(1.025);
+}
+
+@keyframes welcome-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes welcome-energy {
+  50% { stroke-dashoffset: 170; }
+}
+
+@keyframes welcome-pulse {
+  50% { transform: scale(1.1); }
+}
+
+@keyframes welcome-wave {
+  0% { opacity: 0.65; transform: scale(0.9); }
+  100% { opacity: 0; transform: scale(1.28); }
+}
+
+@keyframes welcome-particle {
+  20% { opacity: 0.75; transform: translateY(0); }
+  80% { opacity: 0; transform: translateY(-30px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-welcome-ring,
+  .login-welcome-ring-energy,
+  .login-welcome-mark,
+  .login-welcome-mark::after,
+  .welcome-particles span {
+    animation: none;
+  }
+
+  .login-welcome-enter-active,
+  .login-welcome-leave-active {
+    transition: none;
+  }
 }
 
 .welcome-panel {

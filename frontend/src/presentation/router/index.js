@@ -10,6 +10,8 @@ import AlertsView from '../views/AlertsView.vue'
 import SalesView from '../views/SalesView.vue'
 import CustomersView from '../views/CustomersView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import ReportsView from '../views/ReportsView.vue'
+import HistoryView from '../views/HistoryView.vue'
 import { RESPONSABLES } from '../../config/distribution'
 import { estaAutenticado, esAdministrador, obtenerSesion } from '../../business/session'
 
@@ -108,6 +110,18 @@ const router = createRouter({
         title: 'Configuración',
         responsable: RESPONSABLES.seguridad
       }
+    },
+    {
+      path: '/reportes',
+      name: 'reportes',
+      component: ReportsView,
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Reportes', responsable: RESPONSABLES.reportes }
+    },
+    {
+      path: '/historial',
+      name: 'historial',
+      component: HistoryView,
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Historial', responsable: RESPONSABLES.reportes }
     },
     {
       path: '/usuarios',

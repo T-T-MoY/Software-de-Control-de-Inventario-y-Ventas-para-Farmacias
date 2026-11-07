@@ -113,7 +113,7 @@ const celda = (columna, valor) => {
   // Formato compacto para fecha y hora, evita que la tabla se desborde
   if (columna.tipo === 'fechahora') {
     const d = new Date(valor)
-    if (isNaN(d.getTime())) return valor
+    if (Number.isNaN(d.getTime())) return valor
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
   
@@ -173,8 +173,9 @@ onMounted(generar)
         
         <!-- Selector de Reporte -->
         <div class="w-full lg:w-1/4">
-          <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Tipo de reporte</label>
+          <label for="filtro-tipo" class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Tipo de reporte</label>
           <select
+            id="filtro-tipo"
             class="form-select panel-control w-full h-11 bg-[var(--bg-base)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow"
             :value="tipo"
             @change="elegirTipo($event.target.value)"
@@ -186,12 +187,12 @@ onMounted(generar)
         <!-- Fechas -->
         <template v-if="tipoActual.conRango">
           <div class="w-full lg:w-1/4">
-            <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Desde</label>
-            <input v-model="fechaInicio" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
+            <label for="filtro-desde" class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Desde</label>
+            <input id="filtro-desde" v-model="fechaInicio" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
           </div>
           <div class="w-full lg:w-1/4">
-            <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Hasta</label>
-            <input v-model="fechaFin" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
+            <label for="filtro-hasta" class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Hasta</label>
+            <input id="filtro-hasta" v-model="fechaFin" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
           </div>
         </template>
         

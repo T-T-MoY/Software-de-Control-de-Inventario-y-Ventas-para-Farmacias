@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run --coverage",
+    "test:cov": "vitest run --coverage && node scripts/normalize-lcov.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -18,6 +20,11 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.6",
-    "vite": "^8.0.12"
+    "@vitest/coverage-istanbul": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vue/test-utils": "^2.5.1",
+    "jsdom": "^29.1.1",
+    "vite": "^8.0.12",
+    "vitest": "^5.1.0"
   }
 }

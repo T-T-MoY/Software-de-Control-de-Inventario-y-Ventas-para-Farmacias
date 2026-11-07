@@ -1,7 +1,24 @@
-# Pruebas Sprint 5 – Reportes e historial (RF6)
+# Pruebas Sprint 5 — Reportes e historial (RF6)
 
 Todas las rutas requieren sesión de **Administrador** (`generar_reportes`).
-Base: `http://localhost:3000`. Cabecera: `Authorization: Bearer <token>`.
+Base local: `http://localhost:3000`. La colección obtiene los tokens iniciando sesión con las cuentas demo.
+
+## Resultado de ejecución
+
+| Métrica | Resultado |
+|---|---:|
+| Solicitudes ejecutadas | 27 |
+| Solicitudes con fallos | 0 |
+| Resultado | **Aprobado — todas las pruebas pasaron** |
+
+Ejecución reportada desde Postman Collection Runner. Las respuestas negativas esperadas para fechas o formatos inválidos y permisos restringidos también pasaron.
+
+## Importar y repetir la ejecución
+
+- Colección: [`Sprint 5 - Reportes e historial`](pruebas/POSTMAN/Sprint5/Sprint%205%20-%20Reportes%20e%20historial.postman_collection.json)
+- Entorno: [`Sprint 5 - Local`](pruebas/POSTMAN/Sprint5/Sprint%205%20-%20Local.postman_environment.json)
+
+Importa ambos archivos, escribe la contraseña local en `passwordDemo`, selecciona el entorno y ejecuta la colección completa para repetir la prueba.
 
 ## Endpoints
 
@@ -30,6 +47,8 @@ El día de una venta se calcula en la zona horaria `ZONA_HORARIA` (por defecto `
 | CP-07 | `PUT`/`DELETE`/`PATCH`/`POST` a `/api/historial` | 405 |
 | CP-07 | `UPDATE`/`DELETE`/`TRUNCATE` en `historial_operacion` por SQL | Error de la base (trigger) |
 | Seguridad | Sin token / rol Ventas / rol Inventario | 401 / 403 / 403 |
+
+La colección Postman cubre las rutas HTTP. La inmutabilidad directa del trigger SQL y las pruebas RNF3, RNF4 y RNF5 (rendimiento/concurrencia, disponibilidad y análisis estático) requieren validaciones aparte; no se consideran aprobadas por ejecutar esta colección.
 
 Pruebas unitarias: `cd backend && npm test` (`tests/reports.rules.test.js`).
 

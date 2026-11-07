@@ -1,0 +1,700 @@
+{
+  "info": {
+    "_postman_id": "05504a0d-14dc-4b45-8169-11ca90f99ad5",
+    "name": "Sprint 4 - Ventas (CP-05 / CP-08 / CP-14)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44334416",
+    "_collection_link": "https://go.postman.co/collection/44334416-05504a0d-14dc-4b45-8169-11ca90f99ad5?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "0. Preparación",
+      "item": [
+        {
+          "name": "Login Administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.usuario.rol).to.eql('Administrador');",
+                  "pm.environment.set('tokenAdmin', b.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@farmacia.bo\",\"password\":\"{{passwordDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Ventas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.usuario.rol).to.eql('Ventas');",
+                  "pm.environment.set('tokenVentas', b.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"ventas@farmacia.bo\",\"password\":\"{{passwordDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Encargado de inventario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.usuario.rol).to.eql('Encargado de inventario');",
+                  "pm.environment.set('tokenInventario', b.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"inventario@farmacia.bo\",\"password\":\"{{passwordDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear cliente de prueba",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('ciClientePrueba', String(Date.now()));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cliente de prueba creado', () => pm.response.to.have.status(201));\nconst c = pm.response.json().cliente;\npm.expect(c.id_cliente).to.exist;\npm.environment.set('clientePrueba', c.id_cliente);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombres\": \"Cliente de prueba\", \"apellido_paterno\": \"Prueba\", \"ci_nit\": \"{{ciClientePrueba}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seleccionar medicamentos disponibles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Catálogo de venta disponible', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json();",
+                  "const libres = rows.filter(m => m.tipo_venta === 'Libre' && Number(m.stock_disponible) > 0);",
+                  "const libre = libres[0];",
+                  "const receta = rows.find(m => m.tipo_venta === 'Con receta' && Number(m.stock_disponible) > 0);",
+                  "pm.expect(libres.length, 'Se requieren tres productos libres con stock para CP-08').to.be.at.least(3);",
+                  "pm.expect(receta, 'Debe existir un medicamento con receta y stock').to.exist;",
+                  "pm.environment.set('medicamentoLibre', libre.id_medicamento);",
+                  "pm.environment.set('precioLibre', libre.precio_unitario);",
+                  "pm.environment.set('stockLibreInicial', libre.stock_disponible);",
+                  "pm.environment.set('medicamentoLibre2', libres[1].id_medicamento);",
+                  "pm.environment.set('precioLibre2', libres[1].precio_unitario);",
+                  "pm.environment.set('medicamentoLibre3', libres[2].id_medicamento);",
+                  "pm.environment.set('precioLibre3', libres[2].precio_unitario);",
+                  "pm.environment.set('medicamentoReceta', receta.id_medicamento);",
+                  "pm.environment.set('precioReceta', receta.precio_unitario);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas/catalogo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "catalogo"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. CP-05 Cálculos y rechazos",
+      "item": [
+        {
+          "name": "Rechazar venta con pago insuficiente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pago insuficiente rechazado', () => pm.response.to.have.status(400));",
+                  "pm.expect(pm.response.json().error).to.include('no cubre el total');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clientePrueba}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoLibre}}\",\"cantidad\":1}],\"descuento_porcentaje\":0,\"monto_recibido\":0}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Venta con descuento, cambio y nota de venta",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const price = Number(pm.environment.get('precioLibre'));",
+                  "pm.environment.set('montoVentaLibre', (price * 2).toFixed(2));",
+                  "pm.environment.set('totalEsperadoLibre', (price * 0.9).toFixed(2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Venta registrada', () => pm.response.to.have.status(201));",
+                  "const v = pm.response.json().venta;",
+                  "pm.expect(v.id_venta).to.exist;",
+                  "pm.expect(Number(v.subtotal)).to.be.closeTo(Number(pm.environment.get('precioLibre')), 0.01);",
+                  "pm.expect(Number(v.descuento_monto)).to.be.closeTo(Number(pm.environment.get('precioLibre')) * 0.1, 0.01);",
+                  "pm.expect(Number(v.total)).to.be.closeTo(Number(pm.environment.get('totalEsperadoLibre')), 0.01);",
+                  "pm.expect(Number(v.cambio)).to.be.above(0);",
+                  "pm.expect(v.tipo_comprobante).to.eql('Nota de venta');",
+                  "pm.expect(v.num_serie).to.match(/^NV-/);",
+                  "pm.environment.set('idVentaPrueba', v.id_venta);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clientePrueba}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoLibre}}\",\"cantidad\":1}],\"descuento_porcentaje\":10,\"monto_recibido\":\"{{montoVentaLibre}}\",\"tipo_comprobante\":\"Nota de venta\",\"formato_impresion\":\"Pantalla\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar descuento de una unidad del stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Catálogo actualizado', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json();",
+                  "const m = rows.find(x => Number(x.id_medicamento) === Number(pm.environment.get('medicamentoLibre')));",
+                  "pm.expect(m).to.exist;",
+                  "pm.expect(Number(m.stock_disponible)).to.eql(Number(pm.environment.get('stockLibreInicial')) - 1);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas/catalogo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "catalogo"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar cantidad superior al stock",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const stock = Number(pm.environment.get('stockLibreInicial'));",
+                  "pm.environment.set('cantidadExcesiva', stock + 100);",
+                  "pm.environment.set('montoExcesivo', (Number(pm.environment.get('precioLibre')) * (stock + 100) + 1).toFixed(2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock insuficiente rechazado sin confirmar venta', () => pm.response.to.have.status(409));",
+                  "pm.expect(pm.response.json().error).to.be.a('string');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clientePrueba}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoLibre}}\",\"cantidad\":\"{{cantidadExcesiva}}\"}],\"descuento_porcentaje\":0,\"monto_recibido\":\"{{montoExcesivo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CP-08 Registrar una venta de tres productos en menos de tres minutos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const total = ['precioLibre', 'precioLibre2', 'precioLibre3'].reduce((sum, key) => sum + Number(pm.environment.get(key)), 0);",
+                  "pm.environment.set('montoVentaTresProductos', (total + 1).toFixed(2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Venta de tres productos registrada', () => pm.response.to.have.status(201));",
+                  "const v = pm.response.json().venta;",
+                  "pm.expect(v.items).to.have.lengthOf(3);",
+                  "pm.expect(pm.response.responseTime).to.be.below(180000);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clientePrueba}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoLibre}}\",\"cantidad\":1},{\"id_medicamento\":\"{{medicamentoLibre2}}\",\"cantidad\":1},{\"id_medicamento\":\"{{medicamentoLibre3}}\",\"cantidad\":1}],\"descuento_porcentaje\":0,\"monto_recibido\":\"{{montoVentaTresProductos}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. CP-14 Venta de medicamento con receta",
+      "item": [
+        {
+          "name": "Rechazar medicamento con receta sin datos médicos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Receta obligatoria', () => pm.response.to.have.status(400));",
+                  "pm.expect(pm.response.json().error).to.include('receta');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clientePrueba}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoReceta}}\",\"cantidad\":1}],\"descuento_porcentaje\":0,\"monto_recibido\":\"{{precioReceta}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar venta con receta y factura",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('montoVentaReceta', (Number(pm.environment.get('precioReceta')) + 1).toFixed(2));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Venta con receta registrada', () => pm.response.to.have.status(201));",
+                  "const v = pm.response.json().venta;",
+                  "pm.expect(v.items[0].id_medicamento).to.eql(Number(pm.environment.get('medicamentoReceta')));",
+                  "pm.expect(v.tipo_comprobante).to.eql('Factura');",
+                  "pm.expect(v.num_serie).to.match(/^F-/);",
+                  "pm.expect(Number(v.cambio)).to.be.above(0);",
+                  "pm.expect(pm.response.json().farmacia).to.be.an('object');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clientePrueba}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoReceta}}\",\"cantidad\":1}],\"descuento_porcentaje\":0,\"monto_recibido\":\"{{montoVentaReceta}}\",\"tipo_comprobante\":\"Factura\",\"formato_impresion\":\"Impreso\",\"receta\":{\"paciente\":\"Paciente Sprint 4\",\"medico\":\"Doctora de prueba\",\"matricula\":\"MED-POSTMAN-01\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Inventario no puede procesar ventas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Venta restringida por rol', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

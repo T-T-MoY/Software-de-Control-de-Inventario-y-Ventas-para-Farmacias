@@ -26,7 +26,7 @@ No se incluyen pruebas de rendimiento ni de calidad estática: corresponden a RN
 
 - **Cuentas demo:** `admin@farmacia.bo`, `inventario@farmacia.bo` y `ventas@farmacia.bo`, todas con contraseña `Passw123`.
 - **Usuario de prueba:** se crea dentro de la ejecución con correo y CI generados por un *pre-request script* (`prueba.sprint1.<timestamp>@farmacia.bo`), por lo que la colección se puede volver a ejecutar sin limpiar la base.
-- **Entorno de Postman:** se versiona con `baseUrl` y `passwordAdmin` vacíos. Antes de ejecutar hay que completarlos localmente (`http://localhost:3000` y `Passw123`); los tokens se llenan solos con los tests.
+- **Entorno de Postman:** `baseUrl` viene configurado como `http://localhost:3000`; completa localmente `passwordAdmin` con la contraseña de la cuenta demo. Los tokens se llenan solos con los tests.
 - **Orden de ejecución:** las carpetas de la colección están numeradas y deben correrse en orden, porque los tokens y el `idUsuarioPrueba` se encadenan entre requests.
 
 ## 3. Resultado global
@@ -113,7 +113,7 @@ No se incluyen pruebas de rendimiento ni de calidad estática: corresponden a RN
 - El usuario de prueba se creó, desactivó y eliminó lógicamente dentro de la misma ejecución; no se alteraron las cuentas demo.
 - La contraseña de la cuenta administradora se cambió a `Nueva12345` y se restauró a `Passw123` al finalizar. Las credenciales demo siguen vigentes.
 - La colección usa `{{idUsuarioPrueba}}` en las rutas de desactivación y baja, y genera correo/CI únicos en cada ejecución, por lo que es reutilizable.
-- Los valores sensibles del entorno no se versionan: solo se guardan vacíos.
+- La contraseña no se versiona; `baseUrl` sí está configurado en el entorno local.
 
 ## 7. Cómo reproducir
 
@@ -132,9 +132,7 @@ No se incluyen pruebas de rendimiento ni de calidad estática: corresponden a RN
    ```
 
 3. Importar en Postman la colección y el entorno de `docs/pruebas/POSTMAN/`.
-4. Seleccionar el entorno **Sprint 1 - Local** y completar:
-   - `baseUrl` = `http://localhost:3000`
-   - `passwordAdmin` = `Passw123`
+4. Seleccionar el entorno **Sprint 1 - Local** y completar `passwordAdmin` con la contraseña local de la cuenta demo. Verificar que `baseUrl` sea `http://localhost:3000`.
 5. Abrir la colección → **Run** → ejecutar las 4 carpetas en orden.
 6. Confirmar el resumen: **36 assertions, 0 fallos**.
 

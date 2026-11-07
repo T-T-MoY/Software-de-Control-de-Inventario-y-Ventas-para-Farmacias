@@ -20,6 +20,7 @@ const historialRutas = require('./presentation/routes/history.routes');
 const { noEncontrado, manejarErrores } = require('./presentation/middleware/errors');
 
 const app = express();
+app.disable('x-powered-by');
 
 app.use(cors({
     origin: process.env.FRONTEND_ORIGIN || true,
@@ -75,4 +76,7 @@ const iniciar = async () => {
     });
 };
 
-iniciar();
+iniciar().catch((error) => {
+    console.error('No se pudo iniciar la API:', error.message);
+    process.exit(1);
+});

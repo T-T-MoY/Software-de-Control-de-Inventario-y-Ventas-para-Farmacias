@@ -955,6 +955,7 @@ onMounted(cargarProveedores)
                 Dirección
               </label>
 
+              <!-- CORRECCIÓN APLICADA AQUÍ: autocomplete="off" -->
               <input
                 id="proveedor-direccion"
                 v-model="form.direccion"
@@ -964,7 +965,7 @@ onMounted(cargarProveedores)
                     errores.direccion && touched.direccion
                 }"
                 maxlength="150"
-                autocomplete="street-address"
+                autocomplete="off"
                 placeholder="Dirección del proveedor"
                 :aria-invalid="Boolean(errores.direccion && touched.direccion)"
                 @input="alEscribir('direccion')"

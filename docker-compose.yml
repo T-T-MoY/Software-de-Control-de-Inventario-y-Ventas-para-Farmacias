@@ -22,24 +22,6 @@ services:
       retries: 10
 
   # ==========================================
-  # PGADMIN (administrador web de la BD)
-  # ==========================================
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: farmacia_pgadmin
-    restart: no
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@farmacia.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD in the root .env file}
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      db:
-        condition: service_healthy
-
-  # ==========================================
   # BACKEND (Node.js + Express)
   # ==========================================
   backend:
@@ -89,4 +71,3 @@ services:
 
 volumes:
   pgdata:
-  pgadmin_data:

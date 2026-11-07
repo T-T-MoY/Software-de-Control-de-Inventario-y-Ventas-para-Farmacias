@@ -21,7 +21,7 @@ El detalle de cada sprint está en **Planificación por sprint**. Mientras otro 
 - Frontend: Vue 3, Vue Router, Vite y Tailwind CSS 4.
 - Backend: Node.js, Express, PostgreSQL y bcrypt.
 - Base de datos: PostgreSQL 15; esquema, procesos y datos iniciales en `database/`.
-- Entorno local: Docker Compose y pgAdmin.
+- Entorno local: Docker Compose y pgAdmin instalado localmente.
 
 ## Estructura del proyecto
 
@@ -39,6 +39,9 @@ Esta es la estructura real con la que trabaja el equipo. Los nombres de carpetas
 │   ├── MODELO-DATOS.md
 │   ├── PRUEBAS-SPRINT-1.md          # evidencia de CP-01 y CP-07
 │   ├── PRUEBAS-SPRINT-2.md          # evidencia de RF2
+│   ├── PRUEBAS-SPRINT-3.md          # colección Postman aprobada, 0 fallos
+│   ├── PRUEBAS-SPRINT-4.md          # colección Postman aprobada, 0 fallos
+│   ├── PRUEBAS-SPRINT-5.md          # colección Postman aprobada, 0 fallos
 │   └── pruebas/POSTMAN/             # colección, entorno y capturas
 │
 ├── database/                       # esquema y datos iniciales
@@ -248,6 +251,7 @@ Cada integrante crea sus archivos siguiendo el mismo patrón: **repositorio → 
 Detalle completo, flujos y ejemplos: [`docs/ARQUITECTURA-MULTICAPA.md`](docs/ARQUITECTURA-MULTICAPA.md).
 Modelo E/R, diagrama de clases y diccionario de datos: [`docs/MODELO-DATOS.md`](docs/MODELO-DATOS.md).
 Pruebas de cierre del Sprint 1 (CP-01 y CP-07): [`docs/PRUEBAS-SPRINT-1.md`](docs/PRUEBAS-SPRINT-1.md).
+Resultados de las pruebas de los Sprints 1–5: consulta [`docs/PRUEBAS-SPRINT-1.md`](docs/PRUEBAS-SPRINT-1.md), [`docs/PRUEBAS-SPRINT-2.md`](docs/PRUEBAS-SPRINT-2.md), [`docs/PRUEBAS-SPRINT-3.md`](docs/PRUEBAS-SPRINT-3.md), [`docs/PRUEBAS-SPRINT-4.md`](docs/PRUEBAS-SPRINT-4.md) y [`docs/PRUEBAS-SPRINT-5.md`](docs/PRUEBAS-SPRINT-5.md). Las colecciones de los Sprints 3, 4 y 5 se ejecutaron con cero fallos.
 
 ## Credenciales de acceso (solo desarrollo)
 
@@ -265,7 +269,6 @@ Direcciones del sistema cuando está en marcha:
 |---|---|
 | Frontend | <http://localhost:5173> |
 | API (estado) | <http://localhost:3000/api/health> |
-| pgAdmin | <http://localhost:5050> |
 
 Las contraseñas se guardan como hash bcrypt (coste 12). Cámbialas y no reutilices estas credenciales fuera de un entorno local.
 
@@ -334,13 +337,7 @@ Levanta únicamente PostgreSQL (puerto 5432):
 docker compose up -d db
 ```
 
-Con pgAdmin (administrador web de la base de datos):
-
-```sh
-docker compose up -d db pgadmin
-```
-
-En pgAdmin (<http://localhost:5050>) registra el servidor con host `db`, puerto `5432` y el usuario y la contraseña definidos en `.env`.
+Para usar pgAdmin instalado localmente, inicia PostgreSQL con Docker y registra un servidor usando host `localhost`, puerto `5432` y el usuario y la contraseña definidos en `.env`.
 
 ### 2. Desarrollo de backend y frontend
 
@@ -362,7 +359,7 @@ npm run dev
 
 ### 3. Despliegue del sistema completo
 
-Levanta base de datos, pgAdmin, backend y frontend:
+Levanta la base de datos, el backend y el frontend:
 
 ```sh
 docker compose up -d

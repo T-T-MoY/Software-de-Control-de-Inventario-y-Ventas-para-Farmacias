@@ -5,7 +5,7 @@
 | **Proyecto** | Sistema de Control de Inventario y Ventas para Farmacias |
 | **Sprint** | 2 — Catálogo de medicamentos (RF2) |
 | **Casos de prueba** | CP-02 y CP-12 |
-| **Resultado** | **12/12 aserciones de API aprobadas**; compilación y búsqueda en interfaz verificadas |
+| **Resultado** | **12/12 aserciones de API aprobadas, 0 fallos**; compilación y búsqueda en interfaz verificadas |
 | **Entorno** | API local, PostgreSQL en Docker y frontend Vue/Vite |
 
 ## Alcance verificado
@@ -37,3 +37,10 @@
 | Compilación de producción del frontend | `npm --prefix frontend run build` exitoso | Aprobado |
 
 El medicamento temporal utilizado para probar alta, edición y estado se eliminó de la base al terminar; no se modificaron los datos de ejemplo.
+
+## Evidencia Postman
+
+- [Colección Postman — Sprint 2](pruebas/POSTMAN/Sprint2/Sprint%202%20%E2%80%93%20Cat%C3%A1logo%20%28CP-02%20-%20CP-12%20-%20L%20y%20SS%29.postman_collection.json)
+- [Entorno Postman — Sprint 2 Local](pruebas/POSTMAN/Sprint2/Sprint%202%20-%20Local.postman_environment.json)
+
+El entorno tiene `baseUrl` configurado como `http://localhost:3000`. Las credenciales y los tokens se mantienen locales en Postman.

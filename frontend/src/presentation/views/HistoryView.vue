@@ -26,7 +26,7 @@ const error = ref('')
 const formatearFechaCompacta = (fechaISO) => {
   if (!fechaISO) return '—'
   const d = new Date(fechaISO)
-  if (isNaN(d.getTime())) return fechaISO
+  if (Number.isNaN(d.getTime())) return fechaISO
   const pad = (n) => String(n).padStart(2, '0')
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
@@ -107,14 +107,14 @@ onMounted(async () => {
           <input v-model="filtros.fechaFin" type="date" class="form-input panel-control w-full h-11 bg-[var(--bg-base)] [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow" />
         </label>
         <div class="w-full">
-          <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Operación</label>
-          <select v-model="filtros.tipo" class="form-select panel-control w-full h-11 bg-[var(--bg-base)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow">
+          <label for="filtro-operacion" class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Operación</label>
+          <select id="filtro-operacion" v-model="filtros.tipo" class="form-select panel-control w-full h-11 bg-[var(--bg-base)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow">
             <option v-for="t in TIPOS" :key="t.valor" :value="t.valor">{{ t.nombre }}</option>
           </select>
         </div>
         <div class="w-full">
-          <label class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Usuario</label>
-          <select v-model="filtros.idUsuario" class="form-select panel-control w-full h-11 bg-[var(--bg-base)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow">
+          <label for="filtro-usuario" class="mb-1.5 block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Usuario</label>
+          <select id="filtro-usuario" v-model="filtros.idUsuario" class="form-select panel-control w-full h-11 bg-[var(--bg-base)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent transition-shadow">
             <option value="">Todos los usuarios</option>
             <option v-for="u in usuarios" :key="u.id_usuario" :value="u.id_usuario">
               {{ u.usuario }}

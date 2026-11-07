@@ -659,7 +659,7 @@ onMounted(cargarDatos)
           </div>
 
           <div class="flex min-w-0 flex-col gap-1.5">
-            <label class="hidden lg:block" aria-hidden="true">&nbsp;</label>
+            <div class="hidden lg:block" aria-hidden="true">&nbsp;</div>
             <button
               type="button"
               class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"

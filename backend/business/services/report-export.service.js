@@ -10,7 +10,14 @@ const ExcelJS = require('exceljs');
 // ---------------------------------------------------------------------
 // Formato de valores (independiente del ICU instalado en el servidor)
 // ---------------------------------------------------------------------
-const separarMiles = (entero) => entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const separarMiles = (entero) => {
+    let resultado = '';
+    for (let i = 0; i < entero.length; i += 1) {
+        if (i > 0 && (entero.length - i) % 3 === 0) resultado += '.';
+        resultado += entero[i];
+    }
+    return resultado;
+};
 
 const formatearNumero = (valor, decimales) => {
     const numero = Number(valor);

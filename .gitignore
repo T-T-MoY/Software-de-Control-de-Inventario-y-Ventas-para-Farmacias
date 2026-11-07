@@ -8,6 +8,8 @@ credenciales.txt
 node_modules/
 **/node_modules/
 frontend/dist/
+**/coverage/
+.scannerwork/
 
 # Archivos de usuario y registros
 !backend/uploads/.gitkeep

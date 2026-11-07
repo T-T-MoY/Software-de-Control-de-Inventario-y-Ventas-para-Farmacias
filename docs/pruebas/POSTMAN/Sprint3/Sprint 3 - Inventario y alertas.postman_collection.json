@@ -1,0 +1,837 @@
+{
+  "info": {
+    "_postman_id": "be1e7916-72b3-4c47-b769-3428f4ab4055",
+    "name": "Sprint 3 - Inventario y alertas (CP-03 / CP-04 / CP-10 / CP-11 / CP-13)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "44334416",
+    "_collection_link": "https://go.postman.co/collection/44334416-be1e7916-72b3-4c47-b769-3428f4ab4055?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "0. Preparación",
+      "item": [
+        {
+          "name": "Login Administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.usuario.rol).to.eql('Administrador');",
+                  "pm.environment.set('tokenAdmin', b.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@farmacia.bo\",\"password\":\"{{passwordDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Encargado de inventario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.usuario.rol).to.eql('Encargado de inventario');",
+                  "pm.environment.set('tokenInventario', b.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"inventario@farmacia.bo\",\"password\":\"{{passwordDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Ventas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.usuario.rol).to.eql('Ventas');",
+                  "pm.environment.set('tokenVentas', b.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"ventas@farmacia.bo\",\"password\":\"{{passwordDemo}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar medicamento para recepción",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Catálogo consultable', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array').that.is.not.empty;",
+                  "const m = rows.find(x => x.estado_medicamento === 'Activo') || rows[0];",
+                  "pm.environment.set('medicamentoPrueba', m.id_medicamento);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicamentos?buscar=Aspirineta",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicamentos"
+              ],
+              "query": [
+                {
+                  "key": "buscar",
+                  "value": "Aspirineta"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener cliente general para probar bloqueo de vencidos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Clientes disponibles para Ventas', () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json().find(x => String(x.ci_nit) === '00000');",
+                  "pm.expect(c, 'Debe existir el cliente general de prueba').to.exist;",
+                  "pm.environment.set('clienteGeneral', c.id_cliente);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clientes?buscar=00000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "buscar",
+                  "value": "00000"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. CP-03 Proveedores y recepción de lotes",
+      "item": [
+        {
+          "name": "Registrar proveedor de prueba",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('rucPrueba', String(Date.now()));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor creado', () => pm.response.to.have.status(201));",
+                  "const p = pm.response.json().proveedor;",
+                  "pm.expect(p.id_proveedor).to.exist;",
+                  "pm.environment.set('proveedorPrueba', p.id_proveedor);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre_comercial\":\"Proveedor Sprint 3\",\"ruc_nit\":\"{{rucPrueba}}\",\"telefono\":\"22112233\",\"correo_electronico\":\"sprint3@farmacia.bo\",\"direccion\":\"La Paz\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar proveedores y comprobar proveedor creado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Listado de proveedores disponible', () => pm.response.to.have.status(200));",
+                  "const rows = pm.response.json();",
+                  "pm.expect(rows).to.be.an('array');",
+                  "pm.expect(rows.some(p => Number(p.id_proveedor) === Number(pm.environment.get('proveedorPrueba')))).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores?buscar=Proveedor Sprint 3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ],
+              "query": [
+                {
+                  "key": "buscar",
+                  "value": "Proveedor Sprint 3"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar recepción con fecha inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Fecha inválida rechazada', () => pm.response.to.have.status(400));",
+                  "pm.expect(pm.response.json().error).to.be.a('string');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_medicamento\":\"{{medicamentoPrueba}}\",\"id_proveedor\":\"{{proveedorPrueba}}\",\"lote_numero\":\"INVALIDO-{{$timestamp}}\",\"fecha_vencimiento\":\"2026-02-31\",\"costo_unitario\":1,\"cantidad_stock\":3}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lotes/recepciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lotes",
+                "recepciones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar recepción de lote próximo a vencer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date(); d.setDate(d.getDate() + 10);",
+                  "pm.environment.set('fechaVencimientoPrueba', d.toISOString().slice(0, 10));",
+                  "pm.environment.set('lotePrueba', 'SP3-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recepción registrada', () => pm.response.to.have.status(201));",
+                  "const lote = pm.response.json().lote;",
+                  "pm.expect(lote.id_lote).to.exist;",
+                  "pm.expect(lote.lote_numero).to.eql(pm.environment.get('lotePrueba'));",
+                  "pm.environment.set('idLotePrueba', lote.id_lote);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_medicamento\":\"{{medicamentoPrueba}}\",\"id_proveedor\":\"{{proveedorPrueba}}\",\"lote_numero\":\"{{lotePrueba}}\",\"fecha_vencimiento\":\"{{fechaVencimientoPrueba}}\",\"costo_unitario\":1.25,\"cantidad_stock\":5}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lotes/recepciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lotes",
+                "recepciones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar lote recibido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lote consultable', () => pm.response.to.have.status(200));",
+                  "const l = pm.response.json();",
+                  "pm.expect(l.lote_numero).to.eql(pm.environment.get('lotePrueba'));",
+                  "pm.expect(Number(l.cantidad_stock)).to.eql(5);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lotes/{{idLotePrueba}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lotes",
+                "{{idLotePrueba}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verificar recepción en historial de auditoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recepciones aparecen en historial', () => pm.response.to.have.status(200));",
+                  "const h = pm.response.json();",
+                  "pm.expect(h.registros.some(r => r.tipo_operacion === 'RECEPCION' && Number(r.id_registro) === Number(pm.environment.get('idLotePrueba')))).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/historial?tipo=RECEPCION&limite=100",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "historial"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "RECEPCION"
+                },
+                {
+                  "key": "limite",
+                  "value": "100"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas no puede registrar proveedores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Acceso denegado por rol', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "proveedores"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. CP-04 / CP-11 Alertas y vencimientos",
+      "item": [
+        {
+          "name": "Lote de prueba aparece en próximos a vencer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta de próximos a vencer', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.lotes).to.be.an('array');",
+                  "pm.expect(b.lotes.some(l => l.lote_numero === pm.environment.get('lotePrueba'))).to.eql(true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas/vencimientos/proximos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alertas",
+                "vencimientos",
+                "proximos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar lotes vencidos pendientes de baja",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta de vencidos', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.total).to.be.a('number');",
+                  "pm.expect(b.lotes).to.be.an('array');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas/vencimientos/vencidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alertas",
+                "vencimientos",
+                "vencidos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seleccionar lote vencido sembrado para CP-11",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Existe el lote de prueba vencido', () => pm.response.to.have.status(200));",
+                  "const lotes = pm.response.json().lotes;",
+                  "const lote = lotes.find(l => l.lote_numero === 'MON-2025-B');",
+                  "pm.expect(lote, 'La base inicial debe incluir MON-2025-B').to.exist;",
+                  "pm.environment.set('medicamentoVencido', lote.id_medicamento);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas/vencimientos/vencidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alertas",
+                "vencimientos",
+                "vencidos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bloquear venta de medicamento cuyo stock solo está vencido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Stock vencido no se puede vender', () => pm.response.to.have.status(409));",
+                  "pm.expect(pm.response.json().error).to.be.a('string');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVentas}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_cliente\":\"{{clienteGeneral}}\",\"items\":[{\"id_medicamento\":\"{{medicamentoVencido}}\",\"cantidad\":1}],\"descuento_porcentaje\":0,\"monto_recibido\":100}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ventas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar medicamentos que requieren reposición",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta de reorden', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.expect(b.medicamentos).to.be.an('array');",
+                  "b.medicamentos.forEach(m => pm.expect(m.requiere_reposicion).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas/reorden",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "alertas",
+                "reorden"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Solo Administrador puede dar de baja lotes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Baja restringida a Administrador', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInventario}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lotes/{{idLotePrueba}}/baja",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lotes",
+                "{{idLotePrueba}}",
+                "baja"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

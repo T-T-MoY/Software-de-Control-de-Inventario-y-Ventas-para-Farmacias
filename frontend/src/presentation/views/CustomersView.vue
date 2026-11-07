@@ -20,6 +20,10 @@ const editando = ref(false)
 const clienteId = ref(null)
 const form = ref({})
 
+const esClienteGeneral = (cliente) =>
+  String(cliente.nombres || '').trim().toLocaleLowerCase() === 'cliente general' &&
+  String(cliente.ci_nit || '').trim() === '00000'
+
 const formularioInicial = () => ({
   nombres: '',
   apellido_paterno: '',
@@ -28,9 +32,10 @@ const formularioInicial = () => ({
 })
 
 const clientesFiltrados = computed(() => {
+  const clientesVisibles = clientes.value.filter((cliente) => !esClienteGeneral(cliente))
   const termino = busqueda.value.trim().toLocaleLowerCase()
-  if (!termino) return clientes.value
-  return clientes.value.filter((cliente) => [
+  if (!termino) return clientesVisibles
+  return clientesVisibles.filter((cliente) => [
     cliente.nombres,
     cliente.apellido_paterno,
     cliente.apellido_materno,

@@ -7,6 +7,7 @@
  */
 
 const db = require('../connection');
+const { coincidePalabraPorPrefijo } = require('./search');
 const parametros = require('../../config/parameters');
 
 const CAMPOS_LOTE = `
@@ -54,10 +55,10 @@ const listar = async (buscar = '') => {
          ${TABLAS_LOTE}
          WHERE
             $2 = ''
-            OR m.nombre_comercial ILIKE $3
-            OR m.codigo_barras ILIKE $3
-            OR p.nombre_comercial ILIKE $3
-            OR l.lote_numero ILIKE $3
+            OR ${coincidePalabraPorPrefijo('m.nombre_comercial', '$3')}
+            OR ${coincidePalabraPorPrefijo('m.codigo_barras', '$3')}
+            OR ${coincidePalabraPorPrefijo('p.nombre_comercial', '$3')}
+            OR ${coincidePalabraPorPrefijo('l.lote_numero', '$3')}
          ORDER BY
             CASE WHEN l.fecha_baja IS NOT NULL THEN 1 ELSE 0 END,
             l.fecha_vencimiento ASC,
@@ -65,7 +66,7 @@ const listar = async (buscar = '') => {
         [
             parametros.margenAlertaDias,
             termino,
-            `%${termino}%`
+            termino
         ]
     );
 

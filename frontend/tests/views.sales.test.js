@@ -28,11 +28,12 @@ vi.mock('../src/components/SaleReceipt.vue', () => ({
 const SalesView = (await import('../src/presentation/views/SalesView.vue')).default
 
 const mockClientes = () => [
-  { id_cliente: 1, nombres: 'Consumidor', apellido_paterno: 'Final', apellido_materno: '', ci_nit: '00000' }
+  { id_cliente: 1, nombres: 'Consumidor', apellido_paterno: 'Final', apellido_materno: '', ci_nit: '00000' },
+  { id_cliente: 2, nombres: 'Luis', apellido_paterno: 'Gómez', apellido_materno: '', ci_nit: '87654321' }
 ]
 
 const mockProductos = () => [
-  { id_medicamento: 1, nombre_comercial: 'Dolofin', dci: 'Paracetamol', precio_unitario: 2, stock_disponible: 50, tipo_venta: 'Libre' }
+  { id_medicamento: 1, nombre_comercial: 'Dolofin', dci: 'Paracetamol', precio_unitario: 2, stock_disponible: 50, tipo_venta: 'Con receta' }
 ]
 
 describe('vista de punto de venta', () => {
@@ -46,6 +47,8 @@ describe('vista de punto de venta', () => {
   test('carga la vista y selecciona Consumidor Final por defecto', async () => {
     const wrapper = mount(SalesView)
     await flushPromises()
+
+    expect(wrapper.find('.sale-product-option').text()).toContain('Con receta')
 
     expect(salesMock.listarClientes).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('Consumidor Final')
@@ -68,5 +71,24 @@ describe('vista de punto de venta', () => {
     // Verificamos que el carrito ahora tenga el producto y el total cambie
     expect(wrapper.text()).toContain('1 productos')
     expect(wrapper.text()).toContain('Bs 2.00')
+    expect(wrapper.text()).toContain('Receta')
+  })
+
+  test('no muestra clientes por coincidencias internas del nombre', async () => {
+    const wrapper = mount(SalesView)
+    await flushPromises()
+
+    await wrapper.get('#buscar-cliente-venta').setValue('uis')
+
+    expect(wrapper.find('#cliente-sugerencias').text()).not.toContain('Luis Gómez')
+  })
+
+  test('permite buscar clientes con varias palabras', async () => {
+    const wrapper = mount(SalesView)
+    await flushPromises()
+
+    await wrapper.get('#buscar-cliente-venta').setValue('luis gó')
+
+    expect(wrapper.find('#cliente-sugerencias').text()).toContain('Luis Gómez')
   })
 })

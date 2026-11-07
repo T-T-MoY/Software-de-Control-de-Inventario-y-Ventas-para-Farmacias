@@ -14,6 +14,7 @@ import {
 import { apiAssetUrl } from '../../data/api'
 import { obtenerParametros } from '../../data/endpoints/parameters'
 import { formatearPrecio } from '../../business/format'
+import { coincidePorPrefijo } from '../../business/search'
 import { puedeGestionarCatalogo } from '../../business/session'
 import {
   FORMAS_FARMACEUTICAS,
@@ -195,7 +196,7 @@ const medicamentosFiltrados = computed(() => {
         medicamento.forma_farmaceutica,
         medicamento.nombre_categoria,
         medicamento.codigo_barras
-      ].some((valor) => String(valor || '').toLocaleLowerCase().includes(consulta))
+      ].some((valor) => coincidePorPrefijo(valor, consulta))
       if (!coincide) return false
     }
 
@@ -731,6 +732,12 @@ onMounted(cargarDatos)
                     {{ medicamento.estado_medicamento }}
                   </span>
                 </div>
+                <span
+                  v-if="medicamento.tipo_venta === 'Con receta'"
+                  class="mb-2 inline-flex w-fit rounded-full bg-[var(--warning-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--warning)]"
+                >
+                  Con receta
+                </span>
 
                 <p class="medicine-desc truncate-2-lines" :title="`${medicamento.dci} · ${medicamento.concentracion} · ${medicamento.forma_farmaceutica}`">
                   {{ medicamento.dci }} · {{ medicamento.concentracion }} · {{ medicamento.forma_farmaceutica }}
@@ -1338,7 +1345,7 @@ onMounted(cargarDatos)
 /* ============================================== */
 .medicines-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   align-items: stretch;
   gap: 1rem;
   padding: 1rem;

@@ -72,4 +72,14 @@ describe('vista de lotes', () => {
     expect(wrapper.text()).toContain('L-002')
     expect(wrapper.text()).not.toContain('L-001')
   })
+
+  test('no encuentra coincidencias internas en el nombre del medicamento', async () => {
+    const wrapper = mount(LotsView)
+    await flushPromises()
+
+    await wrapper.get('#buscar-lotes').setValue('acetam')
+
+    expect(wrapper.text()).not.toContain('L-001')
+    expect(wrapper.text()).toContain('No se encontraron lotes que coincidan con los filtros.')
+  })
 })

@@ -30,7 +30,7 @@ describe('repositorio de clientes', () => {
 
       await expect(listar()).resolves.toBe(filas);
 
-      expect(db.query.mock.calls[0][1]).toEqual(['', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['', '']);
     });
 
     test('recorta el término y arma el patrón ILIKE', async () => {
@@ -38,7 +38,7 @@ describe('repositorio de clientes', () => {
 
       await listar('  Ana  ');
 
-      expect(db.query.mock.calls[0][1]).toEqual(['Ana', '%Ana%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['Ana', 'Ana']);
     });
 
     test('trata un valor nulo como búsqueda vacía', async () => {
@@ -46,7 +46,7 @@ describe('repositorio de clientes', () => {
 
       await listar(null);
 
-      expect(db.query.mock.calls[0][1]).toEqual(['', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['', '']);
     });
 
     test('propaga el error de la base de datos', async () => {

@@ -48,6 +48,7 @@ describe('vista de medicamentos', () => {
     expect(medicinesMock.listarMedicamentos).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('Dolofin')
     expect(wrapper.text()).toContain('Amoxil')
+    expect(wrapper.text()).toContain('Con receta')
     expect(wrapper.text()).toContain('Total registrados')
     expect(wrapper.text()).toContain('2')
   })
@@ -59,5 +60,15 @@ describe('vista de medicamentos', () => {
     await wrapper.get('#buscar-medicamentos').setValue('Dolofin')
     expect(wrapper.text()).toContain('Dolofin')
     expect(wrapper.text()).not.toContain('Amoxil')
+  })
+
+  test('no encuentra términos dentro de una palabra', async () => {
+    const wrapper = mount(MedicinesView)
+    await flushPromises()
+
+    await wrapper.get('#buscar-medicamentos').setValue('etam')
+
+    expect(wrapper.text()).not.toContain('Dolofin')
+    expect(wrapper.text()).toContain('No se encontraron medicamentos')
   })
 })

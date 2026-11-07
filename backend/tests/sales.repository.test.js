@@ -117,7 +117,7 @@ describe('repositorio de ventas', () => {
 
       await expect(listarCatalogo()).resolves.toBe(filas);
 
-      expect(db.query.mock.calls[0][1]).toEqual([30, '', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual([30, '', '']);
     });
 
     test('recorta el término y arma el patrón ILIKE', async () => {
@@ -125,7 +125,7 @@ describe('repositorio de ventas', () => {
 
       await listarCatalogo('  para  ');
 
-      expect(db.query.mock.calls[0][1]).toEqual([30, 'para', '%para%']);
+      expect(db.query.mock.calls[0][1]).toEqual([30, 'para', 'para']);
     });
 
     test('trata un valor nulo como búsqueda vacía', async () => {
@@ -133,7 +133,7 @@ describe('repositorio de ventas', () => {
 
       await listarCatalogo(null);
 
-      expect(db.query.mock.calls[0][1]).toEqual([30, '', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual([30, '', '']);
     });
 
     test('propaga el error de la base de datos', async () => {

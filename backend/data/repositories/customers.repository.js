@@ -2,6 +2,7 @@
  * Consultas de clientes.
  */
 const db = require('../connection');
+const { coincidePalabraPorPrefijo } = require('./search');
 
 const CAMPOS_CLIENTE = `
     id_cliente,
@@ -17,12 +18,13 @@ const listar = async (buscar = '') => {
         `SELECT ${CAMPOS_CLIENTE}
          FROM cliente
          WHERE $1 = ''
-            OR nombres ILIKE $2
-            OR apellido_paterno ILIKE $2
-            OR apellido_materno ILIKE $2
-            OR ci_nit ILIKE $2
+            OR ${coincidePalabraPorPrefijo(
+              "concat_ws(' ', nombres, apellido_paterno, apellido_materno)",
+              '$2'
+            )}
+            OR ${coincidePalabraPorPrefijo('ci_nit', '$2')}
          ORDER BY nombres, apellido_paterno, ci_nit`,
-        [termino, `%${termino}%`]
+        [termino, termino]
     );
     return rows;
 };

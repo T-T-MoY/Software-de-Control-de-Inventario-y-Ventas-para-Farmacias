@@ -57,8 +57,9 @@ describe('repositorio de medicamentos', () => {
 
       await listar({ buscar: 'para', idCategoria: 2, estado: 'Activo' });
 
-      expect(db.query.mock.calls[0][1]).toEqual(['%para%', 2, 'Activo']);
-      expect(db.query.mock.calls[0][0]).toContain('m.nombre_comercial ILIKE $1');
+      expect(db.query.mock.calls[0][1]).toEqual(['para', 2, 'Activo']);
+      expect(db.query.mock.calls[0][0])
+        .toContain('starts_with(lower(valor.palabra), lower(consulta.termino))');
       expect(db.query.mock.calls[0][0]).toContain('m.id_categoria = $2');
       expect(db.query.mock.calls[0][0]).toContain('m.estado_medicamento = $3');
     });
@@ -68,7 +69,7 @@ describe('repositorio de medicamentos', () => {
 
       await listar({ buscar: 'ibu' });
 
-      expect(db.query.mock.calls[0][1]).toEqual(['%ibu%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['ibu']);
     });
 
     test('propaga el error de la base de datos', async () => {

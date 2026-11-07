@@ -2,6 +2,7 @@
  * Consultas y transacciones del módulo de ventas.
  */
 const db = require('../connection');
+const { coincidePalabraPorPrefijo } = require('./search');
 const parametros = require('../../config/parameters');
 
 const listarCatalogo = async (buscar = '') => {
@@ -36,13 +37,13 @@ const listarCatalogo = async (buscar = '') => {
            AND COALESCE(stock.disponible, 0) > 0
            AND (
                 $2 = ''
-                OR m.nombre_comercial ILIKE $3
-                OR m.dci ILIKE $3
-                OR m.codigo_barras ILIKE $3
-                OR m.concentracion ILIKE $3
+                OR ${coincidePalabraPorPrefijo('m.nombre_comercial', '$3')}
+                OR ${coincidePalabraPorPrefijo('m.dci', '$3')}
+                OR ${coincidePalabraPorPrefijo('m.codigo_barras', '$3')}
+                OR ${coincidePalabraPorPrefijo('m.concentracion', '$3')}
            )
          ORDER BY m.nombre_comercial`,
-        [parametros.margenAlertaDias, termino, `%${termino}%`]
+        [parametros.margenAlertaDias, termino, termino]
     );
     return rows;
 };

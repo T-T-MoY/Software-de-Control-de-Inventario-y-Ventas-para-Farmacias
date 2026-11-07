@@ -36,7 +36,7 @@ describe('repositorio de lotes', () => {
 
       await expect(listar()).resolves.toBe(filas);
 
-      expect(db.query.mock.calls[0][1]).toEqual([30, '', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual([30, '', '']);
     });
 
     test('recorta el término y arma el patrón ILIKE', async () => {
@@ -44,7 +44,7 @@ describe('repositorio de lotes', () => {
 
       await listar('  L-2026  ');
 
-      expect(db.query.mock.calls[0][1]).toEqual([30, 'L-2026', '%L-2026%']);
+      expect(db.query.mock.calls[0][1]).toEqual([30, 'L-2026', 'L-2026']);
     });
 
     test('trata un valor nulo como búsqueda vacía', async () => {
@@ -52,7 +52,7 @@ describe('repositorio de lotes', () => {
 
       await listar(null);
 
-      expect(db.query.mock.calls[0][1]).toEqual([30, '', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual([30, '', '']);
     });
 
     test('propaga el error de la base de datos', async () => {

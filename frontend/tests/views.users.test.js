@@ -208,12 +208,32 @@ describe('vista de usuarios', () => {
     expect(wrapper.text()).toContain('Ana Pérez Rojas')
   })
 
+  test('permite precisar la búsqueda con varias palabras', async () => {
+    const wrapper = montar()
+    await flushPromises()
+
+    await wrapper.get('#buscar-usuarios').setValue('ana pér')
+
+    expect(wrapper.text()).toContain('Ana Pérez Rojas')
+    expect(wrapper.text()).not.toContain('Luis Gómez')
+  })
+
   test('muestra el estado vacío cuando no hay coincidencias', async () => {
     const wrapper = montar()
     await flushPromises()
 
     await wrapper.get('#buscar-usuarios').setValue('inexistente')
 
+    expect(wrapper.text()).toContain('No se encontraron usuarios que coincidan con los filtros.')
+  })
+
+  test('no encuentra coincidencias internas en nombres ni correo', async () => {
+    const wrapper = montar()
+    await flushPromises()
+
+    await wrapper.get('#buscar-usuarios').setValue('rl')
+
+    expect(wrapper.text()).not.toContain('Carla Ríos')
     expect(wrapper.text()).toContain('No se encontraron usuarios que coincidan con los filtros.')
   })
 

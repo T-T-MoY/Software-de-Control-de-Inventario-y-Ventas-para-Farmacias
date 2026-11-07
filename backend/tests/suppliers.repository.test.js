@@ -31,7 +31,7 @@ describe('repositorio de proveedores', () => {
 
       await expect(listar()).resolves.toBe(filas);
 
-      expect(db.query.mock.calls[0][1]).toEqual(['', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['', '']);
     });
 
     test('recorta el término de búsqueda', async () => {
@@ -39,7 +39,7 @@ describe('repositorio de proveedores', () => {
 
       await listar('  Andina  ');
 
-      expect(db.query.mock.calls[0][1]).toEqual(['Andina', '%Andina%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['Andina', 'Andina']);
     });
 
     test('trata un valor nulo como búsqueda vacía', async () => {
@@ -47,7 +47,7 @@ describe('repositorio de proveedores', () => {
 
       await listar(null);
 
-      expect(db.query.mock.calls[0][1]).toEqual(['', '%%']);
+      expect(db.query.mock.calls[0][1]).toEqual(['', '']);
     });
 
     test('propaga el error de la base de datos', async () => {

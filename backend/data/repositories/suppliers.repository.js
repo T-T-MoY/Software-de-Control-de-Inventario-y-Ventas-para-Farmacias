@@ -5,6 +5,7 @@
  */
 
 const db = require('../connection');
+const { coincidePalabraPorPrefijo } = require('./search');
 
 const CAMPOS_PROVEEDOR = `
     id_proveedor,
@@ -27,12 +28,12 @@ const listar = async (buscar = '') => {
          FROM proveedor
          WHERE
             $1 = ''
-            OR nombre_comercial ILIKE $2
-            OR ruc_nit ILIKE $2
-            OR COALESCE(telefono, '') ILIKE $2
-            OR COALESCE(correo_electronico, '') ILIKE $2
+            OR ${coincidePalabraPorPrefijo('nombre_comercial', '$2')}
+            OR ${coincidePalabraPorPrefijo('ruc_nit', '$2')}
+            OR ${coincidePalabraPorPrefijo('telefono', '$2')}
+            OR ${coincidePalabraPorPrefijo('correo_electronico', '$2')}
          ORDER BY nombre_comercial ASC`,
-        [termino, `%${termino}%`]
+        [termino, termino]
     );
 
     return rows;

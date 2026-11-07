@@ -4,6 +4,7 @@
  * sumando los lotes disponibles (sin baja y no vencidos).
  */
 const db = require('../connection');
+const { coincidePalabraPorPrefijo } = require('./search');
 
 const CAMPOS_MEDICAMENTO = `
     m.id_medicamento,
@@ -38,12 +39,12 @@ const listar = async ({ buscar, idCategoria, estado } = {}) => {
     const valores = [];
 
     if (buscar) {
-        valores.push(`%${buscar}%`);
+        valores.push(buscar);
         filtros.push(`(
-            m.nombre_comercial ILIKE $${valores.length}
-            OR m.dci ILIKE $${valores.length}
-            OR m.codigo_barras ILIKE $${valores.length}
-            OR c.nombre_categoria ILIKE $${valores.length}
+            ${coincidePalabraPorPrefijo('m.nombre_comercial', `$${valores.length}`)}
+            OR ${coincidePalabraPorPrefijo('m.dci', `$${valores.length}`)}
+            OR ${coincidePalabraPorPrefijo('m.codigo_barras', `$${valores.length}`)}
+            OR ${coincidePalabraPorPrefijo('c.nombre_categoria', `$${valores.length}`)}
         )`);
     }
 

@@ -10,6 +10,7 @@ import {
   listarClientes
 } from '../../data/endpoints/sales'
 import { obtenerParametros } from '../../data/endpoints/parameters'
+import { coincidePorPrefijo } from '../../business/search'
 import { validarCi, validarNombre } from '../validators/fields'
 
 const productos = ref([])
@@ -112,12 +113,13 @@ const clientesFiltrados = computed(() => {
   const porDocumento = /^[0-9-]+$/.test(termino)
   return clientes.value
     .filter((cliente) => {
-      const documento = String(cliente.ci_nit || '').toLocaleLowerCase()
+      const documento = cliente.ci_nit
       if (esConsumidorFinal(cliente)) {
-        return documento.includes(termino) || 'consumidor final'.includes(termino)
+        return coincidePorPrefijo(documento, termino)
+          || coincidePorPrefijo('Consumidor Final', termino)
       }
-      if (porDocumento) return documento.includes(termino)
-      return nombreCliente(cliente).toLocaleLowerCase().includes(termino)
+      if (porDocumento) return coincidePorPrefijo(documento, termino)
+      return coincidePorPrefijo(nombreCliente(cliente), termino)
     })
     .sort((a, b) => {
       const textoA = porDocumento ? String(a.ci_nit || '') : nombreCliente(a)
@@ -629,6 +631,12 @@ onBeforeUnmount(() => {
                     </span>
                     <span class="sale-product-details">
                       <strong>{{ producto.nombre_comercial }}</strong>
+                      <span
+                        v-if="producto.tipo_venta === 'Con receta'"
+                        class="mb-1 inline-flex w-fit rounded-full bg-[var(--warning-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--warning)]"
+                      >
+                        Con receta
+                      </span>
                       <small>{{ producto.dci || producto.concentracion }}</small>
                       <small>
                         Bs {{ Number(producto.precio_unitario).toFixed(2) }}

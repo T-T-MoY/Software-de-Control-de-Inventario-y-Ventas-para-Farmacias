@@ -11,6 +11,7 @@ import {
   obtenerImpactoUsuario
 } from '../../data/endpoints/users'
 import { iniciales, nombreCompleto } from '../../business/format'
+import { coincidePorPrefijo } from '../../business/search'
 import { obtenerSesion } from '../../business/session'
 import { FECHA_MINIMA, fechaHoyISO } from '../validators/fields'
 import {
@@ -136,17 +137,14 @@ const usuariosFiltrados = computed(() => {
 
   return usuarios.value.filter((usuario) => {
     if (consulta) {
-      const nombre = [
-        usuario.nombres,
-        usuario.apellido_paterno,
-        usuario.apellido_materno
-      ].filter(Boolean).join(' ')
       const coincide = [
-        nombre,
+        [usuario.nombres, usuario.apellido_paterno, usuario.apellido_materno]
+          .filter(Boolean)
+          .join(' '),
         usuario.correo,
         usuario.ci,
         usuario.nombre_rol
-      ].some((valor) => String(valor || '').toLocaleLowerCase().includes(consulta))
+      ].some((valor) => coincidePorPrefijo(valor, consulta))
       if (!coincide) return false
     }
 

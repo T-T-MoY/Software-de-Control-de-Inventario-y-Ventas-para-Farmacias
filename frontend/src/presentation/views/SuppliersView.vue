@@ -8,6 +8,7 @@ import {
   actualizarProveedor
 } from '../../data/endpoints/suppliers'
 
+import { coincidePorPrefijo } from '../../business/search'
 import { obtenerSesion } from '../../business/session'
 
 import {
@@ -51,7 +52,7 @@ const proveedoresFiltrados = computed(() => {
     ]
 
     return valores.some((valor) =>
-      String(valor || '').toLocaleLowerCase().includes(consulta)
+      coincidePorPrefijo(valor, consulta)
     )
   })
 })

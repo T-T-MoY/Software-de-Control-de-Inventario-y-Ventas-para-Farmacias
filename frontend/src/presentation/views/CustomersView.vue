@@ -6,6 +6,7 @@ import {
   crearCliente,
   listarClientes
 } from '../../data/endpoints/sales'
+import { coincidePorPrefijo } from '../../business/search'
 import { validarCi, validarNombre } from '../validators/fields'
 
 const clientes = ref([])
@@ -36,11 +37,11 @@ const clientesFiltrados = computed(() => {
   const termino = busqueda.value.trim().toLocaleLowerCase()
   if (!termino) return clientesVisibles
   return clientesVisibles.filter((cliente) => [
-    cliente.nombres,
-    cliente.apellido_paterno,
-    cliente.apellido_materno,
+    [cliente.nombres, cliente.apellido_paterno, cliente.apellido_materno]
+      .filter(Boolean)
+      .join(' '),
     cliente.ci_nit
-  ].some((valor) => String(valor || '').toLocaleLowerCase().includes(termino)))
+  ].some((valor) => coincidePorPrefijo(valor, termino)))
 })
 
 const nombreCliente = (cliente) => [

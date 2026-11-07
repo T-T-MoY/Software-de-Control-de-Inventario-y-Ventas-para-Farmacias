@@ -52,6 +52,26 @@ describe('vista de clientes', () => {
     expect(wrapper.text()).toContain('1 cliente(s)')
   })
 
+  test('no encuentra coincidencias dentro del nombre', async () => {
+    const wrapper = montar()
+    await flushPromises()
+
+    await wrapper.get('#buscar-cliente').setValue('uis')
+
+    expect(wrapper.text()).not.toContain('Luis Gómez')
+    expect(wrapper.text()).toContain('No hay resultados para la búsqueda.')
+  })
+
+  test('permite buscar varias palabras del nombre', async () => {
+    const wrapper = montar()
+    await flushPromises()
+
+    await wrapper.get('#buscar-cliente').setValue('ana pé')
+
+    expect(wrapper.text()).toContain('Ana Pérez Rojas')
+    expect(wrapper.text()).not.toContain('Luis Gómez')
+  })
+
   test('muestra el estado vacío según la búsqueda', async () => {
     const wrapper = montar()
     await flushPromises()

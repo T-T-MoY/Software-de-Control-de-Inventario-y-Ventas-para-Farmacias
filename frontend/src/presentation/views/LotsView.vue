@@ -11,6 +11,7 @@ import {
 
 import { listarMedicamentos } from '../../data/endpoints/medicines'
 import { listarProveedores } from '../../data/endpoints/suppliers'
+import { coincidePorPrefijo } from '../../business/search'
 
 import {
   puedeGestionarCatalogo,
@@ -50,7 +51,7 @@ const lotesFiltrados = computed(() => {
       lote.proveedor,
       lote.lote_numero
     ].some((valor) =>
-      String(valor || '').toLocaleLowerCase().includes(consulta)
+      coincidePorPrefijo(valor, consulta)
     )
 
     const coincideEstado =

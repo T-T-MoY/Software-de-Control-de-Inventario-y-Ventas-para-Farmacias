@@ -23,9 +23,7 @@ const error = ref('')
 const notificacion = ref('')
 const tonoNotificacion = ref('success')
 const busqueda = ref('')
-const productoId = ref('')
 const fotosNoDisponibles = ref(new Set())
-const cantidad = ref(1)
 const carrito = ref([])
 const clienteId = ref('')
 const descuento = ref(0)
@@ -53,9 +51,9 @@ let solicitudCatalogo = 0
 const requiereReceta = computed(() =>
   carrito.value.some((item) => item.tipo_venta === 'Con receta')
 )
-const productoSeleccionado = computed(() =>
-  productos.value.find((item) => String(item.id_medicamento) === productoId.value)
-)
+const idsEnCarrito = computed(() => new Set(
+  carrito.value.map((item) => item.id_medicamento)
+))
 const subtotalCentavos = computed(() => carrito.value.reduce(
   (suma, item) => suma + Math.round(Number(item.precio_unitario) * 100) * item.cantidad,
   0
@@ -153,12 +151,6 @@ const cargarDatos = async () => {
       const consumidorFinal = listaClientes.find((cliente) => esConsumidorFinal(cliente))
       if (consumidorFinal) clienteId.value = String(consumidorFinal.id_cliente)
     }
-
-    if (productoId.value && !productos.value.some(
-      (item) => String(item.id_medicamento) === productoId.value
-    )) {
-      productoId.value = ''
-    }
   } catch (err) {
     error.value = err.message || 'No se pudieron cargar los datos del punto de venta.'
   } finally {
@@ -169,7 +161,6 @@ const cargarDatos = async () => {
 const cargarCatalogo = async () => {
   if (!clienteValido.value) {
     productos.value = []
-    productoId.value = ''
     return
   }
 
@@ -182,11 +173,6 @@ const cargarCatalogo = async () => {
     productos.value = catalogo.filter(
       (item) => Number(item.stock_disponible) > 0
     )
-    if (productoId.value && !productos.value.some(
-      (item) => String(item.id_medicamento) === productoId.value
-    )) {
-      productoId.value = ''
-    }
   } catch (err) {
     if (solicitud !== solicitudCatalogo) return
     error.value = err.message || 'No se pudo cargar el catálogo de medicamentos.'
@@ -206,7 +192,6 @@ const recargarDatos = async () => {
 // El carrito no se vacía al cambiar de cliente: se vuelve a enlazar con el
 // cliente actual al confirmar la venta y se conservan productos e importes.
 watch(clienteId, () => {
-  productoId.value = ''
   void cargarCatalogo()
 })
 
@@ -391,27 +376,21 @@ const manejarAtajos = (event) => {
 
 }
 
-const agregarProducto = () => {
+const agregarProducto = (producto) => {
   if (!clienteValido.value) {
     notificacion.value = 'Selecciona o registra un cliente antes de agregar productos.'
     tonoNotificacion.value = 'error'
     return
   }
-  const producto = productoSeleccionado.value
-  if (
-    !producto
-    || Number(producto.stock_disponible) <= 0
-    || !Number.isInteger(Number(cantidad.value))
-    || Number(cantidad.value) < 1
-  ) {
-    notificacion.value = 'Selecciona un medicamento y una cantidad válida.'
+  if (!producto || Number(producto.stock_disponible) <= 0) {
+    notificacion.value = 'Selecciona un medicamento con stock disponible.'
     tonoNotificacion.value = 'error'
     return
   }
   const existente = carrito.value.find(
     (item) => item.id_medicamento === producto.id_medicamento
   )
-  const nuevaCantidad = Number(cantidad.value) + (existente?.cantidad || 0)
+  const nuevaCantidad = (existente?.cantidad || 0) + 1
   if (nuevaCantidad > Number(producto.stock_disponible)) {
     notificacion.value = 'La cantidad supera el stock disponible.'
     tonoNotificacion.value = 'error'
@@ -420,16 +399,19 @@ const agregarProducto = () => {
   if (existente) {
     existente.cantidad = nuevaCantidad
   } else {
-    carrito.value.push({ ...producto, cantidad: Number(cantidad.value) })
+    carrito.value.push({ ...producto, cantidad: 1 })
   }
-  productoId.value = ''
-  cantidad.value = 1
 }
 
-const seleccionarProducto = (producto) => {
-  if (clienteValido.value && Number(producto.stock_disponible) > 0) {
-    productoId.value = String(producto.id_medicamento)
+// Enter en el buscador agrega el primer medicamento encontrado.
+const agregarPrimerProducto = () => {
+  if (!productos.value.length) {
+    if (!cargandoCatalogo.value) {
+      notificar('No hay medicamentos que coincidan con la búsqueda.', 'error')
+    }
+    return
   }
+  agregarProducto(productos.value[0])
 }
 
 const imagenProducto = (producto) => (
@@ -600,21 +582,17 @@ onBeforeUnmount(() => {
                     placeholder="Nombre, DCI o código de barras"
                     autocomplete="off"
                     @input="buscarProductos"
+                    @keydown.enter.prevent="agregarPrimerProducto"
                   >
                 </div>
               </div>
               <div class="min-w-0 sm:col-span-12">
                 <span class="form-label block">Medicamentos disponibles</span>
                 <div class="sale-product-list" role="group" aria-label="Medicamentos disponibles">
-                  <button
+                  <div
                     v-for="producto in productos"
                     :key="producto.id_medicamento"
-                    type="button"
                     class="sale-product-option"
-                    :class="{ 'is-selected': productoId === String(producto.id_medicamento) }"
-                    :aria-pressed="productoId === String(producto.id_medicamento)"
-                    :disabled="Number(producto.stock_disponible) <= 0"
-                    @click="seleccionarProducto(producto)"
                   >
                     <span class="sale-product-image">
                       <img
@@ -633,7 +611,7 @@ onBeforeUnmount(() => {
                       <strong>{{ producto.nombre_comercial }}</strong>
                       <span
                         v-if="producto.tipo_venta === 'Con receta'"
-                        class="mb-1 inline-flex w-fit rounded-full bg-[var(--warning-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--warning)]"
+                        class="sale-product-tag"
                       >
                         Con receta
                       </span>
@@ -643,37 +621,25 @@ onBeforeUnmount(() => {
                         · stock {{ producto.stock_disponible }}
                       </small>
                     </span>
-                    <i
-                      v-if="productoId === String(producto.id_medicamento)"
-                      class="fas fa-circle-check text-primary"
-                      aria-hidden="true"
-                    ></i>
-                  </button>
+                    <button
+                      type="button"
+                      class="sale-product-add"
+                      :class="{ 'is-added': idsEnCarrito.has(producto.id_medicamento) }"
+                      :aria-label="`Agregar ${producto.nombre_comercial} al carrito`"
+                      :title="`Agregar ${producto.nombre_comercial} al carrito`"
+                      @click="agregarProducto(producto)"
+                    >
+                      <i
+                        class="fas"
+                        :class="idsEnCarrito.has(producto.id_medicamento) ? 'fa-check' : 'fa-plus'"
+                        aria-hidden="true"
+                      ></i>
+                    </button>
+                  </div>
                   <p v-if="!cargandoCatalogo && productos.length === 0" class="m-0 p-3 text-sm text-[var(--text-muted)]">
                     No hay medicamentos con stock vigente que coincidan con la búsqueda.
                   </p>
                 </div>
-              </div>
-              <div class="min-w-0 sm:col-span-3 lg:col-span-2">
-                <label class="form-label" for="cantidad-venta">Cantidad</label>
-                <input
-                  id="cantidad-venta"
-                  v-model.number="cantidad"
-                  class="form-input"
-                  type="number"
-                  min="1"
-                  :max="productoSeleccionado?.stock_disponible || 1"
-                >
-              </div>
-              <div class="sm:col-span-9 lg:col-span-10">
-                <button
-                  type="button"
-                  class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#2a468b] to-[#3d6ac1] px-5 py-2.5 text-sm font-bold text-[#fff7e3] shadow-md transition hover:from-[#1e356d] hover:to-[#2a468b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-55"
-                  :disabled="!productoSeleccionado"
-                  @click="agregarProducto"
-                >
-                  <i class="fas fa-cart-plus" aria-hidden="true"></i>Agregar
-                </button>
               </div>
             </div>
             </fieldset>
@@ -1201,9 +1167,9 @@ onBeforeUnmount(() => {
 
 .sale-product-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 0.65rem;
-  max-height: 18rem;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 0.5rem;
+  max-height: 11rem;
   overflow-y: auto;
   padding: 0.15rem;
 }
@@ -1220,35 +1186,82 @@ onBeforeUnmount(() => {
 .sale-product-option {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   min-width: 0;
-  padding: 0.55rem;
+  padding: 0.4rem;
   border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
+  border-radius: 0.6rem;
   background: var(--bg-card);
   color: inherit;
   text-align: left;
 }
 
-.sale-product-option:hover,
-.sale-product-option.is-selected {
+.sale-product-option:hover {
   border-color: var(--primary);
 }
 
-.sale-product-option:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
+.sale-product-tag {
+  width: fit-content;
+  margin-bottom: 0.1rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.sale-product-add {
+  display: inline-flex;
+  flex: 0 0 2rem;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.45rem;
+  background: var(--accent-soft);
+  color: var(--primary);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.sale-product-add i {
+  display: block;
+  line-height: 1;
+}
+
+.sale-product-add:hover {
+  border-color: var(--primary);
+  transform: scale(1.06);
+}
+
+.sale-product-add:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sale-product-add.is-added {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.sale-product-add.is-added:hover {
+  border-color: var(--success);
 }
 
 .sale-product-image {
   display: flex;
-  flex: 0 0 3.5rem;
+  flex: 0 0 2.5rem;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   overflow: hidden;
-  border-radius: 0.5rem;
+  border-radius: 0.4rem;
   background: #fff;
 }
 
@@ -1288,8 +1301,15 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+.sale-product-details strong {
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
 .sale-product-details small {
   color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.25;
 }
 
 .sale-preview-backdrop {

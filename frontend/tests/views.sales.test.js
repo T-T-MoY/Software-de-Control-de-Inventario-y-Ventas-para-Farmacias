@@ -60,18 +60,30 @@ describe('vista de punto de venta', () => {
     const wrapper = mount(SalesView)
     await flushPromises()
 
-    // Simulamos el click en el producto del catálogo
-    const botonProducto = wrapper.findAll('.sale-product-option')[0]
-    await botonProducto.trigger('click')
-
-    // Buscamos el botón "Agregar" y hacemos click
-    const botonAgregar = wrapper.findAll('button').find((b) => b.text().includes('Agregar'))
+    // Agregamos el producto con el botón "+" de la tarjeta
+    const botonAgregar = wrapper.findAll('.sale-product-add')[0]
     await botonAgregar.trigger('click')
 
     // Verificamos que el carrito ahora tenga el producto y el total cambie
     expect(wrapper.text()).toContain('1 productos')
     expect(wrapper.text()).toContain('Bs 2.00')
     expect(wrapper.text()).toContain('Receta')
+    // El botón pasa de "+" a tick verde
+    expect(wrapper.find('.sale-product-add').classes()).toContain('is-added')
+    expect(wrapper.find('.sale-product-add i').classes()).toContain('fa-check')
+  })
+
+  test('agrega el primer resultado al presionar Enter en el buscador', async () => {
+    const wrapper = mount(SalesView)
+    await flushPromises()
+
+    const buscador = wrapper.get('#buscar-producto')
+    await buscador.setValue('dolo')
+    await buscador.trigger('keydown', { key: 'Enter' })
+
+    expect(wrapper.text()).toContain('1 productos')
+    expect(wrapper.find('.sale-product-add').classes()).toContain('is-added')
+    expect(wrapper.find('.sale-product-add i').classes()).toContain('fa-check')
   })
 
   test('no muestra clientes por coincidencias internas del nombre', async () => {

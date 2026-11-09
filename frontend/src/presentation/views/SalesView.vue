@@ -95,7 +95,11 @@ const clienteSeleccionado = computed(() => (
   clientes.value.find((cliente) => String(cliente.id_cliente) === clienteId.value) || null
 ))
 
+const clienteEsGenerico = computed(() => esConsumidorFinal(clienteSeleccionado.value))
+
 const clienteValido = computed(() => Boolean(clienteSeleccionado.value))
+
+const recetaVacia = () => ({ paciente: '', medico: '', matricula: '' })
 
 const terminoCliente = computed(() => busquedaCliente.value.trim().toLocaleLowerCase())
 const buscarPorDocumento = computed(() => /^[0-9-]+$/.test(terminoCliente.value))
@@ -441,6 +445,11 @@ const confirmarVenta = async () => {
     tonoNotificacion.value = 'error'
     return
   }
+  if (requiereReceta.value && clienteEsGenerico.value) {
+    notificacion.value = 'Para vender medicamentos con receta, selecciona o registra un cliente real (no Consumidor Final).'
+    tonoNotificacion.value = 'error'
+    return
+  }
   if (requiereReceta.value && Object.values(receta.value).some((valor) => !valor.trim())) {
     notificacion.value = 'Completa paciente, médico y matrícula para los medicamentos con receta.'
     tonoNotificacion.value = 'error'
@@ -480,7 +489,7 @@ const confirmarVenta = async () => {
     carrito.value = []
     efectivo.value = ''
     descuento.value = 0
-    receta.value = { paciente: '', medico: '', matricula: '' }
+    receta.value = recetaVacia()
     void recargarDatos()
     return
   }
@@ -496,7 +505,7 @@ const confirmarVenta = async () => {
   carrito.value = []
   efectivo.value = ''
   descuento.value = 0
-  receta.value = { paciente: '', medico: '', matricula: '' }
+  receta.value = recetaVacia()
   void recargarDatos()
 }
 
@@ -687,7 +696,7 @@ onBeforeUnmount(() => {
                     <td class="border-t border-[var(--border-color)] px-3 py-3">
                       <button
                         type="button"
-                        class="inline-flex size-9 items-center justify-center rounded-full border border-[var(--danger)] text-[var(--danger)] transition hover:bg-[var(--danger-soft)] focus-visible:outline-2 focus-visible:outline-[var(--danger)]"
+                        class="sale-product-trash"
                         :aria-label="`Quitar ${item.nombre_comercial}`"
                         @click="carrito = carrito.filter((producto) => producto.id_medicamento !== item.id_medicamento)"
                       >
@@ -733,7 +742,9 @@ onBeforeUnmount(() => {
                 <button
                   v-else-if="clienteConsumidorFinal"
                   type="button"
-                  class="shrink-0 rounded-full border border-[var(--border-color)] px-3 py-1.5 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)]"
+                  class="shrink-0 rounded-full border border-[var(--border-color)] px-3 py-1.5 text-xs font-bold text-[var(--text-muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[var(--text-muted)]"
+                  :disabled="requiereReceta"
+                  :title="requiereReceta ? 'La venta con receta requiere un cliente registrado' : 'Volver a Consumidor Final'"
                   @click="volverConsumidorFinal"
                 >
                   Consumidor final
@@ -837,6 +848,16 @@ onBeforeUnmount(() => {
 
             <div v-if="requiereReceta" class="mb-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-body)] p-4">
               <h3 class="mb-3 text-sm font-extrabold"><i class="fas fa-prescription mr-2" aria-hidden="true"></i>Datos de receta (RD5)</h3>
+              <p class="mb-3 text-xs text-[var(--text-muted)]">
+                El cliente es quien compra; el paciente es quien recibirá el medicamento. Pueden ser personas distintas.
+              </p>
+              <p
+                v-if="clienteEsGenerico"
+                class="mb-3 rounded-xl bg-[var(--warning-soft)] px-3 py-2 text-xs font-semibold text-[var(--warning)]"
+              >
+                <i class="fas fa-triangle-exclamation mr-1" aria-hidden="true"></i>
+                Selecciona o registra un cliente real. La venta con receta no se permite con Consumidor Final.
+              </p>
               <div class="mb-3">
                 <label class="form-label" for="paciente">Paciente</label>
                 <input id="paciente" v-model.trim="receta.paciente" class="form-input" maxlength="160" required>
@@ -851,7 +872,7 @@ onBeforeUnmount(() => {
                   <input id="matricula" v-model.trim="receta.matricula" class="form-input" maxlength="40" required>
                 </div>
               </div>
-              <small class="mt-2 block text-xs text-[var(--text-muted)]">Estos datos se validan para la venta y no se guardan.</small>
+              <small class="mt-2 block text-xs text-[var(--text-muted)]">Estos datos se guardan con la venta y se imprimen en el comprobante.</small>
             </div>
 
             <div class="mb-4 grid grid-cols-2 gap-3">
@@ -1222,6 +1243,22 @@ onBeforeUnmount(() => {
   border-radius: 0.45rem;
   background: var(--accent-soft);
   color: var(--primary);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.sale-product-trash {
+  display: inline-flex;
+  flex: 0 0 2rem;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.45rem;
+  color: var(--danger);
   font-size: 0.8rem;
   line-height: 1;
   padding: 0;

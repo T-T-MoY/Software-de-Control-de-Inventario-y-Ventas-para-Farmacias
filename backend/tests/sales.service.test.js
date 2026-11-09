@@ -1,6 +1,7 @@
 jest.mock('../data/repositories/sales.repository', () => ({
   listarCatalogo: jest.fn(),
   buscarMedicamentos: jest.fn(),
+  buscarCliente: jest.fn(),
   crear: jest.fn(),
 }));
 
@@ -8,6 +9,7 @@ jest.mock('../business/rules/sales.rules', () => ({
   calcularTotales: jest.fn(),
   normalizarDatosVenta: jest.fn(),
   validarReceta: jest.fn(),
+  esClienteConsumidorFinal: jest.fn(),
 }));
 
 jest.mock('../business/errors/app-error', () => {
@@ -42,6 +44,7 @@ const {
   calcularTotales,
   normalizarDatosVenta,
   validarReceta,
+  esClienteConsumidorFinal,
 } = require('../business/rules/sales.rules');
 const {
   errorConflicto,
@@ -97,7 +100,13 @@ describe('servicio de ventas', () => {
     normalizarDatosVenta.mockReturnValue({ ...ventaNormalizada });
     calcularTotales.mockReturnValue({ ...totales });
     validarReceta.mockReturnValue(undefined);
+    esClienteConsumidorFinal.mockReturnValue(false);
     ventasRepositorio.buscarMedicamentos.mockResolvedValue([{ ...medicamento }]);
+    ventasRepositorio.buscarCliente.mockResolvedValue({
+      id_cliente: 1,
+      nombres: 'Ana',
+      ci_nit: '4521897',
+    });
     ventasRepositorio.crear.mockResolvedValue({
       ...ventaGuardada,
       items: ventaGuardada.items.map((item) => ({ ...item })),
@@ -198,6 +207,51 @@ describe('servicio de ventas', () => {
 
       expect(validarReceta).toHaveBeenCalledWith(receta);
       expect(ventasRepositorio.crear).toHaveBeenCalledTimes(1);
+      expect(ventasRepositorio.crear).toHaveBeenCalledWith(
+        expect.objectContaining({ receta }),
+        7
+      );
+    });
+
+    test('rechaza la receta con Consumidor Final (CI/NIT 00000)', async () => {
+      const receta = { paciente: 'Ana', medico: 'Dr. Pérez', matricula: '123' };
+      normalizarDatosVenta.mockReturnValue({
+        ...ventaNormalizada,
+        receta,
+      });
+      ventasRepositorio.buscarMedicamentos.mockResolvedValue([
+        { ...medicamento, tipo_venta: 'Con receta' },
+      ]);
+      ventasRepositorio.buscarCliente.mockResolvedValue({
+        id_cliente: 1,
+        nombres: 'Cliente general',
+        ci_nit: '00000',
+      });
+      esClienteConsumidorFinal.mockReturnValue(true);
+
+      await expect(crear({ id_cliente: 1 }, 7)).rejects.toMatchObject({
+        estado: 400,
+        codigo: 'VALIDACION',
+        message: 'Para vender medicamentos con receta, selecciona o registra un cliente real; no se permite Consumidor Final.',
+      });
+
+      expect(esClienteConsumidorFinal).toHaveBeenCalledWith(
+        expect.objectContaining({ ci_nit: '00000' })
+      );
+      expect(calcularTotales).not.toHaveBeenCalled();
+      expect(ventasRepositorio.crear).not.toHaveBeenCalled();
+    });
+
+    test('rechaza cuando el cliente no existe', async () => {
+      ventasRepositorio.buscarCliente.mockResolvedValue(null);
+
+      await expect(crear({ id_cliente: 1 }, 7)).rejects.toMatchObject({
+        estado: 404,
+        codigo: 'NO_ENCONTRADO',
+        message: 'El cliente seleccionado no existe.',
+      });
+
+      expect(ventasRepositorio.crear).not.toHaveBeenCalled();
     });
 
     test.each([0, -1, 1.5, null, undefined, 'abc', ''])(

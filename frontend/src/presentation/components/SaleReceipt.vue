@@ -115,6 +115,21 @@ const imprimir = () => {
       </p>
     </section>
 
+    <section v-if="venta.receta" class="receipt-meta receipt-receta">
+      <p class="receipt-line">
+        <span>Paciente:</span>
+        <span>{{ venta.receta.paciente }}</span>
+      </p>
+      <p class="receipt-line">
+        <span>Médico:</span>
+        <span>{{ venta.receta.medico }}</span>
+      </p>
+      <p class="receipt-line">
+        <span>Matrícula:</span>
+        <span>{{ venta.receta.matricula }}</span>
+      </p>
+    </section>
+
     <table class="receipt-table">
       <thead>
         <tr>
@@ -188,6 +203,7 @@ const imprimir = () => {
   max-width: 100%;
   margin: 0 auto;
   padding: 4mm;
+  box-sizing: border-box;
   background: #fff;
   color: #111;
   font-family: 'Courier New', Courier, monospace;
@@ -310,10 +326,11 @@ const imprimir = () => {
     position: absolute;
     top: 0;
     left: 0;
-    width: 72mm;
+    width: 80mm;
     max-width: none;
     margin: 0;
-    padding: 0;
+    padding: 4mm;
+    box-sizing: border-box;
     box-shadow: none;
     overflow: visible;
     overflow-wrap: anywhere;

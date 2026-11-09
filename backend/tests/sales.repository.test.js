@@ -11,6 +11,7 @@ const db = require('../data/connection');
 const {
   listarCatalogo,
   buscarMedicamentos,
+  buscarCliente,
   crear,
 } = require('../data/repositories/sales.repository');
 
@@ -162,6 +163,30 @@ describe('repositorio de ventas', () => {
     });
   });
 
+  describe('buscarCliente', () => {
+    test('consulta el cliente por su identificador', async () => {
+      const fila = { id_cliente: 1, nombres: 'Ana', ci_nit: '4521897' };
+      db.query.mockResolvedValue({ rows: [fila] });
+
+      await expect(buscarCliente(1)).resolves.toBe(fila);
+
+      expect(db.query.mock.calls[0][1]).toEqual([1]);
+    });
+
+    test('devuelve null cuando el cliente no existe', async () => {
+      db.query.mockResolvedValue({ rows: [] });
+
+      await expect(buscarCliente(99)).resolves.toBeNull();
+    });
+
+    test('propaga el error de la base de datos', async () => {
+      const error = new Error('Error de base de datos');
+      db.query.mockRejectedValue(error);
+
+      await expect(buscarCliente(1)).rejects.toBe(error);
+    });
+  });
+
   describe('crear', () => {
     test('registra la venta completa y reparte el stock entre lotes', async () => {
       const cliente = crearClienteTransaccion();
@@ -196,6 +221,7 @@ describe('repositorio de ventas', () => {
         total: 12.5,
         monto_recibido: 20,
         cambio: 7.5,
+        receta: null,
         lotes_por_vencer: [10],
       });
 
@@ -231,7 +257,42 @@ describe('repositorio de ventas', () => {
       const venta = llamadas.find(
         ([sql]) => sql.includes('INSERT INTO venta')
       );
-      expect(venta[1]).toEqual([1, 8, 0, 20]);
+      expect(venta[1]).toEqual([1, 8, 0, 20, null, null, null]);
+    });
+
+    test('guarda los datos de la receta en la venta', async () => {
+      const cliente = crearClienteTransaccion();
+      const receta = {
+        paciente: 'Ana Pérez',
+        medico: 'Dr. Pérez',
+        matricula: 'MP-123',
+      };
+
+      const resultado = await crear({ ...ventaBase, receta }, 8);
+
+      const venta = cliente.query.mock.calls.find(
+        ([sql]) => sql.includes('INSERT INTO venta')
+      );
+      expect(venta[1]).toEqual([
+        1, 8, 0, 20,
+        'Ana Pérez', 'Dr. Pérez', 'MP-123',
+      ]);
+      expect(resultado.receta).toEqual(receta);
+    });
+
+    test('descarta una receta incompleta aunque llegue en los datos', async () => {
+      const cliente = crearClienteTransaccion();
+
+      const resultado = await crear({
+        ...ventaBase,
+        receta: { paciente: 'Ana', medico: '', matricula: 'MP-1' },
+      }, 8);
+
+      const venta = cliente.query.mock.calls.find(
+        ([sql]) => sql.includes('INSERT INTO venta')
+      );
+      expect(venta[1]).toEqual([1, 8, 0, 20, null, null, null]);
+      expect(resultado.receta).toBeNull();
     });
 
     test('usa el prefijo NV para una nota de venta', async () => {

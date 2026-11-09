@@ -56,6 +56,56 @@ describe('vista de punto de venta', () => {
     expect(salesMock.listarCatalogoVenta).toHaveBeenCalledTimes(1)
   })
 
+  test('exige un cliente registrado para confirmar una venta con receta', async () => {
+    const wrapper = mount(SalesView)
+    await flushPromises()
+    await wrapper.find('.sale-product-add').trigger('click')
+
+    expect(wrapper.text()).toContain('El cliente es quien compra')
+    expect(wrapper.text()).toContain('La venta con receta no se permite con Consumidor Final.')
+
+    await wrapper.get('#efectivo-venta').setValue('2')
+    await wrapper.findAll('button')
+      .find((button) => button.text().includes('Confirmar venta'))
+      .trigger('click')
+
+    expect(salesMock.crearVenta).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('selecciona o registra un cliente real')
+  })
+
+  test('mantiene aparte al comprador registrado y al paciente de la receta', async () => {
+    salesMock.crearVenta.mockResolvedValue({ venta: { items: [] } })
+    const wrapper = mount(SalesView)
+    await flushPromises()
+    await wrapper.find('.sale-product-add').trigger('click')
+
+    const buscadorCliente = wrapper.get('#buscar-cliente-venta')
+    await buscadorCliente.setValue('Luis')
+    await wrapper.get('#cliente-sugerencias .cliente-suggestion').trigger('click')
+    await flushPromises()
+
+    const paciente = wrapper.get('#paciente')
+    expect(paciente.element.value).toBe('')
+
+    await paciente.setValue('Mateo Gómez')
+    await wrapper.get('#medico').setValue('Dra. Pérez')
+    await wrapper.get('#matricula').setValue('MP-123')
+    await wrapper.get('#efectivo-venta').setValue('2')
+    await wrapper.findAll('button')
+      .find((button) => button.text().includes('Confirmar venta'))
+      .trigger('click')
+    await flushPromises()
+
+    expect(salesMock.crearVenta).toHaveBeenCalledWith(expect.objectContaining({
+      id_cliente: 2,
+      receta: {
+        paciente: 'Mateo Gómez',
+        medico: 'Dra. Pérez',
+        matricula: 'MP-123'
+      }
+    }))
+  })
+
   test('permite buscar y agregar un producto al carrito', async () => {
     const wrapper = mount(SalesView)
     await flushPromises()

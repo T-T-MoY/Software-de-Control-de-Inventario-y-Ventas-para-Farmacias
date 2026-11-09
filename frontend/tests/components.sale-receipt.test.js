@@ -52,6 +52,26 @@ describe('comprobante de venta', () => {
     expect(wrapper.text()).toContain('Luis Ventas')
   })
 
+  test('muestra los datos de la receta separados de los del cliente', () => {
+    const wrapper = montar({
+      venta: {
+        ...ventaCompleta(),
+        receta: {
+          paciente: 'Mateo Gómez',
+          medico: 'Dra. Pérez',
+          matricula: 'MP-123',
+        },
+      },
+    })
+
+    expect(wrapper.text()).toContain('Cliente:')
+    expect(wrapper.text()).toContain('Ana Pérez')
+    expect(wrapper.text()).toContain('Paciente:')
+    expect(wrapper.text()).toContain('Mateo Gómez')
+    expect(wrapper.text()).toContain('Dra. Pérez')
+    expect(wrapper.text()).toContain('MP-123')
+  })
+
   test('muestra los productos con importes y totales', () => {
     const wrapper = montar()
 

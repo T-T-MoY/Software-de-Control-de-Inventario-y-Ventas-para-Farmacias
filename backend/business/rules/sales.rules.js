@@ -144,9 +144,15 @@ const validarReceta = (receta) => {
     }
 };
 
+// El cliente genérico (CI/NIT 00000) no sirve para trazabilidad de recetas.
+const esClienteConsumidorFinal = (cliente) => (
+    String(cliente?.ci_nit ?? '').trim() === '00000'
+);
+
 module.exports = {
     esEnteroPositivo,
     normalizarDatosVenta,
     calcularTotales,
     validarReceta,
+    esClienteConsumidorFinal,
 };

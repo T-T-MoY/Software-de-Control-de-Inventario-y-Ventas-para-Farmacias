@@ -394,6 +394,12 @@ Restricción adicional: `UNIQUE (id_medicamento, lote_numero)`.
 | `fecha_hora_venta` | `TIMESTAMP` | NOT NULL, default `CURRENT_TIMESTAMP` |
 | `descuento_porcentaje` | `NUMERIC(5,2)` | NOT NULL, entre 0 y 100 |
 | `monto_recibido` | `NUMERIC(10,2)` | NOT NULL, ≥ 0 |
+| `paciente` | `VARCHAR(160)` | — (receta, RD5) |
+| `medico` | `VARCHAR(160)` | — (receta, RD5) |
+| `matricula` | `VARCHAR(40)` | — (receta, RD5) |
+
+Restricción adicional: `venta_receta_completa` exige que `paciente`, `medico` y `matricula` estén todos presentes o todos nulos.
+`id_cliente` identifica a quien compra; `paciente` identifica a quien recibirá el medicamento según la receta. Pueden ser personas distintas. Las ventas con medicamentos que requieren receta deben usar un cliente registrado, no Consumidor Final (`00000`).
 
 ### `dispensa`
 
@@ -437,7 +443,7 @@ Restricción adicional: `UNIQUE (id_venta, id_lote)`.
 | RD1 | Conservar lote y proveedor en cada entrada y salida | `dispensa` → `lote` → `proveedor` (datos) |
 | RD3 | Medicamento con DCI, concentración y forma farmacéutica | Restricciones `NOT NULL` (datos) + validación (presentación) |
 | RD4 | Punto de reorden `ROP = ceil(D × L) + SS`; D usa las unidades dispensadas durante `VENTANA_DEMANDA_DIAS` | `business/rules/` y endpoint de alertas (Sprint 3) |
-| RD5 | Receta obligatoria para `tipo_venta = 'Con receta'` | `business/services/sales.service.js` (futuro) |
+| RD5 | Receta obligatoria para `tipo_venta = 'Con receta'`: paciente, médico y matrícula se guardan en `venta` y exigen un cliente real (no `00000`) | `business/services/sales.service.js` + `database/05_receta_venta.sql` |
 | — | Stock nunca negativo | `CHECK (cantidad_stock >= 0)` + transacción en el servicio |
 | — | No vender lotes vencidos | Regla de negocio + `fecha_vencimiento` (datos) |
 | — | Una cuenta no puede desactivarse a sí misma | `business/rules/users.rules.js` |

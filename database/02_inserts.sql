@@ -160,14 +160,19 @@ VALUES
 
 -- ---------------------------------------------------------------------
 -- VENTAS (sin descuento) y DISPENSA (líneas de cada venta)
---   Las ventas 2 y 4 incluyen Cefixima (Con receta): la receta se validó
---   en pantalla y no se guarda.
+--   Las ventas 2 y 4 incluyen Cefixima (Con receta): guardan los datos de
+--   la receta (paciente, médico y matrícula) para su trazabilidad.
 -- ---------------------------------------------------------------------
-INSERT INTO venta (id_cliente, id_usuario, fecha_hora_venta, descuento_porcentaje, monto_recibido) VALUES
-(1, 3, CURRENT_TIMESTAMP - INTERVAL '3 days',  0, 20.00),
-(2, 3, CURRENT_TIMESTAMP - INTERVAL '2 days',  0, 30.00),
-(1, 3, CURRENT_TIMESTAMP - INTERVAL '1 day',   0, 20.00),
-(3, 3, CURRENT_TIMESTAMP - INTERVAL '5 hours', 0, 30.00);
+INSERT INTO venta (
+    id_cliente, id_usuario, fecha_hora_venta, descuento_porcentaje,
+    monto_recibido, paciente, medico, matricula
+) VALUES
+(1, 3, CURRENT_TIMESTAMP - INTERVAL '3 days',  0, 20.00, NULL, NULL, NULL),
+(2, 3, CURRENT_TIMESTAMP - INTERVAL '2 days',  0, 30.00,
+ 'María Elena Quispe Condori', 'Dr. Carlos Rojas', 'MP-12345'),
+(1, 3, CURRENT_TIMESTAMP - INTERVAL '1 day',   0, 20.00, NULL, NULL, NULL),
+(3, 3, CURRENT_TIMESTAMP - INTERVAL '5 hours', 0, 30.00,
+ 'Pedro Luis Apaza Ticona', 'Dra. Silvia Mendoza', 'MP-67890');
 
 INSERT INTO dispensa (id_venta, id_lote, cantidad, precio_venta) VALUES
 (1, 1,  3,  1.94),   -- Terracolin x3   =  5.82

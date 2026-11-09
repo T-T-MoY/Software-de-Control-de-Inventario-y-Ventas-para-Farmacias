@@ -6,6 +6,7 @@ const {
     calcularTotales,
     normalizarDatosVenta,
     validarReceta,
+    esClienteConsumidorFinal,
 } = require('../rules/sales.rules');
 const {
     errorConflicto,
@@ -52,6 +53,11 @@ const crear = async (datos, idUsuario) => {
         throw errorNoEncontrado('Uno de los medicamentos seleccionados no existe.');
     }
 
+    const clienteVenta = await ventasRepositorio.buscarCliente(venta.id_cliente);
+    if (!clienteVenta) {
+        throw errorNoEncontrado('El cliente seleccionado no existe.');
+    }
+
     const porId = new Map(medicamentos.map((medicamento) => [
         medicamento.id_medicamento,
         medicamento,
@@ -79,8 +85,14 @@ const crear = async (datos, idUsuario) => {
         };
     });
 
-    if (items.some((item) => item.tipo_venta === 'Con receta')) {
+    const requiereReceta = items.some((item) => item.tipo_venta === 'Con receta');
+    if (requiereReceta) {
         validarReceta(venta.receta);
+        if (esClienteConsumidorFinal(clienteVenta)) {
+            throw errorValidacion(
+                'Para vender medicamentos con receta, selecciona o registra un cliente real; no se permite Consumidor Final.'
+            );
+        }
     }
 
     const totales = calcularTotales({
@@ -92,6 +104,7 @@ const crear = async (datos, idUsuario) => {
     try {
         const resultado = await ventasRepositorio.crear({
             ...venta,
+            receta: requiereReceta ? venta.receta : null,
             items,
             ...totales,
         }, Number(idUsuario));

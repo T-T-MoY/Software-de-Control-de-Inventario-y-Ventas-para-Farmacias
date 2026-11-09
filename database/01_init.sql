@@ -90,8 +90,8 @@ CREATE TABLE lote (
 
 -- ---------------------------------------------------------------------
 -- VENTAS: clientes, ventas, dispensa (relación N:M Venta-Lote) y comprobantes
--- La receta no se guarda: solo se valida en pantalla al vender
--- medicamentos con tipo_venta = 'Con receta'.
+-- La receta (paciente, médico y matrícula) se guarda en la venta cuando
+-- incluye medicamentos con tipo_venta = 'Con receta' (RD5).
 -- ---------------------------------------------------------------------
 CREATE TABLE cliente (
     id_cliente          SERIAL        PRIMARY KEY,
@@ -108,7 +108,16 @@ CREATE TABLE venta (
     fecha_hora_venta      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     descuento_porcentaje  NUMERIC(5,2)   NOT NULL DEFAULT 0
                           CHECK (descuento_porcentaje BETWEEN 0 AND 100),
-    monto_recibido        NUMERIC(10,2)  NOT NULL CHECK (monto_recibido >= 0)
+    monto_recibido        NUMERIC(10,2)  NOT NULL CHECK (monto_recibido >= 0),
+    -- Datos de la receta (RD5). Nulos cuando la venta no incluye
+    -- medicamentos con tipo_venta = 'Con receta'.
+    paciente              VARCHAR(160),
+    medico                VARCHAR(160),
+    matricula             VARCHAR(40),
+    CONSTRAINT venta_receta_completa CHECK (
+        (paciente IS NULL AND medico IS NULL AND matricula IS NULL)
+        OR (paciente IS NOT NULL AND medico IS NOT NULL AND matricula IS NOT NULL)
+    )
 );
 
 -- Tabla de la relación Venta --Dispensa(N:M)[Cantidad, Precio_Venta]-- Lote

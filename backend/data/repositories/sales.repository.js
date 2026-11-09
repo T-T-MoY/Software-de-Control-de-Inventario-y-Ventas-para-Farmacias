@@ -71,6 +71,16 @@ const buscarMedicamentos = async (ids) => {
     return rows;
 };
 
+const buscarCliente = async (idCliente) => {
+    const { rows } = await db.query(
+        `SELECT id_cliente, nombres, apellido_paterno, apellido_materno, ci_nit
+         FROM cliente
+         WHERE id_cliente = $1`,
+        [idCliente]
+    );
+    return rows[0] || null;
+};
+
 const crear = async (datos, idUsuario) => db.conTransaccion(async (cliente) => {
     const clienteResult = await cliente.query(
         `SELECT nombres, apellido_paterno, apellido_materno
@@ -154,17 +164,28 @@ const crear = async (datos, idUsuario) => db.conTransaccion(async (cliente) => {
         }
     }
 
+    const receta = datos.receta
+        && datos.receta.paciente
+        && datos.receta.medico
+        && datos.receta.matricula
+        ? datos.receta
+        : null;
+
     const ventaResult = await cliente.query(
         `INSERT INTO venta (
-            id_cliente, id_usuario, descuento_porcentaje, monto_recibido
+            id_cliente, id_usuario, descuento_porcentaje, monto_recibido,
+            paciente, medico, matricula
          )
-         VALUES ($1, $2, $3, $4)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING id_venta, fecha_hora_venta`,
         [
             datos.id_cliente,
             idUsuario,
             datos.descuento_porcentaje,
             datos.monto_recibido,
+            receta?.paciente ?? null,
+            receta?.medico ?? null,
+            receta?.matricula ?? null,
         ]
     );
     const venta = ventaResult.rows[0];
@@ -233,6 +254,7 @@ const crear = async (datos, idUsuario) => db.conTransaccion(async (cliente) => {
         ].filter(Boolean).join(' '),
         ...comprobanteResult.rows[0],
         items: itemsVenta,
+        receta: receta ? { ...receta } : null,
         subtotal: datos.subtotal,
         descuento_monto: datos.descuento_monto,
         total: datos.total,
@@ -247,5 +269,6 @@ const crear = async (datos, idUsuario) => db.conTransaccion(async (cliente) => {
 module.exports = {
     listarCatalogo,
     buscarMedicamentos,
+    buscarCliente,
     crear,
 };

@@ -14,11 +14,13 @@ fusionar con `main`.
 
 | Archivo | Cambio |
 |---|---|
-| `backend/data/connection.js` | Activa SSL cuando `DB_SSL=true` y acepta `DATABASE_URL` como alternativa a las variables `DB_*`. |
+| `backend/data/connection.js` | Activa SSL automáticamente con `DATABASE_URL` (o con `DB_SSL=true`) y acepta la cadena completa de Neon. |
+| `backend/scripts/apply-database.js` | Aplica los 5 `.sql` en orden usando `DATABASE_URL_UNPOOLED`; no hace nada si el esquema ya existe. |
 | `backend/server.js` | `FRONTEND_ORIGIN` admite varias URLs separadas por comas (producción y previews de Vercel). |
 | `frontend/vercel.json` | Reescribe todas las rutas a `index.html` para que recargar `/medicamentos` no devuelva 404. |
 | `frontend/.env.example` | Documenta `VITE_API_URL`. |
 | `.env.example` | Documenta las variables de la nube. |
+| `neon.ts` y `package.json` | Configuración de Neon CLI y scripts raíz `build`, `start`, `db:apply`. |
 
 ## Paso 1 — Base de datos en Neon
 
@@ -44,6 +46,23 @@ fusionar con `main`.
    porque las tablas ya existen; eso es normal.
 
 > Guarda la cadena de conexión: se usa en el paso 2.
+
+### Alternativa con Neon CLI
+
+Si usas el CLI de Neon, desde la raíz del repositorio:
+
+```sh
+neon init -y --org-id <org-id> --project-id <project-id> \
+  --branch production --services postgres
+neon deploy
+npm run db:apply
+```
+
+`neon init` y `neon deploy` escriben `DATABASE_URL` y
+`DATABASE_URL_UNPOOLED` en `.env`. `npm run db:apply` ejecuta los 5 scripts
+contra la conexión directa (`DATABASE_URL_UNPOOLED`) y se detiene si el
+esquema ya existe. La aplicación usa `DATABASE_URL` (pooled), que es la
+recomendada para el backend Express.
 
 ## Paso 2 — Backend en Render
 

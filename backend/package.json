@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "db:apply": "node scripts/apply-database.js",
     "hash": "node scripts/generate-hash.js",
     "test": "jest",
     "test:cov": "jest --coverage"

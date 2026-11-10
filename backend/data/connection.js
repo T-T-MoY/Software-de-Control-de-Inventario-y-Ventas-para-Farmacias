@@ -7,9 +7,12 @@
 const { Pool } = require('pg');
 require('../config/env');
 
-// Los proveedores en la nube (Neon, Render) exigen SSL. En local se deja
-// desactivado porque el PostgreSQL de Docker no lo tiene configurado.
-const ssl = process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
+// Los proveedores en la nube (Neon, Render) exigen SSL. Si se usa
+// DATABASE_URL se activa por defecto; DB_SSL=false lo desactiva y DB_SSL=true
+// lo fuerza. En local, con el PostgreSQL de Docker, queda desactivado.
+const usarSsl = process.env.DB_SSL === 'true'
+    || (Boolean(process.env.DATABASE_URL) && process.env.DB_SSL !== 'false');
+const ssl = usarSsl ? { rejectUnauthorized: false } : false;
 
 // DATABASE_URL permite pegar directamente la cadena de conexión del
 // proveedor. Si no existe, se usan las variables DB_* por separado.

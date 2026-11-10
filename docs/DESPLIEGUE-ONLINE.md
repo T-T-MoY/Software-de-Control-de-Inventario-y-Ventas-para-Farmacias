@@ -143,6 +143,10 @@ recomendada para el backend Express.
 
    Sin barra final.
 
+   > En Vercel solo va `VITE_API_URL`. No copies `DATABASE_URL`, `POSTGRES_*`,
+   > `SESSION_SECRET` ni las demás variables del backend: el frontend no las
+   > usa y quedarían guardadas como secretos innecesarios.
+
 5. Despliega y copia la URL pública, por ejemplo
    `https://farmacia-test.vercel.app`.
 

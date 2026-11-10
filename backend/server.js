@@ -22,8 +22,15 @@ const { noEncontrado, manejarErrores } = require('./presentation/middleware/erro
 const app = express();
 app.disable('x-powered-by');
 
+// FRONTEND_ORIGIN admite una o varias URLs separadas por comas
+// (por ejemplo, el dominio de producción y los previews de Vercel).
+const origenesPermitidos = (process.env.FRONTEND_ORIGIN || '')
+    .split(',')
+    .map((origen) => origen.trim())
+    .filter(Boolean);
+
 app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN || true,
+    origin: origenesPermitidos.length > 0 ? origenesPermitidos : true,
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

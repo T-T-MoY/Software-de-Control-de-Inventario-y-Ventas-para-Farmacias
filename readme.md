@@ -383,6 +383,13 @@ Los scripts de `database/` se ejecutan automáticamente **solo cuando PostgreSQL
 2. Configura las variables del backend indicadas arriba.
 3. Ejecuta backend y frontend con `npm install` y `npm run dev`.
 
+### Despliegue en línea (gratis)
+
+La guía paso a paso para publicar el sistema con **Neon + Render + Vercel**
+está en [`docs/DESPLIEGUE-ONLINE.md`](docs/DESPLIEGUE-ONLINE.md). La rama
+`test_online` incluye los cambios necesarios: SSL para la base de datos,
+soporte de `DATABASE_URL` y el rewrite del SPA en Vercel.
+
 ## API implementada
 
 | Método | Ruta | Descripción |

@@ -7,13 +7,24 @@
 const { Pool } = require('pg');
 require('../config/env');
 
-const pool = new Pool({
-    user: process.env.DB_USER || process.env.POSTGRES_USER || 'admin',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || process.env.POSTGRES_DB || 'control_farmacia',
-    password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD,
-    port: Number(process.env.DB_PORT || 5432),
-});
+// Los proveedores en la nube (Neon, Render) exigen SSL. En local se deja
+// desactivado porque el PostgreSQL de Docker no lo tiene configurado.
+const ssl = process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false;
+
+// DATABASE_URL permite pegar directamente la cadena de conexión del
+// proveedor. Si no existe, se usan las variables DB_* por separado.
+const configuracion = process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL, ssl }
+    : {
+        user: process.env.DB_USER || process.env.POSTGRES_USER || 'admin',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || process.env.POSTGRES_DB || 'control_farmacia',
+        password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD,
+        port: Number(process.env.DB_PORT || 5432),
+        ssl,
+    };
+
+const pool = new Pool(configuracion);
 
 /**
  * Ejecuta varias operaciones dentro de una transacción.

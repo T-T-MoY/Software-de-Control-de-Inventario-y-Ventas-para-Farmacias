@@ -1395,6 +1395,11 @@ onBeforeUnmount(() => {
 }
 
 @media print {
+  :global(body.printing-receipt) {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   .sale-preview-backdrop {
     position: static !important;
     inset: auto !important;

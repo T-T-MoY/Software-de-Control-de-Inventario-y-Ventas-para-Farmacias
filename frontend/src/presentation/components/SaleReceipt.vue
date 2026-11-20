@@ -310,11 +310,15 @@ const imprimir = () => {
 
 @media print {
   @page {
+    size: 80mm 297mm;
     margin: 0;
   }
 
-  :global(body.printing-receipt *) {
-    visibility: hidden;
+  /* Saca del flujo todo el layout de la app: #app no contiene la factura
+     (está teleportada a <body>), así el documento mide solo lo que mide
+     el comprobante y no se genera una segunda hoja en blanco. */
+  :global(body.printing-receipt #app) {
+    display: none !important;
   }
 
   .sale-receipt,
@@ -323,9 +327,7 @@ const imprimir = () => {
   }
 
   .sale-receipt {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: static;
     width: 80mm;
     max-width: none;
     margin: 0;

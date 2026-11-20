@@ -406,6 +406,7 @@ const stats = computed(() => [
   height: 260px;
   border-radius: 50%;
   border: 1px solid rgba(184, 174, 227, 0.2);
+  pointer-events: none;
 }
 
 .welcome-glow {

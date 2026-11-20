@@ -200,17 +200,6 @@ const stats = computed(() => [
         </router-link>
       </div>
     </div>
-
-    <div class="info-strip mt-4">
-      <span class="info-icon"><i class="fas fa-database" aria-hidden="true"></i></span>
-      <div class="min-w-0">
-        <div class="font-semibold">Base de datos preparada</div>
-        <p class="mb-0 text-sm text-[var(--text-muted)]">
-          El esquema de PostgreSQL está en <code>database/</code> y sirve como referencia
-          para implementar los módulos.
-        </p>
-      </div>
-    </div>
   </section>
 </template>
 
